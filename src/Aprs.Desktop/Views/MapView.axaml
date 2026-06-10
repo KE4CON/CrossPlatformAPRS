@@ -1,25 +1,119 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Aprs.Desktop.Views.MapView">
+             xmlns:vm="using:Aprs.Desktop.ViewModels"
+             x:Class="Aprs.Desktop.Views.MapView"
+             x:DataType="vm:MapViewModel">
   <Grid RowDefinitions="Auto,*"
-        Margin="0,10,0,0">
-    <StackPanel Grid.Row="0"
-                Margin="0,0,0,12">
-      <TextBlock Text="Map"
-                 FontSize="24"
-                 FontWeight="SemiBold" />
-      <TextBlock Text="Live APRS station positions"
-                 Foreground="#526173" />
-    </StackPanel>
+        RowSpacing="8">
+    <Grid Grid.Row="0"
+          ColumnDefinitions="*,Auto"
+          ColumnSpacing="10">
+      <StackPanel Spacing="1">
+        <TextBlock Text="Map"
+                   FontSize="20"
+                   FontWeight="SemiBold"
+                   Foreground="#0F172A" />
+        <TextBlock Text="APRS stations"
+                   FontSize="12"
+                   Foreground="#526173" />
+      </StackPanel>
+      <Border Grid.Column="1"
+              Background="#EEF6FF"
+              BorderBrush="#93C5FD"
+              BorderThickness="1"
+              CornerRadius="4"
+              Padding="8,5"
+              VerticalAlignment="Center">
+        <StackPanel Orientation="Horizontal"
+                    Spacing="4">
+          <TextBlock Text="{Binding MarkerCount}"
+                     FontWeight="SemiBold"
+                     Foreground="#1D4ED8" />
+          <TextBlock Text="markers"
+                     Foreground="#1D4ED8" />
+        </StackPanel>
+      </Border>
+    </Grid>
+
     <Border Grid.Row="1"
-            BorderBrush="#CBD5E1"
+            Background="#E7F0EF"
+            BorderBrush="#9AB4B1"
             BorderThickness="1"
             CornerRadius="6"
-            Background="#F8FAFC">
-      <TextBlock Text="Map display will appear here."
-                 HorizontalAlignment="Center"
-                 VerticalAlignment="Center"
-                 Foreground="#526173" />
+            ClipToBounds="True">
+      <Grid>
+        <Grid RowDefinitions="*,*,*,*,*,*"
+              ColumnDefinitions="*,*,*,*,*,*,*">
+          <Border Grid.Row="0"
+                  Grid.ColumnSpan="7"
+                  BorderBrush="#C9DAD7"
+                  BorderThickness="0,0,0,1" />
+          <Border Grid.Row="1"
+                  Grid.ColumnSpan="7"
+                  BorderBrush="#C9DAD7"
+                  BorderThickness="0,0,0,1" />
+          <Border Grid.Row="2"
+                  Grid.ColumnSpan="7"
+                  BorderBrush="#C9DAD7"
+                  BorderThickness="0,0,0,1" />
+          <Border Grid.Row="3"
+                  Grid.ColumnSpan="7"
+                  BorderBrush="#C9DAD7"
+                  BorderThickness="0,0,0,1" />
+          <Border Grid.Row="4"
+                  Grid.ColumnSpan="7"
+                  BorderBrush="#C9DAD7"
+                  BorderThickness="0,0,0,1" />
+          <Border Grid.Column="0"
+                  Grid.RowSpan="6"
+                  BorderBrush="#C9DAD7"
+                  BorderThickness="0,0,1,0" />
+          <Border Grid.Column="1"
+                  Grid.RowSpan="6"
+                  BorderBrush="#C9DAD7"
+                  BorderThickness="0,0,1,0" />
+          <Border Grid.Column="2"
+                  Grid.RowSpan="6"
+                  BorderBrush="#C9DAD7"
+                  BorderThickness="0,0,1,0" />
+          <Border Grid.Column="3"
+                  Grid.RowSpan="6"
+                  BorderBrush="#C9DAD7"
+                  BorderThickness="0,0,1,0" />
+          <Border Grid.Column="4"
+                  Grid.RowSpan="6"
+                  BorderBrush="#C9DAD7"
+                  BorderThickness="0,0,1,0" />
+          <Border Grid.Column="5"
+                  Grid.RowSpan="6"
+                  BorderBrush="#C9DAD7"
+                  BorderThickness="0,0,1,0" />
+        </Grid>
+
+        <Canvas x:Name="MarkerCanvas" />
+
+        <Border HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Margin="12"
+                Background="#F8FAFC"
+                BorderBrush="#CBD5E1"
+                BorderThickness="1"
+                CornerRadius="5"
+                Padding="10,8"
+                MaxWidth="260">
+          <StackPanel Spacing="2">
+            <TextBlock Text="{Binding SelectedStation.DisplayName}"
+                       FontWeight="SemiBold"
+                       Foreground="#0F172A" />
+            <TextBlock Text="{Binding SelectedStation.Callsign}"
+                       Foreground="#475569"
+                       FontSize="12" />
+            <TextBlock Text="{Binding SelectedStation.MovementLabel}"
+                       Foreground="#475569"
+                       FontSize="12" />
+          </StackPanel>
+        </Border>
+      </Grid>
     </Border>
   </Grid>
 </UserControl>
