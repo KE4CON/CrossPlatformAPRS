@@ -65,3 +65,125 @@ public sealed record PositionAprsPacket(
         ReceivedAtUtc,
         IsValid,
         ValidationErrors);
+
+public sealed record StatusAprsPacket(
+    string RawLine,
+    string SourceCallsign,
+    int? SourceSsid,
+    string Destination,
+    IReadOnlyList<string> Path,
+    string Information,
+    DateTimeOffset ReceivedAtUtc,
+    bool IsValid,
+    IReadOnlyList<string> ValidationErrors,
+    string? QConstruct,
+    string RawStatusText,
+    string StatusText)
+    : AprsPacket(
+        RawLine,
+        SourceCallsign,
+        SourceSsid,
+        Destination,
+        Path,
+        Information,
+        ReceivedAtUtc,
+        IsValid,
+        ValidationErrors);
+
+public sealed record TelemetryAprsPacket(
+    string RawLine,
+    string SourceCallsign,
+    int? SourceSsid,
+    string Destination,
+    IReadOnlyList<string> Path,
+    string Information,
+    DateTimeOffset ReceivedAtUtc,
+    bool IsValid,
+    IReadOnlyList<string> ValidationErrors,
+    string? QConstruct,
+    string RawTelemetryBody,
+    int? SequenceNumber,
+    IReadOnlyList<int> AnalogValues,
+    IReadOnlyList<bool> DigitalValues)
+    : AprsPacket(
+        RawLine,
+        SourceCallsign,
+        SourceSsid,
+        Destination,
+        Path,
+        Information,
+        ReceivedAtUtc,
+        IsValid,
+        ValidationErrors);
+
+public sealed record TelemetryMetadataAprsPacket(
+    string RawLine,
+    string SourceCallsign,
+    int? SourceSsid,
+    string Destination,
+    IReadOnlyList<string> Path,
+    string Information,
+    DateTimeOffset ReceivedAtUtc,
+    bool IsValid,
+    IReadOnlyList<string> ValidationErrors,
+    string? QConstruct,
+    string MetadataKind,
+    string RawMetadataBody,
+    IReadOnlyList<string> Values,
+    IReadOnlyList<bool> BitValues,
+    string? ProjectTitle)
+    : AprsPacket(
+        RawLine,
+        SourceCallsign,
+        SourceSsid,
+        Destination,
+        Path,
+        Information,
+        ReceivedAtUtc,
+        IsValid,
+        ValidationErrors);
+
+public sealed record CapabilityAprsPacket(
+    string RawLine,
+    string SourceCallsign,
+    int? SourceSsid,
+    string Destination,
+    IReadOnlyList<string> Path,
+    string Information,
+    DateTimeOffset ReceivedAtUtc,
+    bool IsValid,
+    IReadOnlyList<string> ValidationErrors,
+    string? QConstruct,
+    string CapabilityText)
+    : AprsPacket(
+        RawLine,
+        SourceCallsign,
+        SourceSsid,
+        Destination,
+        Path,
+        Information,
+        ReceivedAtUtc,
+        IsValid,
+        ValidationErrors);
+
+public sealed record UnknownAprsPacket(
+    string RawLine,
+    string SourceCallsign,
+    int? SourceSsid,
+    string Destination,
+    IReadOnlyList<string> Path,
+    string Information,
+    DateTimeOffset ReceivedAtUtc,
+    bool IsValid,
+    IReadOnlyList<string> ValidationErrors,
+    string? QConstruct)
+    : AprsPacket(
+        RawLine,
+        SourceCallsign,
+        SourceSsid,
+        Destination,
+        Path,
+        Information,
+        ReceivedAtUtc,
+        IsValid,
+        ValidationErrors);

@@ -116,10 +116,10 @@ public sealed class AprsParserTests
 
         parser.TryParse("N0CALL>APRS,TCPIP*,qAC,T2SERVER:>status", ReceivedAtUtc, out var packet, out _);
 
-        var rawPacket = Assert.IsType<RawAprsPacket>(packet);
-        Assert.True(rawPacket.IsValid);
-        Assert.Equal("qAC", rawPacket.QConstruct);
-        Assert.Equal(new[] { "TCPIP*", "qAC", "T2SERVER" }, rawPacket.Path);
+        var statusPacket = Assert.IsType<StatusAprsPacket>(packet);
+        Assert.True(statusPacket.IsValid);
+        Assert.Equal("qAC", statusPacket.QConstruct);
+        Assert.Equal(new[] { "TCPIP*", "qAC", "T2SERVER" }, statusPacket.Path);
     }
 
     [Theory]
@@ -253,5 +253,163 @@ public sealed class AprsParserTests
         });
 
         Assert.Null(exception);
+    }
+
+    [Fact]
+    public void TryParse_ReturnsStatusPacket_ForStatusInformation()
+    {
+        var parser = new AprsParser();
+
+        var isValid = parser.TryParse(
+            "N0CALL>APRS:>Net control station online",
+            ReceivedAtUtc,
+            out var packet,
+            out var error);
+
+        var statusPacket = Assert.IsType<StatusAprsPacket>(packet);
+        Assert.True(isValid);
+        Assert.Null(error);
+        Assert.Equal("Net control station online", statusPacket.StatusText);
+        Assert.Equal("Net control station online", statusPacket.RawStatusText);
+    }
+
+    [Fact]
+    public void TryParse_AllowsEmptyStatusPacket()
+    {
+        var parser = new AprsParser();
+
+        var isValid = parser.TryParse("K8ABC>APRS:>", ReceivedAtUtc, out var packet, out var error);
+
+        var statusPacket = Assert.IsType<StatusAprsPacket>(packet);
+        Assert.True(isValid);
+        Assert.Null(error);
+        Assert.Equal(string.Empty, statusPacket.StatusText);
+        Assert.Equal(string.Empty, statusPacket.RawStatusText);
+    }
+
+    [Fact]
+    public void TryParse_ReturnsTelemetryPacket_ForTelemetryValues()
+    {
+        var parser = new AprsParser();
+
+        var isValid = parser.TryParse(
+            "W1AW>APRS:T#001,111,222,333,444,555,10101010",
+            ReceivedAtUtc,
+            out var packet,
+            out var error);
+
+        var telemetryPacket = Assert.IsType<TelemetryAprsPacket>(packet);
+        Assert.True(isValid);
+        Assert.Null(error);
+        Assert.Equal("001,111,222,333,444,555,10101010", telemetryPacket.RawTelemetryBody);
+        Assert.Equal(1, telemetryPacket.SequenceNumber);
+        Assert.Equal(new[] { 111, 222, 333, 444, 555 }, telemetryPacket.AnalogValues);
+        Assert.Equal(new[] { true, false, true, false, true, false, true, false }, telemetryPacket.DigitalValues);
+    }
+
+    [Theory]
+    [InlineData("WX9XYZ>APRS:PARM.Temp,Volt,Wind,Rain,Hum", "PARM", "Temp,Volt,Wind,Rain,Hum", new[] { "Temp", "Volt", "Wind", "Rain", "Hum" })]
+    [InlineData("WX9XYZ>APRS:UNIT.F,Volts,MPH,In,%", "UNIT", "F,Volts,MPH,In,%", new[] { "F", "Volts", "MPH", "In", "%" })]
+    [InlineData("WX9XYZ>APRS:EQNS.0,1,0,0,1,0,0,1,0,0,1,0,0,1,0", "EQNS", "0,1,0,0,1,0,0,1,0,0,1,0,0,1,0", new[] { "0", "1", "0", "0", "1", "0", "0", "1", "0", "0", "1", "0", "0", "1", "0" })]
+    public void TryParse_ReturnsTelemetryMetadataPacket_ForMetadata(
+        string rawLine,
+        string expectedKind,
+        string expectedBody,
+        string[] expectedValues)
+    {
+        var parser = new AprsParser();
+
+        var isValid = parser.TryParse(rawLine, ReceivedAtUtc, out var packet, out var error);
+
+        var metadataPacket = Assert.IsType<TelemetryMetadataAprsPacket>(packet);
+        Assert.True(isValid);
+        Assert.Null(error);
+        Assert.Equal(expectedKind, metadataPacket.MetadataKind);
+        Assert.Equal(expectedBody, metadataPacket.RawMetadataBody);
+        Assert.Equal(expectedValues, metadataPacket.Values);
+        Assert.Empty(metadataPacket.BitValues);
+        Assert.Null(metadataPacket.ProjectTitle);
+    }
+
+    [Fact]
+    public void TryParse_ReturnsTelemetryBitsMetadata_WithProjectTitle()
+    {
+        var parser = new AprsParser();
+
+        var isValid = parser.TryParse(
+            "WX9XYZ>APRS:BITS.10101010,Weather station",
+            ReceivedAtUtc,
+            out var packet,
+            out var error);
+
+        var metadataPacket = Assert.IsType<TelemetryMetadataAprsPacket>(packet);
+        Assert.True(isValid);
+        Assert.Null(error);
+        Assert.Equal("BITS", metadataPacket.MetadataKind);
+        Assert.Equal("10101010,Weather station", metadataPacket.RawMetadataBody);
+        Assert.Equal(new[] { true, false, true, false, true, false, true, false }, metadataPacket.BitValues);
+        Assert.Equal("Weather station", metadataPacket.ProjectTitle);
+    }
+
+    [Fact]
+    public void TryParse_ReturnsCapabilityPacket_ForCapabilityInformation()
+    {
+        var parser = new AprsParser();
+
+        var isValid = parser.TryParse(
+            "N0CALL>APRS:<IGATE,MSG_CNT=10",
+            ReceivedAtUtc,
+            out var packet,
+            out var error);
+
+        var capabilityPacket = Assert.IsType<CapabilityAprsPacket>(packet);
+        Assert.True(isValid);
+        Assert.Null(error);
+        Assert.Equal("IGATE,MSG_CNT=10", capabilityPacket.CapabilityText);
+    }
+
+    [Fact]
+    public void TryParse_ReturnsValidationErrors_ForMalformedTelemetry()
+    {
+        var parser = new AprsParser();
+
+        var exception = Record.Exception(() =>
+        {
+            var isValid = parser.TryParse(
+                "BADTEL>APRS:T#abc,not,valid",
+                ReceivedAtUtc,
+                out var packet,
+                out var error);
+
+            var telemetryPacket = Assert.IsType<TelemetryAprsPacket>(packet);
+            Assert.False(isValid);
+            Assert.False(telemetryPacket.IsValid);
+            Assert.Equal("abc,not,valid", telemetryPacket.RawTelemetryBody);
+            Assert.Null(telemetryPacket.SequenceNumber);
+            Assert.Empty(telemetryPacket.AnalogValues);
+            Assert.Contains("Telemetry sequence number is invalid.", telemetryPacket.ValidationErrors);
+            Assert.Contains("Telemetry analog value is invalid.", telemetryPacket.ValidationErrors);
+            Assert.Equal("Telemetry sequence number is invalid.", error);
+        });
+
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void TryParse_ReturnsUnknownPacket_ForUnsupportedInformation()
+    {
+        var parser = new AprsParser();
+
+        var isValid = parser.TryParse(
+            "UNKNOWN>APRS:?APRSTEST",
+            ReceivedAtUtc,
+            out var packet,
+            out var error);
+
+        var unknownPacket = Assert.IsType<UnknownAprsPacket>(packet);
+        Assert.True(isValid);
+        Assert.Null(error);
+        Assert.Equal("?APRSTEST", unknownPacket.Information);
+        Assert.Equal("UNKNOWN>APRS:?APRSTEST", unknownPacket.RawLine);
     }
 }

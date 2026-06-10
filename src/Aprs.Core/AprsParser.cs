@@ -3,6 +3,7 @@ namespace Aprs.Core;
 public sealed class AprsParser : IAprsParser
 {
     private readonly AprsPositionParser positionParser = new();
+    private readonly AprsTelemetryParser telemetryParser = new();
 
     public bool TryParse(string rawLine, DateTimeOffset receivedAtUtc, out AprsPacket? packet, out string? error)
     {
@@ -73,7 +74,61 @@ public sealed class AprsParser : IAprsParser
             return positionParser.Parse(rawPacket);
         }
 
-        return rawPacket;
+        if (rawPacket.Information.StartsWith('>'))
+        {
+            var statusText = rawPacket.Information[1..];
+            return new StatusAprsPacket(
+                rawPacket.RawLine,
+                rawPacket.SourceCallsign,
+                rawPacket.SourceSsid,
+                rawPacket.Destination,
+                rawPacket.Path,
+                rawPacket.Information,
+                rawPacket.ReceivedAtUtc,
+                rawPacket.IsValid,
+                rawPacket.ValidationErrors,
+                rawPacket.QConstruct,
+                statusText,
+                statusText);
+        }
+
+        if (rawPacket.Information.StartsWith('<'))
+        {
+            return new CapabilityAprsPacket(
+                rawPacket.RawLine,
+                rawPacket.SourceCallsign,
+                rawPacket.SourceSsid,
+                rawPacket.Destination,
+                rawPacket.Path,
+                rawPacket.Information,
+                rawPacket.ReceivedAtUtc,
+                rawPacket.IsValid,
+                rawPacket.ValidationErrors,
+                rawPacket.QConstruct,
+                rawPacket.Information[1..]);
+        }
+
+        if (telemetryParser.CanParse(rawPacket.Information))
+        {
+            return telemetryParser.Parse(rawPacket);
+        }
+
+        if (!rawPacket.IsValid || string.IsNullOrEmpty(rawPacket.Information))
+        {
+            return rawPacket;
+        }
+
+        return new UnknownAprsPacket(
+            rawPacket.RawLine,
+            rawPacket.SourceCallsign,
+            rawPacket.SourceSsid,
+            rawPacket.Destination,
+            rawPacket.Path,
+            rawPacket.Information,
+            rawPacket.ReceivedAtUtc,
+            rawPacket.IsValid,
+            rawPacket.ValidationErrors,
+            rawPacket.QConstruct);
     }
 
     private static RawAprsPacket CreateRawPacket(
@@ -156,7 +211,7 @@ public sealed class AprsParser : IAprsParser
 
     private static bool IsValidCallsign(string callsign)
     {
-        return callsign.Length is >= 1 and <= 6
+        return callsign.Length is >= 1 and <= 9
             && callsign.All(char.IsLetterOrDigit);
     }
 
