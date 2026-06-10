@@ -401,7 +401,7 @@ public sealed class AprsParserTests
         var parser = new AprsParser();
 
         var isValid = parser.TryParse(
-            "UNKNOWN>APRS:?APRSTEST",
+            "UNKNOWN>APRS:$APRSTEST",
             ReceivedAtUtc,
             out var packet,
             out var error);
@@ -409,7 +409,139 @@ public sealed class AprsParserTests
         var unknownPacket = Assert.IsType<UnknownAprsPacket>(packet);
         Assert.True(isValid);
         Assert.Null(error);
-        Assert.Equal("?APRSTEST", unknownPacket.Information);
-        Assert.Equal("UNKNOWN>APRS:?APRSTEST", unknownPacket.RawLine);
+        Assert.Equal("$APRSTEST", unknownPacket.Information);
+        Assert.Equal("UNKNOWN>APRS:$APRSTEST", unknownPacket.RawLine);
+    }
+
+    [Fact]
+    public void TryParse_ReturnsMessagePacket_ForStandardMessage()
+    {
+        var parser = new AprsParser();
+
+        var isValid = parser.TryParse(
+            "K8ABC>APRS::N0CALL   :Hello there{01",
+            ReceivedAtUtc,
+            out var packet,
+            out var error);
+
+        var messagePacket = Assert.IsType<MessageAprsPacket>(packet);
+        Assert.True(isValid);
+        Assert.Null(error);
+        Assert.Equal("N0CALL", messagePacket.Addressee);
+        Assert.Equal("Hello there{01", messagePacket.RawMessageBody);
+        Assert.Equal("Hello there", messagePacket.MessageBody);
+        Assert.Equal("01", messagePacket.MessageId);
+        Assert.Null(messagePacket.AcknowledgedMessageId);
+        Assert.Null(messagePacket.RejectedMessageId);
+        Assert.False(messagePacket.IsBulletin);
+        Assert.False(messagePacket.IsQuery);
+    }
+
+    [Theory]
+    [InlineData("N0CALL>APRS::K8ABC    :ack01", "01", null)]
+    [InlineData("N0CALL>APRS::K8ABC    :rej01", null, "01")]
+    public void TryParse_DetectsMessageAckAndRej(string rawLine, string? expectedAckId, string? expectedRejId)
+    {
+        var parser = new AprsParser();
+
+        var isValid = parser.TryParse(rawLine, ReceivedAtUtc, out var packet, out var error);
+
+        var messagePacket = Assert.IsType<MessageAprsPacket>(packet);
+        Assert.True(isValid);
+        Assert.Null(error);
+        Assert.Equal("K8ABC", messagePacket.Addressee);
+        Assert.Equal(expectedAckId, messagePacket.AcknowledgedMessageId);
+        Assert.Equal(expectedRejId, messagePacket.RejectedMessageId);
+    }
+
+    [Theory]
+    [InlineData("W1AW>APRS::BLN0     :Club meeting at 1900 local", "0", "Club meeting at 1900 local")]
+    [InlineData("W1AW>APRS::BLN1     :Weather net at 2000", "1", "Weather net at 2000")]
+    public void TryParse_DetectsBulletinMessages(string rawLine, string expectedBulletinId, string expectedText)
+    {
+        var parser = new AprsParser();
+
+        var isValid = parser.TryParse(rawLine, ReceivedAtUtc, out var packet, out var error);
+
+        var messagePacket = Assert.IsType<MessageAprsPacket>(packet);
+        Assert.True(isValid);
+        Assert.Null(error);
+        Assert.True(messagePacket.IsBulletin);
+        Assert.False(messagePacket.IsAnnouncement);
+        Assert.Equal(expectedBulletinId, messagePacket.BulletinId);
+        Assert.Equal(expectedText, messagePacket.MessageBody);
+    }
+
+    [Fact]
+    public void TryParse_AllowsEmptyMessageBody()
+    {
+        var parser = new AprsParser();
+
+        var isValid = parser.TryParse(
+            "K8ABC>APRS::N0CALL   :",
+            ReceivedAtUtc,
+            out var packet,
+            out var error);
+
+        var messagePacket = Assert.IsType<MessageAprsPacket>(packet);
+        Assert.True(isValid);
+        Assert.Null(error);
+        Assert.Equal("N0CALL", messagePacket.Addressee);
+        Assert.Equal(string.Empty, messagePacket.RawMessageBody);
+        Assert.Equal(string.Empty, messagePacket.MessageBody);
+    }
+
+    [Theory]
+    [InlineData("BADMSG>APRS::TOOSHORT", "Message packet is missing addressee or body separator.")]
+    [InlineData("BADMSG>APRS::N0CALL   Missing second colon", "Message packet is missing second ':' body separator.")]
+    public void TryParse_ReturnsValidationErrors_ForMalformedMessage(string rawLine, string expectedError)
+    {
+        var parser = new AprsParser();
+
+        var exception = Record.Exception(() =>
+        {
+            var isValid = parser.TryParse(rawLine, ReceivedAtUtc, out var packet, out var error);
+
+            var messagePacket = Assert.IsType<MessageAprsPacket>(packet);
+            Assert.False(isValid);
+            Assert.False(messagePacket.IsValid);
+            Assert.Contains(expectedError, messagePacket.ValidationErrors);
+            Assert.Equal(expectedError, error);
+        });
+
+        Assert.Null(exception);
+    }
+
+    [Theory]
+    [InlineData("QUERY1>APRS:?APRSD")]
+    public void TryParse_ReturnsQueryPacket_ForDirectQuery(string rawLine)
+    {
+        var parser = new AprsParser();
+
+        var isValid = parser.TryParse(rawLine, ReceivedAtUtc, out var packet, out var error);
+
+        var queryPacket = Assert.IsType<QueryAprsPacket>(packet);
+        Assert.True(isValid);
+        Assert.Null(error);
+        Assert.Equal("?APRSD", queryPacket.QueryText);
+    }
+
+    [Fact]
+    public void TryParse_MarksAddressedMessageBodyAsQuery()
+    {
+        var parser = new AprsParser();
+
+        var isValid = parser.TryParse(
+            "QUERY2>APRS::APRS     :?APRSD",
+            ReceivedAtUtc,
+            out var packet,
+            out var error);
+
+        var messagePacket = Assert.IsType<MessageAprsPacket>(packet);
+        Assert.True(isValid);
+        Assert.Null(error);
+        Assert.Equal("APRS", messagePacket.Addressee);
+        Assert.True(messagePacket.IsQuery);
+        Assert.Equal("?APRSD", messagePacket.QueryText);
     }
 }

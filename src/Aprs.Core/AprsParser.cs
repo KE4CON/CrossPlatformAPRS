@@ -4,6 +4,7 @@ public sealed class AprsParser : IAprsParser
 {
     private readonly AprsPositionParser positionParser = new();
     private readonly AprsTelemetryParser telemetryParser = new();
+    private readonly AprsMessageParser messageParser = new();
 
     public bool TryParse(string rawLine, DateTimeOffset receivedAtUtc, out AprsPacket? packet, out string? error)
     {
@@ -111,6 +112,27 @@ public sealed class AprsParser : IAprsParser
         if (telemetryParser.CanParse(rawPacket.Information))
         {
             return telemetryParser.Parse(rawPacket);
+        }
+
+        if (messageParser.CanParse(rawPacket.Information))
+        {
+            return messageParser.Parse(rawPacket);
+        }
+
+        if (rawPacket.Information.StartsWith('?'))
+        {
+            return new QueryAprsPacket(
+                rawPacket.RawLine,
+                rawPacket.SourceCallsign,
+                rawPacket.SourceSsid,
+                rawPacket.Destination,
+                rawPacket.Path,
+                rawPacket.Information,
+                rawPacket.ReceivedAtUtc,
+                rawPacket.IsValid,
+                rawPacket.ValidationErrors,
+                rawPacket.QConstruct,
+                rawPacket.Information);
         }
 
         if (!rawPacket.IsValid || string.IsNullOrEmpty(rawPacket.Information))

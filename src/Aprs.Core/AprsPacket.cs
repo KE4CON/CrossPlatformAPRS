@@ -187,3 +187,59 @@ public sealed record UnknownAprsPacket(
         ReceivedAtUtc,
         IsValid,
         ValidationErrors);
+
+public sealed record MessageAprsPacket(
+    string RawLine,
+    string SourceCallsign,
+    int? SourceSsid,
+    string Destination,
+    IReadOnlyList<string> Path,
+    string Information,
+    DateTimeOffset ReceivedAtUtc,
+    bool IsValid,
+    IReadOnlyList<string> ValidationErrors,
+    string? QConstruct,
+    string Addressee,
+    string RawMessageBody,
+    string MessageBody,
+    string? MessageId,
+    string? AcknowledgedMessageId,
+    string? RejectedMessageId,
+    bool IsBulletin,
+    string? BulletinId,
+    bool IsAnnouncement,
+    bool IsQuery,
+    string? QueryText)
+    : AprsPacket(
+        RawLine,
+        SourceCallsign,
+        SourceSsid,
+        Destination,
+        Path,
+        Information,
+        ReceivedAtUtc,
+        IsValid,
+        ValidationErrors);
+
+public sealed record QueryAprsPacket(
+    string RawLine,
+    string SourceCallsign,
+    int? SourceSsid,
+    string Destination,
+    IReadOnlyList<string> Path,
+    string Information,
+    DateTimeOffset ReceivedAtUtc,
+    bool IsValid,
+    IReadOnlyList<string> ValidationErrors,
+    string? QConstruct,
+    string QueryText)
+    : AprsPacket(
+        RawLine,
+        SourceCallsign,
+        SourceSsid,
+        Destination,
+        Path,
+        Information,
+        ReceivedAtUtc,
+        IsValid,
+        ValidationErrors);
