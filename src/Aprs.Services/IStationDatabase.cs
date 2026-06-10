@@ -28,6 +28,11 @@ public interface IStationDatabase
     IReadOnlyCollection<StationSnapshot> GetActiveStations();
 
     /// <summary>
+    /// Returns the chronological position trail for one station.
+    /// </summary>
+    IReadOnlyList<StationTrailPoint> GetTrail(string callsign);
+
+    /// <summary>
     /// Returns one station by callsign or callsign-SSID.
     /// </summary>
     StationSnapshot? GetStation(string callsign);
@@ -51,6 +56,16 @@ public interface IStationDatabase
     /// Clears all manual hidden states and recalculates age states.
     /// </summary>
     void ClearHiddenState(DateTimeOffset now);
+
+    /// <summary>
+    /// Removes trail history for one station.
+    /// </summary>
+    bool ClearTrail(string callsign);
+
+    /// <summary>
+    /// Removes all trail history.
+    /// </summary>
+    void ClearAllTrails();
 
     /// <summary>
     /// Removes all station state.

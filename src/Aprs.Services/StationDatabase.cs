@@ -5,16 +5,29 @@ namespace Aprs.Services;
 public sealed class StationDatabase : IStationDatabase
 {
     private readonly Dictionary<string, StationSnapshot> stations = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, List<StationTrailPoint>> trails = new(StringComparer.OrdinalIgnoreCase);
     private readonly StationAgingConfiguration agingConfiguration;
+    private readonly StationTrailConfiguration trailConfiguration;
 
     public StationDatabase()
-        : this(StationAgingConfiguration.Default)
+        : this(StationAgingConfiguration.Default, StationTrailConfiguration.Default)
     {
     }
 
     public StationDatabase(StationAgingConfiguration agingConfiguration)
+        : this(agingConfiguration, StationTrailConfiguration.Default)
+    {
+    }
+
+    public StationDatabase(StationTrailConfiguration trailConfiguration)
+        : this(StationAgingConfiguration.Default, trailConfiguration)
+    {
+    }
+
+    public StationDatabase(StationAgingConfiguration agingConfiguration, StationTrailConfiguration trailConfiguration)
     {
         this.agingConfiguration = agingConfiguration;
+        this.trailConfiguration = trailConfiguration;
     }
 
     public void ProcessPacket(AprsPacket packet, AprsPacketSource packetSource = AprsPacketSource.Unknown)
@@ -35,6 +48,7 @@ public sealed class StationDatabase : IStationDatabase
         updated = ApplyPacketSpecificFields(updated, packet);
 
         stations[stationKey] = updated;
+        AddTrailPointIfNeeded(stationKey, packet, packetSource);
     }
 
     public IReadOnlyCollection<StationSnapshot> GetAllStations()
@@ -50,6 +64,13 @@ public sealed class StationDatabase : IStationDatabase
     public IReadOnlyCollection<StationSnapshot> GetActiveStations()
     {
         return SortStations(stations.Values.Where(station => station.LifecycleState == StationLifecycleState.Active));
+    }
+
+    public IReadOnlyList<StationTrailPoint> GetTrail(string callsign)
+    {
+        return trails.TryGetValue(NormalizeStationKey(callsign), out var trail)
+            ? trail.ToArray()
+            : [];
     }
 
     public StationSnapshot? GetStation(string callsign)
@@ -116,9 +137,20 @@ public sealed class StationDatabase : IStationDatabase
         }
     }
 
+    public bool ClearTrail(string callsign)
+    {
+        return trails.Remove(NormalizeStationKey(callsign));
+    }
+
+    public void ClearAllTrails()
+    {
+        trails.Clear();
+    }
+
     public void Clear()
     {
         stations.Clear();
+        trails.Clear();
     }
 
     private static StationSnapshot CreateBaseUpdate(
@@ -303,5 +335,116 @@ public sealed class StationDatabase : IStationDatabase
         }
 
         return StationLifecycleState.Active;
+    }
+
+    private void AddTrailPointIfNeeded(string stationKey, AprsPacket packet, AprsPacketSource packetSource)
+    {
+        if (!trailConfiguration.TrailsEnabled)
+        {
+            return;
+        }
+
+        var trailPoint = CreateTrailPoint(stationKey, packet, packetSource);
+        if (trailPoint is null)
+        {
+            return;
+        }
+
+        if (!trails.TryGetValue(stationKey, out var stationTrail))
+        {
+            stationTrail = [];
+            trails[stationKey] = stationTrail;
+        }
+
+        if (stationTrail.Any(existing => IsDuplicateTrailPoint(existing, trailPoint)))
+        {
+            return;
+        }
+
+        if (trailConfiguration.MinimumDistanceMeters is not null
+            && stationTrail.LastOrDefault() is { } latest
+            && CalculateDistanceMeters(latest.Latitude, latest.Longitude, trailPoint.Latitude, trailPoint.Longitude) < trailConfiguration.MinimumDistanceMeters)
+        {
+            return;
+        }
+
+        stationTrail.Add(trailPoint);
+        stationTrail.Sort((left, right) => left.Timestamp.CompareTo(right.Timestamp));
+        TrimTrail(stationTrail, trailPoint.Timestamp);
+    }
+
+    private static StationTrailPoint? CreateTrailPoint(string stationKey, AprsPacket packet, AprsPacketSource packetSource)
+    {
+        var (latitude, longitude, speed, course, altitude) = packet switch
+        {
+            PositionAprsPacket position => (position.Latitude, position.Longitude, position.SpeedKnots, position.CourseDegrees, position.AltitudeFeet),
+            ObjectAprsPacket aprsObject => (aprsObject.Latitude, aprsObject.Longitude, null, null, null),
+            ItemAprsPacket item => (item.Latitude, item.Longitude, null, null, null),
+            WeatherAprsPacket weather => (weather.Latitude, weather.Longitude, null, null, null),
+            _ => (null, null, null, null, null)
+        };
+
+        if (latitude is null || longitude is null)
+        {
+            return null;
+        }
+
+        return new StationTrailPoint(
+            stationKey,
+            latitude.Value,
+            longitude.Value,
+            packet.ReceivedAtUtc,
+            speed,
+            course,
+            altitude,
+            packetSource,
+            packet.RawLine);
+    }
+
+    private void TrimTrail(List<StationTrailPoint> stationTrail, DateTimeOffset now)
+    {
+        if (trailConfiguration.MaximumTrailAge is not null)
+        {
+            var oldestAllowed = now - trailConfiguration.MaximumTrailAge.Value;
+            stationTrail.RemoveAll(point => point.Timestamp < oldestAllowed);
+        }
+
+        if (trailConfiguration.MaximumTrailPointsPerStation < 1)
+        {
+            stationTrail.Clear();
+            return;
+        }
+
+        while (stationTrail.Count > trailConfiguration.MaximumTrailPointsPerStation)
+        {
+            stationTrail.RemoveAt(0);
+        }
+    }
+
+    private static bool IsDuplicateTrailPoint(StationTrailPoint existing, StationTrailPoint candidate)
+    {
+        return existing.Timestamp == candidate.Timestamp
+            && existing.Latitude.Equals(candidate.Latitude)
+            && existing.Longitude.Equals(candidate.Longitude);
+    }
+
+    private static double CalculateDistanceMeters(double firstLatitude, double firstLongitude, double secondLatitude, double secondLongitude)
+    {
+        const double earthRadiusMeters = 6_371_000;
+        var firstLatitudeRadians = DegreesToRadians(firstLatitude);
+        var secondLatitudeRadians = DegreesToRadians(secondLatitude);
+        var latitudeDelta = DegreesToRadians(secondLatitude - firstLatitude);
+        var longitudeDelta = DegreesToRadians(secondLongitude - firstLongitude);
+        var halfChordLength = Math.Sin(latitudeDelta / 2) * Math.Sin(latitudeDelta / 2)
+            + Math.Cos(firstLatitudeRadians) * Math.Cos(secondLatitudeRadians)
+            * Math.Sin(longitudeDelta / 2) * Math.Sin(longitudeDelta / 2);
+        var angularDistance = 2 * Math.Atan2(Math.Sqrt(halfChordLength), Math.Sqrt(1 - halfChordLength));
+
+        return earthRadiusMeters * angularDistance;
+    }
+
+    private static double DegreesToRadians(double degrees)
+    {
+        return degrees * Math.PI / 180;
     }
 }

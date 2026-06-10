@@ -309,6 +309,168 @@ public sealed class StationDatabaseTests
         Assert.Equal("N0CALL", activeStation.Callsign);
     }
 
+    [Fact]
+    public void ProcessPacket_AddsTrailPoint_FromPositionPacket()
+    {
+        var database = new StationDatabase();
+
+        database.ProcessPacket(Parse("N0CALL>APRS,TCPIP*:!3903.50N/08430.50W-Test beacon", FirstHeardUtc), AprsPacketSource.AprsIs);
+
+        var trailPoint = Assert.Single(database.GetTrail("N0CALL"));
+        Assert.Equal("N0CALL", trailPoint.Callsign);
+        Assert.Equal(39.058333, trailPoint.Latitude, 6);
+        Assert.Equal(-84.508333, trailPoint.Longitude, 6);
+        Assert.Equal(FirstHeardUtc, trailPoint.Timestamp);
+        Assert.Equal(AprsPacketSource.AprsIs, trailPoint.PacketSource);
+        Assert.Equal("N0CALL>APRS,TCPIP*:!3903.50N/08430.50W-Test beacon", trailPoint.RawPacket);
+    }
+
+    [Fact]
+    public void ProcessPacket_AddsMultipleTrailPoints_InChronologicalOrder()
+    {
+        var database = new StationDatabase();
+
+        database.ProcessPacket(Parse("N0CALL>APRS:!3905.50N/08432.50W-Later", SecondHeardUtc));
+        database.ProcessPacket(Parse("N0CALL>APRS:!3903.50N/08430.50W-Earlier", FirstHeardUtc));
+
+        var trail = database.GetTrail("N0CALL");
+        Assert.Equal(2, trail.Count);
+        Assert.Equal(FirstHeardUtc, trail[0].Timestamp);
+        Assert.Equal(SecondHeardUtc, trail[1].Timestamp);
+    }
+
+    [Fact]
+    public void ProcessPacket_CapturesMotionFields_InTrailPoint()
+    {
+        var database = new StationDatabase();
+
+        database.ProcessPacket(Parse("MOBILE-9>APRS:!3904.50N/08431.50W>123/045/A=000789 Moving test", FirstHeardUtc), AprsPacketSource.Rf);
+
+        var trailPoint = Assert.Single(database.GetTrail("MOBILE-9"));
+        Assert.Equal("MOBILE-9", trailPoint.Callsign);
+        Assert.Equal(45, trailPoint.SpeedKnots);
+        Assert.Equal(123, trailPoint.CourseDegrees);
+        Assert.Equal(789, trailPoint.AltitudeFeet);
+        Assert.Equal(AprsPacketSource.Rf, trailPoint.PacketSource);
+    }
+
+    [Fact]
+    public void ProcessPacket_DoesNotAddTrailPoint_ForStatusOrMessagePackets()
+    {
+        var database = new StationDatabase();
+
+        database.ProcessPacket(Parse("N0CALL>APRS:>Net control station online", FirstHeardUtc));
+        database.ProcessPacket(Parse("N0CALL>APRS::K8ABC    :ack01", SecondHeardUtc));
+
+        Assert.Empty(database.GetTrail("N0CALL"));
+    }
+
+    [Fact]
+    public void ProcessPacket_KeepsTrailsSeparate_ForDifferentStations()
+    {
+        var database = new StationDatabase();
+
+        database.ProcessPacket(Parse("N0CALL>APRS:!3903.50N/08430.50W-Test beacon", FirstHeardUtc));
+        database.ProcessPacket(Parse("W1AW>APRS:!4123.45N/07234.56W-Test beacon", FirstHeardUtc));
+
+        var firstTrail = Assert.Single(database.GetTrail("N0CALL"));
+        var secondTrail = Assert.Single(database.GetTrail("W1AW"));
+        Assert.Equal("N0CALL", firstTrail.Callsign);
+        Assert.Equal("W1AW", secondTrail.Callsign);
+    }
+
+    [Fact]
+    public void ProcessPacket_EnforcesTrailPointLimit()
+    {
+        var config = StationTrailConfiguration.Default with { MaximumTrailPointsPerStation = 2 };
+        var database = new StationDatabase(config);
+
+        database.ProcessPacket(Parse("N0CALL>APRS:!3901.00N/08430.00W-First", FirstHeardUtc));
+        database.ProcessPacket(Parse("N0CALL>APRS:!3902.00N/08431.00W-Second", FirstHeardUtc.AddMinutes(1)));
+        database.ProcessPacket(Parse("N0CALL>APRS:!3903.00N/08432.00W-Third", FirstHeardUtc.AddMinutes(2)));
+
+        var trail = database.GetTrail("N0CALL");
+        Assert.Equal(2, trail.Count);
+        Assert.Equal(FirstHeardUtc.AddMinutes(1), trail[0].Timestamp);
+        Assert.Equal(FirstHeardUtc.AddMinutes(2), trail[1].Timestamp);
+    }
+
+    [Fact]
+    public void ProcessPacket_DoesNotAddDuplicateTrailPoint_ForSameLocationAndTimestamp()
+    {
+        var database = new StationDatabase();
+        var packet = Parse("N0CALL>APRS:!3903.50N/08430.50W-Test beacon", FirstHeardUtc);
+
+        database.ProcessPacket(packet);
+        database.ProcessPacket(packet);
+
+        Assert.Single(database.GetTrail("N0CALL"));
+    }
+
+    [Fact]
+    public void ProcessPacket_RespectsMinimumDistanceBeforeAddingTrailPoint()
+    {
+        var config = StationTrailConfiguration.Default with { MinimumDistanceMeters = 500 };
+        var database = new StationDatabase(config);
+
+        database.ProcessPacket(Parse("N0CALL>APRS:!3903.50N/08430.50W-First", FirstHeardUtc));
+        database.ProcessPacket(Parse("N0CALL>APRS:!3903.51N/08430.51W-Tiny move", SecondHeardUtc));
+
+        Assert.Single(database.GetTrail("N0CALL"));
+    }
+
+    [Fact]
+    public void ProcessPacket_TrimsTrailByMaximumAge()
+    {
+        var config = StationTrailConfiguration.Default with { MaximumTrailAge = TimeSpan.FromMinutes(5) };
+        var database = new StationDatabase(config);
+
+        database.ProcessPacket(Parse("N0CALL>APRS:!3901.00N/08430.00W-Old", FirstHeardUtc));
+        database.ProcessPacket(Parse("N0CALL>APRS:!3902.00N/08431.00W-New", FirstHeardUtc.AddMinutes(6)));
+
+        var trailPoint = Assert.Single(database.GetTrail("N0CALL"));
+        Assert.Equal(FirstHeardUtc.AddMinutes(6), trailPoint.Timestamp);
+    }
+
+    [Fact]
+    public void ProcessPacket_DoesNotStoreTrails_WhenTrailsDisabled()
+    {
+        var config = StationTrailConfiguration.Default with { TrailsEnabled = false };
+        var database = new StationDatabase(config);
+
+        database.ProcessPacket(Parse("N0CALL>APRS:!3903.50N/08430.50W-Test beacon", FirstHeardUtc));
+
+        Assert.Empty(database.GetTrail("N0CALL"));
+    }
+
+    [Fact]
+    public void ClearTrail_RemovesOnlyOneStationTrail()
+    {
+        var database = new StationDatabase();
+        database.ProcessPacket(Parse("N0CALL>APRS:!3903.50N/08430.50W-Test beacon", FirstHeardUtc));
+        database.ProcessPacket(Parse("W1AW>APRS:!4123.45N/07234.56W-Test beacon", FirstHeardUtc));
+
+        var cleared = database.ClearTrail("N0CALL");
+
+        Assert.True(cleared);
+        Assert.Empty(database.GetTrail("N0CALL"));
+        Assert.Single(database.GetTrail("W1AW"));
+    }
+
+    [Fact]
+    public void ClearAllTrails_RemovesEveryTrail()
+    {
+        var database = new StationDatabase();
+        database.ProcessPacket(Parse("N0CALL>APRS:!3903.50N/08430.50W-Test beacon", FirstHeardUtc));
+        database.ProcessPacket(Parse("W1AW>APRS:!4123.45N/07234.56W-Test beacon", FirstHeardUtc));
+
+        database.ClearAllTrails();
+
+        Assert.Empty(database.GetTrail("N0CALL"));
+        Assert.Empty(database.GetTrail("W1AW"));
+        Assert.Equal(2, database.GetAllStations().Count);
+    }
+
     private static AprsPacket Parse(string rawLine, DateTimeOffset receivedAtUtc)
     {
         var parser = new AprsParser();

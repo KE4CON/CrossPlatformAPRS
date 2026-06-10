@@ -56,6 +56,17 @@ public sealed record StationWeatherSnapshot(
     string RawWeatherBody,
     string? Comment);
 
+public sealed record StationTrailPoint(
+    string Callsign,
+    double Latitude,
+    double Longitude,
+    DateTimeOffset Timestamp,
+    int? SpeedKnots,
+    int? CourseDegrees,
+    int? AltitudeFeet,
+    AprsPacketSource PacketSource,
+    string? RawPacket);
+
 public sealed record StationAgingConfiguration(
     TimeSpan ActiveThreshold,
     TimeSpan StaleThreshold,
@@ -71,4 +82,19 @@ public sealed record StationAgingConfiguration(
         TimeSpan.FromHours(24),
         ShowExpiredStations: true,
         IncludeHiddenStationsInNormalLists: false);
+}
+
+public sealed record StationTrailConfiguration(
+    int MaximumTrailPointsPerStation,
+    double? MinimumDistanceMeters,
+    TimeSpan? MaximumTrailAge,
+    bool TrailsEnabled,
+    bool AllowPerStationTrailToggle)
+{
+    public static StationTrailConfiguration Default { get; } = new(
+        MaximumTrailPointsPerStation: 100,
+        MinimumDistanceMeters: null,
+        MaximumTrailAge: null,
+        TrailsEnabled: true,
+        AllowPerStationTrailToggle: true);
 }
