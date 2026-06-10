@@ -53,6 +53,7 @@ public sealed partial class MapView : UserControl
                 Text = marker.SymbolLabel,
                 FontWeight = FontWeight.Bold,
                 Foreground = Brushes.White,
+                FontSize = marker.SymbolLabel.Length > 1 ? 10 : 13,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
             }
@@ -94,10 +95,23 @@ public sealed partial class MapView : UserControl
     {
         return marker.AgeState switch
         {
-            StationLifecycleState.Active => new SolidColorBrush(Color.FromRgb(22, 101, 52)),
-            StationLifecycleState.Stale => new SolidColorBrush(Color.FromRgb(180, 83, 9)),
-            StationLifecycleState.Expired => new SolidColorBrush(Color.FromRgb(100, 116, 139)),
             StationLifecycleState.Hidden => new SolidColorBrush(Color.FromRgb(71, 85, 105)),
+            StationLifecycleState.Expired => new SolidColorBrush(Color.FromRgb(100, 116, 139)),
+            _ => GetSymbolBrush(marker)
+        };
+    }
+
+    private static IBrush GetSymbolBrush(StationMarkerViewModel marker)
+    {
+        return marker.MarkerIconKey switch
+        {
+            "home" => new SolidColorBrush(Color.FromRgb(37, 99, 235)),
+            "car" => new SolidColorBrush(Color.FromRgb(22, 101, 52)),
+            "truck" => new SolidColorBrush(Color.FromRgb(21, 128, 61)),
+            "weather" => new SolidColorBrush(Color.FromRgb(2, 132, 199)),
+            "digipeater" => new SolidColorBrush(Color.FromRgb(147, 51, 234)),
+            "repeater" => new SolidColorBrush(Color.FromRgb(190, 18, 60)),
+            "object" => new SolidColorBrush(Color.FromRgb(202, 138, 4)),
             _ => new SolidColorBrush(Color.FromRgb(37, 99, 235))
         };
     }

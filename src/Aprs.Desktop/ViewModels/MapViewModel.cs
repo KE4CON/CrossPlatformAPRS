@@ -60,7 +60,7 @@ public sealed class MapViewModel : INotifyPropertyChanged
         var now = DateTimeOffset.UtcNow;
         return new MapViewModel(
         [
-            new StationMarker(
+            StationMarker.Create(
                 "N0CALL",
                 "Net Control",
                 39.0583,
@@ -72,7 +72,7 @@ public sealed class MapViewModel : INotifyPropertyChanged
                 AprsPacketSource.Simulation,
                 CourseDegrees: null,
                 SpeedKnots: null),
-            new StationMarker(
+            StationMarker.Create(
                 "W1AW-9",
                 "W1AW-9",
                 41.3908,
@@ -84,7 +84,7 @@ public sealed class MapViewModel : INotifyPropertyChanged
                 AprsPacketSource.Simulation,
                 CourseDegrees: 123,
                 SpeedKnots: 45),
-            new StationMarker(
+            StationMarker.Create(
                 "WX9XYZ",
                 "Weather WX9XYZ",
                 38.6270,

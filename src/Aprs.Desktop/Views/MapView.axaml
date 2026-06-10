@@ -111,6 +111,9 @@
             <TextBlock Text="{Binding SelectedStation.MovementLabel}"
                        Foreground="#475569"
                        FontSize="12" />
+            <TextBlock Text="{Binding SelectedStation.SymbolDescription}"
+                       Foreground="#475569"
+                       FontSize="12" />
           </StackPanel>
         </Border>
       </Grid>

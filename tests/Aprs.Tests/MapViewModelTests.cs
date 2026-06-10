@@ -22,6 +22,9 @@ public sealed class MapViewModelTests
         Assert.Equal("Tactical 7", marker.DisplayName);
         Assert.Equal(39.1, marker.Latitude);
         Assert.Equal(-84.5, marker.Longitude);
+        Assert.Equal("Car / mobile station", marker.SymbolDescription);
+        Assert.Equal("car", marker.MarkerIconKey);
+        Assert.Equal("C", marker.FallbackMarkerText);
     }
 
     [Fact]
@@ -85,7 +88,7 @@ public sealed class MapViewModelTests
 
     private static StationMarker CreateMarker(string callsign, string displayName, double latitude, double longitude)
     {
-        return new StationMarker(
+        return StationMarker.Create(
             callsign,
             displayName,
             latitude,

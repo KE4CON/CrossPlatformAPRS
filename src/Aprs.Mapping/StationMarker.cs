@@ -9,12 +9,51 @@ public sealed record StationMarker(
     double Longitude,
     char? SymbolTableIdentifier,
     char? SymbolCode,
+    char? Overlay,
+    string SymbolDescription,
+    AprsSymbolCategory SymbolCategory,
+    string MarkerIconKey,
+    string FallbackMarkerText,
     DateTimeOffset LastHeardUtc,
     StationLifecycleState AgeState,
     AprsPacketSource PacketSource,
     int? CourseDegrees,
     int? SpeedKnots)
 {
+    public static StationMarker Create(
+        string callsign,
+        string displayName,
+        double latitude,
+        double longitude,
+        char? symbolTableIdentifier,
+        char? symbolCode,
+        DateTimeOffset lastHeardUtc,
+        StationLifecycleState ageState,
+        AprsPacketSource packetSource,
+        int? CourseDegrees,
+        int? SpeedKnots)
+    {
+        var symbol = AprsSymbolLookupService.Default.Resolve(symbolTableIdentifier, symbolCode);
+
+        return new StationMarker(
+            callsign,
+            displayName,
+            latitude,
+            longitude,
+            symbolTableIdentifier,
+            symbolCode,
+            symbol.Overlay,
+            symbol.Description,
+            symbol.Category,
+            symbol.MarkerIconKey,
+            symbol.FallbackDisplayText,
+            lastHeardUtc,
+            ageState,
+            packetSource,
+            CourseDegrees,
+            SpeedKnots);
+    }
+
     public static bool TryCreate(StationSnapshot station, out StationMarker? marker)
     {
         if (station.Latitude is null || station.Longitude is null)
@@ -23,7 +62,7 @@ public sealed record StationMarker(
             return false;
         }
 
-        marker = new StationMarker(
+        marker = Create(
             station.RealCallsign,
             station.DisplayName,
             station.Latitude.Value,

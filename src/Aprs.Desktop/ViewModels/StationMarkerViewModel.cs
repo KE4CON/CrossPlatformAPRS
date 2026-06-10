@@ -18,6 +18,11 @@ public sealed class StationMarkerViewModel
         Longitude = marker.Longitude;
         SymbolTableIdentifier = marker.SymbolTableIdentifier;
         SymbolCode = marker.SymbolCode;
+        Overlay = marker.Overlay;
+        SymbolDescription = marker.SymbolDescription;
+        SymbolCategory = marker.SymbolCategory;
+        MarkerIconKey = marker.MarkerIconKey;
+        FallbackMarkerText = marker.FallbackMarkerText;
         LastHeardUtc = marker.LastHeardUtc;
         AgeState = marker.AgeState;
         PacketSource = marker.PacketSource;
@@ -37,6 +42,16 @@ public sealed class StationMarkerViewModel
 
     public char? SymbolCode { get; }
 
+    public char? Overlay { get; }
+
+    public string SymbolDescription { get; }
+
+    public AprsSymbolCategory SymbolCategory { get; }
+
+    public string MarkerIconKey { get; }
+
+    public string FallbackMarkerText { get; }
+
     public DateTimeOffset LastHeardUtc { get; }
 
     public StationLifecycleState AgeState { get; }
@@ -47,7 +62,9 @@ public sealed class StationMarkerViewModel
 
     public int? SpeedKnots { get; }
 
-    public string SymbolLabel => SymbolCode?.ToString() ?? "?";
+    public string SymbolLabel => Overlay is null
+        ? FallbackMarkerText
+        : $"{Overlay}{FallbackMarkerText}";
 
     public string SourceLabel => PacketSource.ToString();
 
