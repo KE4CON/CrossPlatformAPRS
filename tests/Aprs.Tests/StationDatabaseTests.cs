@@ -21,6 +21,8 @@ public sealed class StationDatabaseTests
         Assert.NotNull(station);
         Assert.Equal("N0CALL", station.Callsign);
         Assert.Null(station.Ssid);
+        Assert.Equal("N0CALL", station.RealCallsign);
+        Assert.Null(station.TacticalLabel);
         Assert.Equal("N0CALL", station.DisplayName);
         Assert.Equal(StationLifecycleState.Active, station.LifecycleState);
         Assert.Equal(39.058333, station.Latitude!.Value, 6);
@@ -469,6 +471,117 @@ public sealed class StationDatabaseTests
         Assert.Empty(database.GetTrail("N0CALL"));
         Assert.Empty(database.GetTrail("W1AW"));
         Assert.Equal(2, database.GetAllStations().Count);
+    }
+
+    [Fact]
+    public void SetTacticalLabel_UpdatesExistingStationDisplayName()
+    {
+        var database = new StationDatabase();
+        database.ProcessPacket(Parse("KD8ABC-7>APRS:!3903.50N/08430.50W-Test beacon", FirstHeardUtc));
+
+        var label = database.SetTacticalLabel("KD8ABC-7", "Command Post", "Primary net station", SecondHeardUtc);
+
+        var station = database.GetStation("kd8abc-7");
+        Assert.NotNull(station);
+        Assert.Equal("KD8ABC-7", station.RealCallsign);
+        Assert.Equal("Command Post", station.TacticalLabel);
+        Assert.Equal("Command Post", station.DisplayName);
+        Assert.Equal("KD8ABC-7", label.RealCallsign);
+        Assert.Equal("Primary net station", label.Notes);
+        Assert.Equal(SecondHeardUtc, label.CreatedAtUtc);
+        Assert.Equal(SecondHeardUtc, label.UpdatedAtUtc);
+    }
+
+    [Fact]
+    public void SetTacticalLabel_UpdatesExistingLabelAndKeepsCreatedTimestamp()
+    {
+        var database = new StationDatabase();
+
+        database.SetTacticalLabel("KD8ABC-7", "Old Label", null, FirstHeardUtc);
+        var updated = database.SetTacticalLabel("kd8abc-7", "New Label", "Updated notes", SecondHeardUtc);
+
+        Assert.Equal("KD8ABC-7", updated.RealCallsign);
+        Assert.Equal("New Label", updated.Label);
+        Assert.Equal("Updated notes", updated.Notes);
+        Assert.Equal(FirstHeardUtc, updated.CreatedAtUtc);
+        Assert.Equal(SecondHeardUtc, updated.UpdatedAtUtc);
+    }
+
+    [Fact]
+    public void RemoveTacticalLabel_RestoresCallsignDisplayName()
+    {
+        var database = new StationDatabase();
+        database.ProcessPacket(Parse("KD8ABC-7>APRS:!3903.50N/08430.50W-Test beacon", FirstHeardUtc));
+        database.SetTacticalLabel("KD8ABC-7", "Command Post", null, FirstHeardUtc);
+
+        var removed = database.RemoveTacticalLabel("kd8abc-7");
+
+        var station = database.GetStation("KD8ABC-7");
+        Assert.True(removed);
+        Assert.NotNull(station);
+        Assert.Null(station.TacticalLabel);
+        Assert.Equal("KD8ABC-7", station.DisplayName);
+        Assert.Null(database.GetTacticalLabel("KD8ABC-7"));
+    }
+
+    [Theory]
+    [InlineData("kd8abc-7")]
+    [InlineData("KD8ABC-7")]
+    [InlineData("Kd8Abc-7")]
+    public void TacticalLabels_AreCaseInsensitiveByCallsign(string lookupCallsign)
+    {
+        var database = new StationDatabase();
+
+        database.SetTacticalLabel("KD8ABC-7", "Command Post", null, FirstHeardUtc);
+
+        var label = database.GetTacticalLabel(lookupCallsign);
+        Assert.NotNull(label);
+        Assert.Equal("Command Post", label.Label);
+    }
+
+    [Fact]
+    public void SetTacticalLabel_BeforeStationHeard_AppliesWhenStationIsCreated()
+    {
+        var database = new StationDatabase();
+        database.SetTacticalLabel("KD8ABC-7", "Command Post", null, FirstHeardUtc);
+
+        database.ProcessPacket(Parse("kd8abc-7>APRS:!3903.50N/08430.50W-Test beacon", SecondHeardUtc));
+
+        var station = database.GetStation("KD8ABC-7");
+        Assert.NotNull(station);
+        Assert.Equal("KD8ABC-7", station.RealCallsign);
+        Assert.Equal("Command Post", station.TacticalLabel);
+        Assert.Equal("Command Post", station.DisplayName);
+    }
+
+    [Fact]
+    public void GetAllTacticalLabels_ReturnsAllLabels()
+    {
+        var database = new StationDatabase();
+        database.SetTacticalLabel("KD8ABC-7", "Command Post", null, FirstHeardUtc);
+        database.SetTacticalLabel("N0CALL", "Net Control", "Evening net", SecondHeardUtc);
+
+        var labels = database.GetAllTacticalLabels();
+
+        Assert.Equal(2, labels.Count);
+        Assert.Contains(labels, label => label.RealCallsign == "KD8ABC-7" && label.Label == "Command Post");
+        Assert.Contains(labels, label => label.RealCallsign == "N0CALL" && label.Label == "Net Control");
+    }
+
+    [Fact]
+    public void ClearTacticalLabels_RemovesLabelsAndRefreshesStationDisplayNames()
+    {
+        var database = new StationDatabase();
+        database.ProcessPacket(Parse("KD8ABC-7>APRS:!3903.50N/08430.50W-Test beacon", FirstHeardUtc));
+        database.ProcessPacket(Parse("N0CALL>APRS:!3904.50N/08431.50W-Test beacon", FirstHeardUtc));
+        database.SetTacticalLabel("KD8ABC-7", "Command Post", null, FirstHeardUtc);
+        database.SetTacticalLabel("N0CALL", "Net Control", null, FirstHeardUtc);
+
+        database.ClearTacticalLabels();
+
+        Assert.Empty(database.GetAllTacticalLabels());
+        Assert.Equal("KD8ABC-7", database.GetStation("KD8ABC-7")!.DisplayName);
+        Assert.Equal("N0CALL", database.GetStation("N0CALL")!.DisplayName);
     }
 
     private static AprsPacket Parse(string rawLine, DateTimeOffset receivedAtUtc)

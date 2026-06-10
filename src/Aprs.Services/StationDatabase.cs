@@ -6,6 +6,7 @@ public sealed class StationDatabase : IStationDatabase
 {
     private readonly Dictionary<string, StationSnapshot> stations = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, List<StationTrailPoint>> trails = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, TacticalLabel> tacticalLabels = new(StringComparer.OrdinalIgnoreCase);
     private readonly StationAgingConfiguration agingConfiguration;
     private readonly StationTrailConfiguration trailConfiguration;
 
@@ -71,6 +72,58 @@ public sealed class StationDatabase : IStationDatabase
         return trails.TryGetValue(NormalizeStationKey(callsign), out var trail)
             ? trail.ToArray()
             : [];
+    }
+
+    public TacticalLabel SetTacticalLabel(string callsign, string label, string? notes, DateTimeOffset now)
+    {
+        var stationKey = NormalizeStationKey(callsign);
+        var existing = tacticalLabels.GetValueOrDefault(stationKey);
+        var tacticalLabel = new TacticalLabel(
+            stationKey,
+            label.Trim(),
+            notes,
+            existing?.CreatedAtUtc ?? now,
+            now);
+
+        tacticalLabels[stationKey] = tacticalLabel;
+        RefreshStationDisplayName(stationKey);
+
+        return tacticalLabel;
+    }
+
+    public bool RemoveTacticalLabel(string callsign)
+    {
+        var stationKey = NormalizeStationKey(callsign);
+        var removed = tacticalLabels.Remove(stationKey);
+        if (removed)
+        {
+            RefreshStationDisplayName(stationKey);
+        }
+
+        return removed;
+    }
+
+    public TacticalLabel? GetTacticalLabel(string callsign)
+    {
+        return tacticalLabels.TryGetValue(NormalizeStationKey(callsign), out var tacticalLabel)
+            ? tacticalLabel
+            : null;
+    }
+
+    public IReadOnlyCollection<TacticalLabel> GetAllTacticalLabels()
+    {
+        return tacticalLabels.Values
+            .OrderBy(label => label.RealCallsign, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    public void ClearTacticalLabels()
+    {
+        tacticalLabels.Clear();
+        foreach (var stationKey in stations.Keys.ToArray())
+        {
+            RefreshStationDisplayName(stationKey);
+        }
     }
 
     public StationSnapshot? GetStation(string callsign)
@@ -153,18 +206,22 @@ public sealed class StationDatabase : IStationDatabase
         trails.Clear();
     }
 
-    private static StationSnapshot CreateBaseUpdate(
+    private StationSnapshot CreateBaseUpdate(
         string stationKey,
         AprsPacket packet,
         AprsPacketSource packetSource,
         StationSnapshot? existing)
     {
         var (callsign, ssid) = SplitStationKey(stationKey);
+        var realCallsign = FormatDisplayName(callsign, ssid);
+        var tacticalLabel = GetTacticalLabelForKey(stationKey);
 
         return new StationSnapshot(
             callsign,
             ssid,
-            FormatDisplayName(callsign, ssid),
+            realCallsign,
+            tacticalLabel?.Label,
+            tacticalLabel?.Label ?? realCallsign,
             existing?.IsManuallyHidden == true ? StationLifecycleState.Hidden : StationLifecycleState.Active,
             existing?.IsManuallyHidden ?? false,
             existing?.Latitude,
@@ -280,6 +337,29 @@ public sealed class StationDatabase : IStationDatabase
         }
 
         return (stationKey, null);
+    }
+
+    private TacticalLabel? GetTacticalLabelForKey(string stationKey)
+    {
+        return tacticalLabels.TryGetValue(NormalizeStationKey(stationKey), out var tacticalLabel)
+            ? tacticalLabel
+            : null;
+    }
+
+    private void RefreshStationDisplayName(string stationKey)
+    {
+        var normalizedStationKey = NormalizeStationKey(stationKey);
+        if (!stations.TryGetValue(normalizedStationKey, out var station))
+        {
+            return;
+        }
+
+        var tacticalLabel = GetTacticalLabelForKey(normalizedStationKey);
+        stations[normalizedStationKey] = station with
+        {
+            TacticalLabel = tacticalLabel?.Label,
+            DisplayName = tacticalLabel?.Label ?? station.RealCallsign
+        };
     }
 
     private static IReadOnlyCollection<StationSnapshot> SortStations(IEnumerable<StationSnapshot> stationValues)

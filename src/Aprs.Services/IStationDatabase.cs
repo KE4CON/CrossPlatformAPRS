@@ -33,6 +33,31 @@ public interface IStationDatabase
     IReadOnlyList<StationTrailPoint> GetTrail(string callsign);
 
     /// <summary>
+    /// Sets or updates a tactical label for one callsign.
+    /// </summary>
+    TacticalLabel SetTacticalLabel(string callsign, string label, string? notes, DateTimeOffset now);
+
+    /// <summary>
+    /// Removes one tactical label.
+    /// </summary>
+    bool RemoveTacticalLabel(string callsign);
+
+    /// <summary>
+    /// Returns one tactical label by callsign.
+    /// </summary>
+    TacticalLabel? GetTacticalLabel(string callsign);
+
+    /// <summary>
+    /// Returns all tactical labels.
+    /// </summary>
+    IReadOnlyCollection<TacticalLabel> GetAllTacticalLabels();
+
+    /// <summary>
+    /// Removes all tactical labels.
+    /// </summary>
+    void ClearTacticalLabels();
+
+    /// <summary>
     /// Returns one station by callsign or callsign-SSID.
     /// </summary>
     StationSnapshot? GetStation(string callsign);

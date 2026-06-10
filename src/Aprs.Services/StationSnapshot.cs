@@ -20,6 +20,8 @@ public enum StationLifecycleState
 public sealed record StationSnapshot(
     string Callsign,
     int? Ssid,
+    string RealCallsign,
+    string? TacticalLabel,
     string DisplayName,
     StationLifecycleState LifecycleState,
     bool IsManuallyHidden,
@@ -66,6 +68,13 @@ public sealed record StationTrailPoint(
     int? AltitudeFeet,
     AprsPacketSource PacketSource,
     string? RawPacket);
+
+public sealed record TacticalLabel(
+    string RealCallsign,
+    string Label,
+    string? Notes,
+    DateTimeOffset CreatedAtUtc,
+    DateTimeOffset UpdatedAtUtc);
 
 public sealed record StationAgingConfiguration(
     TimeSpan ActiveThreshold,
