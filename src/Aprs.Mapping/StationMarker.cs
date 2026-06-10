@@ -18,7 +18,12 @@ public sealed record StationMarker(
     StationLifecycleState AgeState,
     AprsPacketSource PacketSource,
     int? CourseDegrees,
-    int? SpeedKnots)
+    int? SpeedKnots,
+    int? AltitudeFeet,
+    IReadOnlyList<string> LastPath,
+    string? Comment,
+    string? LastRawPacket,
+    int PacketCount)
 {
     public static StationMarker Create(
         string callsign,
@@ -31,7 +36,12 @@ public sealed record StationMarker(
         StationLifecycleState ageState,
         AprsPacketSource packetSource,
         int? CourseDegrees,
-        int? SpeedKnots)
+        int? SpeedKnots,
+        int? altitudeFeet = null,
+        IReadOnlyList<string>? lastPath = null,
+        string? comment = null,
+        string? lastRawPacket = null,
+        int packetCount = 0)
     {
         var symbol = AprsSymbolLookupService.Default.Resolve(symbolTableIdentifier, symbolCode);
 
@@ -51,7 +61,12 @@ public sealed record StationMarker(
             ageState,
             packetSource,
             CourseDegrees,
-            SpeedKnots);
+            SpeedKnots,
+            altitudeFeet,
+            lastPath ?? [],
+            comment,
+            lastRawPacket,
+            packetCount);
     }
 
     public static bool TryCreate(StationSnapshot station, out StationMarker? marker)
@@ -73,7 +88,12 @@ public sealed record StationMarker(
             station.LifecycleState,
             station.PacketSource,
             station.CourseDegrees,
-            station.SpeedKnots);
+            station.SpeedKnots,
+            station.AltitudeFeet,
+            station.SourcePath,
+            station.Comment,
+            station.LastRawPacket,
+            station.PacketCount);
 
         return true;
     }

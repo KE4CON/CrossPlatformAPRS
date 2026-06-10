@@ -44,7 +44,8 @@ public sealed class MapViewModelTests
         var viewModel = MapViewModel.CreateDesignTime();
 
         Assert.True(viewModel.MarkerCount >= 3);
-        Assert.NotNull(viewModel.SelectedStation);
+        Assert.Null(viewModel.SelectedStation);
+        Assert.Null(viewModel.SelectedStationDetails);
         Assert.Contains(viewModel.Markers, marker => marker.Callsign == "N0CALL" && marker.DisplayName == "Net Control");
     }
 
@@ -75,6 +76,86 @@ public sealed class MapViewModelTests
         viewModel.SelectStation(selected);
 
         Assert.Same(selected, viewModel.SelectedStation);
+        Assert.NotNull(viewModel.SelectedStationDetails);
+        Assert.Equal("W1AW-9", viewModel.SelectedStationDetails.Callsign);
+        Assert.Equal("Mobile 9", viewModel.SelectedStationDetails.DisplayName);
+    }
+
+    [Fact]
+    public void ClearSelection_ClearsSelectedStationDetails()
+    {
+        var viewModel = new MapViewModel([CreateMarker("N0CALL", "Net Control", 39.0, -84.0)]);
+        viewModel.SelectStation(viewModel.Markers.Single());
+
+        viewModel.ClearSelection();
+
+        Assert.Null(viewModel.SelectedStation);
+        Assert.Null(viewModel.SelectedStationDetails);
+        Assert.False(viewModel.HasSelectedStation);
+    }
+
+    [Fact]
+    public void StationDetailsViewModel_FormatsMissingOptionalValuesSafely()
+    {
+        var marker = new StationMarkerViewModel(StationMarker.Create(
+            "N0CALL",
+            "N0CALL",
+            39.0,
+            -84.0,
+            '/',
+            '-',
+            TestNow,
+            StationLifecycleState.Active,
+            AprsPacketSource.Unknown,
+            CourseDegrees: null,
+            SpeedKnots: null));
+
+        var details = new StationDetailsViewModel(marker, TestNow.AddMinutes(10));
+
+        Assert.Equal("N0CALL", details.Callsign);
+        Assert.Equal("N0CALL", details.DisplayName);
+        Assert.Equal("None", details.TacticalLabel);
+        Assert.Equal("Unknown", details.SpeedCourse);
+        Assert.Equal("Unknown", details.Altitude);
+        Assert.Equal("None", details.LastPath);
+        Assert.Equal("None", details.Comment);
+        Assert.Equal("None", details.LastRawPacket);
+        Assert.Equal("10 min ago", details.LastHeardAge);
+    }
+
+    [Fact]
+    public void StationDetailsViewModel_FormatsAvailableStationFields()
+    {
+        var marker = new StationMarkerViewModel(StationMarker.Create(
+            "KD8ABC-7",
+            "Tactical 7",
+            39.1,
+            -84.5,
+            '/',
+            '>',
+            TestNow,
+            StationLifecycleState.Active,
+            AprsPacketSource.AprsIs,
+            CourseDegrees: 180,
+            SpeedKnots: 12,
+            altitudeFeet: 1234,
+            lastPath: ["WIDE1-1", "WIDE2-1"],
+            comment: "Mobile test",
+            lastRawPacket: "KD8ABC-7>APRS:>Mobile test",
+            packetCount: 5));
+
+        var details = new StationDetailsViewModel(marker, TestNow.AddHours(2));
+
+        Assert.Equal("KD8ABC-7", details.Callsign);
+        Assert.Equal("Tactical 7", details.DisplayName);
+        Assert.Equal("Tactical 7", details.TacticalLabel);
+        Assert.Equal("12 kt / 180 deg", details.SpeedCourse);
+        Assert.Equal("1234 ft", details.Altitude);
+        Assert.Equal("WIDE1-1,WIDE2-1", details.LastPath);
+        Assert.Equal("Mobile test", details.Comment);
+        Assert.Equal("KD8ABC-7>APRS:>Mobile test", details.LastRawPacket);
+        Assert.Equal("5", details.PacketCount);
+        Assert.Equal("AprsIs", details.PacketSource);
     }
 
     [Fact]

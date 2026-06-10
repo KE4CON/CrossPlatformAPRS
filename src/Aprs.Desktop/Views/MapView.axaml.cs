@@ -21,13 +21,22 @@ public sealed partial class MapView : UserControl
 
         if (DataContext is not MapViewModel viewModel)
         {
+            EmptySelectionPanel.IsVisible = true;
+            StationDetailsPanel.IsVisible = false;
             return;
         }
 
+        EmptySelectionPanel.IsVisible = !viewModel.HasSelectedStation;
+        StationDetailsPanel.IsVisible = viewModel.HasSelectedStation;
+
         foreach (var marker in viewModel.Markers)
         {
-            var markerButton = CreateMarkerButton(marker);
-            markerButton.Click += (_, _) => viewModel.SelectStation(marker);
+            var markerButton = CreateMarkerButton(marker, ReferenceEquals(marker, viewModel.SelectedStation));
+            markerButton.Click += (_, _) =>
+            {
+                viewModel.SelectStation(marker);
+                RenderMarkers();
+            };
 
             var left = MarkerCanvas.Bounds.Width * marker.MapLeftPercent / 100;
             var top = MarkerCanvas.Bounds.Height * marker.MapTopPercent / 100;
@@ -38,7 +47,16 @@ public sealed partial class MapView : UserControl
         }
     }
 
-    private static Button CreateMarkerButton(StationMarkerViewModel marker)
+    private void ClearSelectionButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (DataContext is MapViewModel viewModel)
+        {
+            viewModel.ClearSelection();
+            RenderMarkers();
+        }
+    }
+
+    private static Button CreateMarkerButton(StationMarkerViewModel marker, bool isSelected)
     {
         var symbol = new Border
         {
@@ -46,8 +64,8 @@ public sealed partial class MapView : UserControl
             Height = 28,
             CornerRadius = new CornerRadius(14),
             Background = GetMarkerBrush(marker),
-            BorderBrush = Brushes.White,
-            BorderThickness = new Thickness(2),
+            BorderBrush = isSelected ? new SolidColorBrush(Color.FromRgb(250, 204, 21)) : Brushes.White,
+            BorderThickness = new Thickness(isSelected ? 3 : 2),
             Child = new TextBlock
             {
                 Text = marker.SymbolLabel,

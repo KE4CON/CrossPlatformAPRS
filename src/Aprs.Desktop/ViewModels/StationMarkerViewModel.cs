@@ -28,6 +28,11 @@ public sealed class StationMarkerViewModel
         PacketSource = marker.PacketSource;
         CourseDegrees = marker.CourseDegrees;
         SpeedKnots = marker.SpeedKnots;
+        AltitudeFeet = marker.AltitudeFeet;
+        LastPath = marker.LastPath;
+        Comment = marker.Comment;
+        LastRawPacket = marker.LastRawPacket;
+        PacketCount = marker.PacketCount;
     }
 
     public string Callsign { get; }
@@ -61,6 +66,16 @@ public sealed class StationMarkerViewModel
     public int? CourseDegrees { get; }
 
     public int? SpeedKnots { get; }
+
+    public int? AltitudeFeet { get; }
+
+    public IReadOnlyList<string> LastPath { get; }
+
+    public string? Comment { get; }
+
+    public string? LastRawPacket { get; }
+
+    public int PacketCount { get; }
 
     public string SymbolLabel => Overlay is null
         ? FallbackMarkerText

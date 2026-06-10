@@ -9,12 +9,12 @@ namespace Aprs.Desktop.ViewModels;
 public sealed class MapViewModel : INotifyPropertyChanged
 {
     private StationMarkerViewModel? selectedStation;
+    private StationDetailsViewModel? selectedStationDetails;
 
     public MapViewModel(IEnumerable<StationMarker> markers)
     {
         Markers = new ObservableCollection<StationMarkerViewModel>(
             markers.Select(marker => new StationMarkerViewModel(marker)));
-        selectedStation = Markers.FirstOrDefault();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -32,9 +32,18 @@ public sealed class MapViewModel : INotifyPropertyChanged
             }
 
             selectedStation = value;
+            selectedStationDetails = value is null
+                ? null
+                : new StationDetailsViewModel(value, DateTimeOffset.UtcNow);
             OnPropertyChanged();
+            OnPropertyChanged(nameof(SelectedStationDetails));
+            OnPropertyChanged(nameof(HasSelectedStation));
         }
     }
+
+    public StationDetailsViewModel? SelectedStationDetails => selectedStationDetails;
+
+    public bool HasSelectedStation => selectedStationDetails is not null;
 
     public int MarkerCount => Markers.Count;
 
@@ -44,6 +53,11 @@ public sealed class MapViewModel : INotifyPropertyChanged
         {
             SelectedStation = marker;
         }
+    }
+
+    public void ClearSelection()
+    {
+        SelectedStation = null;
     }
 
     public static MapViewModel FromStations(IEnumerable<StationSnapshot> stations)
@@ -71,7 +85,12 @@ public sealed class MapViewModel : INotifyPropertyChanged
                 StationLifecycleState.Active,
                 AprsPacketSource.Simulation,
                 CourseDegrees: null,
-                SpeedKnots: null),
+                SpeedKnots: null,
+                altitudeFeet: 820,
+                lastPath: ["TCPIP*"],
+                comment: "Net control station online",
+                lastRawPacket: "N0CALL>APRS,TCPIP*:!3903.50N/08430.50W-Net control station online",
+                packetCount: 4),
             StationMarker.Create(
                 "W1AW-9",
                 "W1AW-9",
@@ -83,7 +102,12 @@ public sealed class MapViewModel : INotifyPropertyChanged
                 StationLifecycleState.Active,
                 AprsPacketSource.Simulation,
                 CourseDegrees: 123,
-                SpeedKnots: 45),
+                SpeedKnots: 45,
+                altitudeFeet: 510,
+                lastPath: ["WIDE1-1", "WIDE2-1"],
+                comment: "Mobile test",
+                lastRawPacket: "W1AW-9>APRS,WIDE1-1,WIDE2-1:=4123.45N/07234.56W>Mobile test",
+                packetCount: 2),
             StationMarker.Create(
                 "WX9XYZ",
                 "Weather WX9XYZ",
@@ -95,7 +119,12 @@ public sealed class MapViewModel : INotifyPropertyChanged
                 StationLifecycleState.Stale,
                 AprsPacketSource.Simulation,
                 CourseDegrees: null,
-                SpeedKnots: null)
+                SpeedKnots: null,
+                altitudeFeet: null,
+                lastPath: ["TCPIP*"],
+                comment: "Weather station",
+                lastRawPacket: "WX9XYZ>APRS:!3903.50N/08430.50W_180/005g010t072r000p000P000h50b10132",
+                packetCount: 7)
         ]);
     }
 

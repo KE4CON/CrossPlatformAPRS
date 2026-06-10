@@ -92,29 +92,140 @@
 
         <Canvas x:Name="MarkerCanvas" />
 
-        <Border HorizontalAlignment="Left"
+        <Border x:Name="EmptySelectionPanel"
+                HorizontalAlignment="Left"
                 VerticalAlignment="Bottom"
                 Margin="12"
                 Background="#F8FAFC"
                 BorderBrush="#CBD5E1"
                 BorderThickness="1"
                 CornerRadius="5"
-                Padding="10,8"
-                MaxWidth="260">
-          <StackPanel Spacing="2">
-            <TextBlock Text="{Binding SelectedStation.DisplayName}"
-                       FontWeight="SemiBold"
-                       Foreground="#0F172A" />
-            <TextBlock Text="{Binding SelectedStation.Callsign}"
-                       Foreground="#475569"
-                       FontSize="12" />
-            <TextBlock Text="{Binding SelectedStation.MovementLabel}"
-                       Foreground="#475569"
-                       FontSize="12" />
-            <TextBlock Text="{Binding SelectedStation.SymbolDescription}"
-                       Foreground="#475569"
-                       FontSize="12" />
-          </StackPanel>
+                Padding="10,8">
+          <TextBlock Text="Select a station marker"
+                     Foreground="#475569" />
+        </Border>
+
+        <Border x:Name="StationDetailsPanel"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Margin="12"
+                Background="#F8FAFC"
+                BorderBrush="#CBD5E1"
+                BorderThickness="1"
+                CornerRadius="5"
+                Padding="12"
+                MaxWidth="430"
+                IsVisible="False">
+          <Grid RowDefinitions="Auto,Auto,Auto,Auto"
+                RowSpacing="8">
+            <Grid ColumnDefinitions="*,Auto"
+                  ColumnSpacing="12">
+              <StackPanel Spacing="1">
+                <TextBlock Text="{Binding SelectedStationDetails.DisplayName}"
+                           FontSize="17"
+                           FontWeight="SemiBold"
+                           Foreground="#0F172A" />
+                <TextBlock Text="{Binding SelectedStationDetails.Callsign}"
+                           Foreground="#475569"
+                           FontSize="12" />
+              </StackPanel>
+              <Button Grid.Column="1"
+                      Padding="8,4"
+                      Click="ClearSelectionButton_Click">
+                <TextBlock Text="Clear" />
+              </Button>
+            </Grid>
+
+            <UniformGrid Grid.Row="1"
+                         Columns="2"
+                         Rows="4">
+              <StackPanel Margin="0,0,12,5">
+                <TextBlock Text="Symbol"
+                           FontSize="11"
+                           Foreground="#64748B" />
+                <TextBlock Text="{Binding SelectedStationDetails.SymbolDescription}"
+                           Foreground="#0F172A" />
+              </StackPanel>
+              <StackPanel Margin="0,0,0,5">
+                <TextBlock Text="Grid"
+                           FontSize="11"
+                           Foreground="#64748B" />
+                <TextBlock Text="{Binding SelectedStationDetails.MaidenheadGridSquare}"
+                           Foreground="#0F172A" />
+              </StackPanel>
+              <StackPanel Margin="0,0,12,5">
+                <TextBlock Text="Coordinates"
+                           FontSize="11"
+                           Foreground="#64748B" />
+                <TextBlock Text="{Binding SelectedStationDetails.Coordinates}"
+                           Foreground="#0F172A" />
+              </StackPanel>
+              <StackPanel Margin="0,0,0,5">
+                <TextBlock Text="Heard"
+                           FontSize="11"
+                           Foreground="#64748B" />
+                <TextBlock Text="{Binding SelectedStationDetails.LastHeardAge}"
+                           Foreground="#0F172A" />
+              </StackPanel>
+              <StackPanel Margin="0,0,12,5">
+                <TextBlock Text="Speed / Course"
+                           FontSize="11"
+                           Foreground="#64748B" />
+                <TextBlock Text="{Binding SelectedStationDetails.SpeedCourse}"
+                           Foreground="#0F172A" />
+              </StackPanel>
+              <StackPanel Margin="0,0,0,5">
+                <TextBlock Text="Altitude"
+                           FontSize="11"
+                           Foreground="#64748B" />
+                <TextBlock Text="{Binding SelectedStationDetails.Altitude}"
+                           Foreground="#0F172A" />
+              </StackPanel>
+              <StackPanel Margin="0,0,12,5">
+                <TextBlock Text="Source"
+                           FontSize="11"
+                           Foreground="#64748B" />
+                <TextBlock Text="{Binding SelectedStationDetails.PacketSource}"
+                           Foreground="#0F172A" />
+              </StackPanel>
+              <StackPanel Margin="0,0,0,5">
+                <TextBlock Text="Packets"
+                           FontSize="11"
+                           Foreground="#64748B" />
+                <TextBlock Text="{Binding SelectedStationDetails.PacketCount}"
+                           Foreground="#0F172A" />
+              </StackPanel>
+            </UniformGrid>
+
+            <StackPanel Grid.Row="2"
+                        Spacing="2">
+              <TextBlock Text="Path"
+                         FontSize="11"
+                         Foreground="#64748B" />
+              <TextBlock Text="{Binding SelectedStationDetails.LastPath}"
+                         Foreground="#0F172A"
+                         TextWrapping="Wrap" />
+              <TextBlock Text="Comment"
+                         FontSize="11"
+                         Foreground="#64748B"
+                         Margin="0,5,0,0" />
+              <TextBlock Text="{Binding SelectedStationDetails.Comment}"
+                         Foreground="#0F172A"
+                         TextWrapping="Wrap" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="3"
+                        Spacing="2">
+              <TextBlock Text="Last Raw Packet"
+                         FontSize="11"
+                         Foreground="#64748B" />
+              <TextBlock Text="{Binding SelectedStationDetails.LastRawPacket}"
+                         Foreground="#334155"
+                         FontFamily="Consolas,Menlo,Monospace"
+                         FontSize="11"
+                         TextWrapping="Wrap" />
+            </StackPanel>
+          </Grid>
         </Border>
       </Grid>
     </Border>
