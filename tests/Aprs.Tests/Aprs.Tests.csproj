@@ -11,5 +11,6 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.1" />
     <ProjectReference Include="..\..\src\Aprs.Core\Aprs.Core.csproj" />
     <ProjectReference Include="..\..\src\Aprs.Services\Aprs.Services.csproj" />
+    <ProjectReference Include="..\..\src\Aprs.Transport\Aprs.Transport.csproj" />
   </ItemGroup>
 </Project>
