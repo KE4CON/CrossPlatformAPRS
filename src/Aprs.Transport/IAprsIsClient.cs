@@ -12,5 +12,13 @@ public interface IAprsIsClient : IAsyncDisposable
 
     Task DisconnectAsync(CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Sends one raw APRS packet line to APRS-IS when transmit is explicitly enabled and confirmed.
+    /// </summary>
+    Task<AprsIsTransmitResult> SendRawPacketAsync(
+        string rawPacketLine,
+        bool transmitConfirmed,
+        CancellationToken cancellationToken);
+
     IAsyncEnumerable<AprsIsRawPacketReceivedEventArgs> ReadPacketsAsync(CancellationToken cancellationToken);
 }

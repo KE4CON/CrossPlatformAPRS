@@ -10,7 +10,11 @@ public sealed record AprsIsClientConfiguration(
     string? Filter,
     bool ReconnectEnabled,
     TimeSpan ReconnectDelay,
-    bool ReceiveOnly)
+    bool ReceiveOnly,
+    bool TransmitEnabled,
+    bool RequireTransmitConfirmation,
+    string? DefaultTransmitSource,
+    DateTimeOffset? LastTransmitTimestampUtc)
 {
     public static AprsIsClientConfiguration Default { get; } = new(
         ServerHost: "rotate.aprs2.net",
@@ -22,7 +26,11 @@ public sealed record AprsIsClientConfiguration(
         Filter: null,
         ReconnectEnabled: true,
         ReconnectDelay: TimeSpan.FromSeconds(10),
-        ReceiveOnly: true);
+        ReceiveOnly: true,
+        TransmitEnabled: false,
+        RequireTransmitConfirmation: true,
+        DefaultTransmitSource: null,
+        LastTransmitTimestampUtc: null);
 
     public AprsIsClientConfiguration WithServer(AprsIsServerDefinition server)
     {

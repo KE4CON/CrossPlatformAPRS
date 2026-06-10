@@ -15,6 +15,8 @@ public sealed class AprsIsClientTests
         Assert.Equal(14580, configuration.ServerPort);
         Assert.Equal("CrossPlatformAprs", configuration.ApplicationName);
         Assert.True(configuration.ReceiveOnly);
+        Assert.False(configuration.TransmitEnabled);
+        Assert.True(configuration.RequireTransmitConfirmation);
         Assert.True(configuration.ReconnectEnabled);
         Assert.Equal("-1", configuration.Passcode);
     }
@@ -132,6 +134,151 @@ public sealed class AprsIsClientTests
         Assert.Equal(AprsIsConnectionState.Disconnected, client.State);
     }
 
+    [Fact]
+    public async Task SendRawPacketAsync_WhenTransmitDisabled_FailsSafely()
+    {
+        var client = CreateClient(new WriteCapturingBlockingReadStream());
+
+        var result = await client.SendRawPacketAsync("N0CALL>APRS:>Online", transmitConfirmed: true, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(AprsTransmitDestinationTransport.AprsIs, result.DestinationTransport);
+        Assert.Contains("transmit is disabled", result.FailureReason);
+    }
+
+    [Fact]
+    public async Task SendRawPacketAsync_WhenReceiveOnly_FailsSafely()
+    {
+        var configuration = CreateTransmitConfiguration() with { ReceiveOnly = true };
+        var client = CreateClient(new WriteCapturingBlockingReadStream(), configuration);
+
+        var result = await client.SendRawPacketAsync("N0CALL>APRS:>Online", transmitConfirmed: true, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Contains("receive-only", result.FailureReason);
+    }
+
+    [Fact]
+    public async Task SendRawPacketAsync_WhenConfirmationMissing_FailsSafely()
+    {
+        var client = CreateClient(new WriteCapturingBlockingReadStream(), CreateTransmitConfiguration());
+
+        var result = await client.SendRawPacketAsync("N0CALL>APRS:>Online", transmitConfirmed: false, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Contains("confirmation", result.FailureReason);
+    }
+
+    [Fact]
+    public async Task SendRawPacketAsync_WhenCallsignMissing_FailsSafely()
+    {
+        var configuration = CreateTransmitConfiguration() with { Callsign = "" };
+        var client = CreateClient(new WriteCapturingBlockingReadStream(), configuration);
+
+        var result = await client.SendRawPacketAsync("N0CALL>APRS:>Online", transmitConfirmed: true, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Contains("callsign", result.FailureReason);
+    }
+
+    [Fact]
+    public async Task SendRawPacketAsync_WhenPasscodeMissing_FailsSafely()
+    {
+        var configuration = CreateTransmitConfiguration() with { Passcode = "" };
+        var client = CreateClient(new WriteCapturingBlockingReadStream(), configuration);
+
+        var result = await client.SendRawPacketAsync("N0CALL>APRS:>Online", transmitConfirmed: true, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Contains("passcode", result.FailureReason);
+    }
+
+    [Fact]
+    public async Task SendRawPacketAsync_WhenPasscodeInvalid_FailsSafely()
+    {
+        var configuration = CreateTransmitConfiguration() with { Passcode = "-1" };
+        var client = CreateClient(new WriteCapturingBlockingReadStream(), configuration);
+
+        var result = await client.SendRawPacketAsync("N0CALL>APRS:>Online", transmitConfirmed: true, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Contains("passcode", result.FailureReason);
+    }
+
+    [Fact]
+    public async Task SendRawPacketAsync_WhenDisconnected_FailsSafely()
+    {
+        var client = CreateClient(new WriteCapturingBlockingReadStream(), CreateTransmitConfiguration());
+
+        var result = await client.SendRawPacketAsync("N0CALL>APRS:>Online", transmitConfirmed: true, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(AprsIsConnectionState.Disconnected, result.ConnectedStateAtRequest);
+        Assert.Contains("not connected", result.FailureReason);
+    }
+
+    [Fact]
+    public async Task SendRawPacketAsync_WhenPacketIsEmpty_FailsSafely()
+    {
+        var stream = new WriteCapturingBlockingReadStream();
+        var client = CreateClient(stream, CreateTransmitConfiguration());
+
+        await client.ConnectAsync(CancellationToken.None);
+        var result = await client.SendRawPacketAsync("", transmitConfirmed: true, CancellationToken.None);
+        await client.DisconnectAsync(CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Contains("empty", result.FailureReason);
+    }
+
+    [Fact]
+    public async Task SendRawPacketAsync_WhenPacketContainsNewline_FailsSafely()
+    {
+        var stream = new WriteCapturingBlockingReadStream();
+        var client = CreateClient(stream, CreateTransmitConfiguration());
+
+        await client.ConnectAsync(CancellationToken.None);
+        var result = await client.SendRawPacketAsync("N0CALL>APRS:>Online\nBAD>APRS:>No", transmitConfirmed: true, CancellationToken.None);
+        await client.DisconnectAsync(CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Contains("line breaks", result.FailureReason);
+    }
+
+    [Fact]
+    public async Task SendRawPacketAsync_WhenPacketMalformed_FailsSafely()
+    {
+        var stream = new WriteCapturingBlockingReadStream();
+        var client = CreateClient(stream, CreateTransmitConfiguration());
+
+        await client.ConnectAsync(CancellationToken.None);
+        var result = await client.SendRawPacketAsync("BADPACKETWITHOUTSEPARATOR", transmitConfirmed: true, CancellationToken.None);
+        await client.DisconnectAsync(CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Contains("missing ':'", result.FailureReason);
+    }
+
+    [Fact]
+    public async Task SendRawPacketAsync_WhenTransmitEnabledAndConnected_WritesPacketToStream()
+    {
+        var stream = new WriteCapturingBlockingReadStream();
+        var client = CreateClient(stream, CreateTransmitConfiguration());
+
+        await client.ConnectAsync(CancellationToken.None);
+        var result = await client.SendRawPacketAsync("N0CALL>APRS:>Online", transmitConfirmed: true, CancellationToken.None);
+        await client.DisconnectAsync(CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Null(result.FailureReason);
+        Assert.Equal("N0CALL>APRS:>Online", result.RawPacket);
+        Assert.Equal(AprsTransmitDestinationTransport.AprsIs, result.DestinationTransport);
+        Assert.Equal(AprsIsConnectionState.Connected, result.ConnectedStateAtRequest);
+        Assert.Equal(
+            "user N0CALL pass 12345 vers CrossPlatformAprs 1.2.3 filter m/50\r\nN0CALL>APRS:>Online\r\n",
+            stream.WrittenText);
+    }
+
     private static AprsIsClient CreateClient(Stream stream)
     {
         var configuration = AprsIsClientConfiguration.Default with
@@ -144,6 +291,27 @@ public sealed class AprsIsClientTests
         };
 
         return new AprsIsClient(configuration, (_, _) => Task.FromResult(stream));
+    }
+
+    private static AprsIsClient CreateClient(Stream stream, AprsIsClientConfiguration configuration)
+    {
+        return new AprsIsClient(configuration, (_, _) => Task.FromResult(stream));
+    }
+
+    private static AprsIsClientConfiguration CreateTransmitConfiguration()
+    {
+        return AprsIsClientConfiguration.Default with
+        {
+            Callsign = "N0CALL",
+            Passcode = "12345",
+            ApplicationVersion = "1.2.3",
+            Filter = "m/50",
+            ReconnectEnabled = false,
+            ReceiveOnly = false,
+            TransmitEnabled = true,
+            RequireTransmitConfirmation = true,
+            DefaultTransmitSource = "N0CALL"
+        };
     }
 
     private sealed class TestDuplexStream : Stream
@@ -261,6 +429,69 @@ public sealed class AprsIsClientTests
 
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         {
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class WriteCapturingBlockingReadStream : Stream
+    {
+        private readonly MemoryStream writeStream = new();
+
+        public string WrittenText => Encoding.ASCII.GetString(writeStream.ToArray());
+
+        public override bool CanRead => true;
+
+        public override bool CanSeek => false;
+
+        public override bool CanWrite => true;
+
+        public override long Length => 0;
+
+        public override long Position
+        {
+            get => 0;
+            set => throw new NotSupportedException();
+        }
+
+        public override void Flush()
+        {
+        }
+
+        public override Task FlushAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            Thread.Sleep(Timeout.Infinite);
+            return 0;
+        }
+
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            return 0;
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override void SetLength(long value)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            writeStream.Write(buffer, offset, count);
+        }
+
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            writeStream.Write(buffer.Span);
             return ValueTask.CompletedTask;
         }
     }

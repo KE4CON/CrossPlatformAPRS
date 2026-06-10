@@ -2,6 +2,7 @@ using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Channels;
+using Aprs.Core;
 
 namespace Aprs.Transport;
 
@@ -10,6 +11,7 @@ public sealed class AprsIsClient : IAprsIsClient
     private readonly AprsIsClientConfiguration configuration;
     private readonly Func<AprsIsClientConfiguration, CancellationToken, Task<Stream>> streamFactory;
     private readonly Channel<AprsIsRawPacketReceivedEventArgs> receivedPackets = Channel.CreateUnbounded<AprsIsRawPacketReceivedEventArgs>();
+    private readonly AprsParser parser = new();
     private CancellationTokenSource? connectionCancellation;
     private Task? receiveTask;
     private Stream? stream;
@@ -99,6 +101,36 @@ public sealed class AprsIsClient : IAprsIsClient
         }
     }
 
+    public async Task<AprsIsTransmitResult> SendRawPacketAsync(
+        string rawPacketLine,
+        bool transmitConfirmed,
+        CancellationToken cancellationToken)
+    {
+        var timestamp = DateTimeOffset.UtcNow;
+        var stateAtRequest = State;
+        var normalizedPacket = rawPacketLine?.Trim() ?? string.Empty;
+        var failureReason = ValidateTransmitRequest(normalizedPacket, transmitConfirmed, stateAtRequest);
+        if (failureReason is not null)
+        {
+            return AprsIsTransmitResult.Failed(timestamp, normalizedPacket, stateAtRequest, failureReason);
+        }
+
+        try
+        {
+            var bytes = Encoding.ASCII.GetBytes(normalizedPacket + "\r\n");
+            await stream!.WriteAsync(bytes, cancellationToken).ConfigureAwait(false);
+            await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
+
+            return AprsIsTransmitResult.Succeeded(timestamp, normalizedPacket, stateAtRequest);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            LastError = exception;
+            State = AprsIsConnectionState.Faulted;
+            return AprsIsTransmitResult.Failed(timestamp, normalizedPacket, stateAtRequest, exception.Message);
+        }
+    }
+
     public async ValueTask DisposeAsync()
     {
         await DisconnectAsync(CancellationToken.None).ConfigureAwait(false);
@@ -153,6 +185,65 @@ public sealed class AprsIsClient : IAprsIsClient
         var packet = new AprsIsRawPacketReceivedEventArgs(line, DateTimeOffset.UtcNow);
         receivedPackets.Writer.TryWrite(packet);
         RawPacketReceived?.Invoke(this, packet);
+    }
+
+    private string? ValidateTransmitRequest(
+        string rawPacketLine,
+        bool transmitConfirmed,
+        AprsIsConnectionState stateAtRequest)
+    {
+        if (!configuration.TransmitEnabled)
+        {
+            return "APRS-IS transmit is disabled.";
+        }
+
+        if (configuration.ReceiveOnly)
+        {
+            return "APRS-IS client is configured for receive-only operation.";
+        }
+
+        if (configuration.RequireTransmitConfirmation && !transmitConfirmed)
+        {
+            return "APRS-IS transmit confirmation is required.";
+        }
+
+        if (string.IsNullOrWhiteSpace(configuration.Callsign))
+        {
+            return "APRS-IS callsign is required before transmit.";
+        }
+
+        if (!IsValidTransmitPasscode(configuration.Passcode))
+        {
+            return "A valid APRS-IS passcode is required before transmit.";
+        }
+
+        if (stateAtRequest != AprsIsConnectionState.Connected || stream is null)
+        {
+            return "APRS-IS client is not connected.";
+        }
+
+        if (string.IsNullOrWhiteSpace(rawPacketLine))
+        {
+            return "APRS packet cannot be empty.";
+        }
+
+        if (rawPacketLine.Contains('\r') || rawPacketLine.Contains('\n'))
+        {
+            return "APRS packet cannot contain line breaks.";
+        }
+
+        var parsed = parser.Parse(rawPacketLine, DateTimeOffset.UtcNow);
+        if (!parsed.IsValid)
+        {
+            return parsed.ValidationErrors.FirstOrDefault() ?? "APRS packet is malformed.";
+        }
+
+        return null;
+    }
+
+    private static bool IsValidTransmitPasscode(string passcode)
+    {
+        return int.TryParse(passcode?.Trim(), out var parsedPasscode) && parsedPasscode > 0;
     }
 
     private async Task WriteLoginLineAsync(Stream targetStream, CancellationToken cancellationToken)
