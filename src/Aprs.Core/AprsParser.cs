@@ -2,6 +2,8 @@ namespace Aprs.Core;
 
 public sealed class AprsParser : IAprsParser
 {
+    private readonly AprsPositionParser positionParser = new();
+
     public bool TryParse(string rawLine, DateTimeOffset receivedAtUtc, out AprsPacket? packet, out string? error)
     {
         var parsed = Parse(rawLine, receivedAtUtc);
@@ -11,7 +13,7 @@ public sealed class AprsParser : IAprsParser
         return parsed.IsValid;
     }
 
-    public RawAprsPacket Parse(string? rawLine, DateTimeOffset receivedAtUtc)
+    public AprsPacket Parse(string? rawLine, DateTimeOffset receivedAtUtc)
     {
         var originalLine = rawLine ?? string.Empty;
         var validationErrors = new List<string>();
@@ -56,7 +58,7 @@ public sealed class AprsParser : IAprsParser
         var (sourceCallsign, sourceSsid) = ParseSource(sourceText, validationErrors);
         var (destination, path) = ParseDestinationAndPath(destinationAndPath, validationErrors);
 
-        return CreateRawPacket(
+        var rawPacket = CreateRawPacket(
             originalLine,
             sourceCallsign,
             sourceSsid,
@@ -65,6 +67,13 @@ public sealed class AprsParser : IAprsParser
             information,
             receivedAtUtc,
             validationErrors);
+
+        if (IsPositionInformation(rawPacket.Information))
+        {
+            return positionParser.Parse(rawPacket);
+        }
+
+        return rawPacket;
     }
 
     private static RawAprsPacket CreateRawPacket(
@@ -155,5 +164,11 @@ public sealed class AprsParser : IAprsParser
     {
         return pathComponent.Length >= 2
             && pathComponent[0] is 'q' or 'Q';
+    }
+
+    private static bool IsPositionInformation(string information)
+    {
+        return information.Length > 0
+            && information[0] is '!' or '=' or '/' or '@';
     }
 }

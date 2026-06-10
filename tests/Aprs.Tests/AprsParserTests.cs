@@ -41,18 +41,18 @@ public sealed class AprsParserTests
 
         var isValid = parser.TryParse(rawLine, ReceivedAtUtc, out var packet, out var error);
 
-        var rawPacket = Assert.IsType<RawAprsPacket>(packet);
+        Assert.NotNull(packet);
         Assert.True(isValid);
-        Assert.True(rawPacket.IsValid);
+        Assert.True(packet.IsValid);
         Assert.Null(error);
-        Assert.Empty(rawPacket.ValidationErrors);
-        Assert.Equal(rawLine, rawPacket.RawLine);
-        Assert.Equal(expectedSourceCallsign, rawPacket.SourceCallsign);
-        Assert.Equal(expectedSourceSsid, rawPacket.SourceSsid);
-        Assert.Equal(expectedDestination, rawPacket.Destination);
-        Assert.Equal(expectedPath, rawPacket.Path);
-        Assert.Equal(expectedInformation, rawPacket.Information);
-        Assert.Equal(ReceivedAtUtc, rawPacket.ReceivedAtUtc);
+        Assert.Empty(packet.ValidationErrors);
+        Assert.Equal(rawLine, packet.RawLine);
+        Assert.Equal(expectedSourceCallsign, packet.SourceCallsign);
+        Assert.Equal(expectedSourceSsid, packet.SourceSsid);
+        Assert.Equal(expectedDestination, packet.Destination);
+        Assert.Equal(expectedPath, packet.Path);
+        Assert.Equal(expectedInformation, packet.Information);
+        Assert.Equal(ReceivedAtUtc, packet.ReceivedAtUtc);
     }
 
     [Fact]
@@ -120,5 +120,138 @@ public sealed class AprsParserTests
         Assert.True(rawPacket.IsValid);
         Assert.Equal("qAC", rawPacket.QConstruct);
         Assert.Equal(new[] { "TCPIP*", "qAC", "T2SERVER" }, rawPacket.Path);
+    }
+
+    [Theory]
+    [InlineData(
+        "N0CALL>APRS,TCPIP*:!3903.50N/08430.50W-Test beacon",
+        '!',
+        null,
+        39.058333,
+        -84.508333,
+        '/',
+        '-',
+        "Test beacon")]
+    [InlineData(
+        "W1AW-9>APRS,WIDE1-1,WIDE2-1:=4123.45N/07234.56W>Mobile test",
+        '=',
+        null,
+        41.390833,
+        -72.576,
+        '/',
+        '>',
+        "Mobile test")]
+    [InlineData(
+        "K8ABC>APRS:/092345z3903.50N/08430.50W>Timestamped test",
+        '/',
+        "092345z",
+        39.058333,
+        -84.508333,
+        '/',
+        '>',
+        "Timestamped test")]
+    [InlineData(
+        "N8XYZ-7>APRS:!3903.50N/08430.50W#PHG5130 Test digi",
+        '!',
+        null,
+        39.058333,
+        -84.508333,
+        '/',
+        '#',
+        "PHG5130 Test digi")]
+    public void TryParse_ReturnsPositionPacket_ForUncompressedPosition(
+        string rawLine,
+        char expectedPositionType,
+        string? expectedTimestamp,
+        double expectedLatitude,
+        double expectedLongitude,
+        char expectedSymbolTable,
+        char expectedSymbolCode,
+        string expectedComment)
+    {
+        var parser = new AprsParser();
+
+        var isValid = parser.TryParse(rawLine, ReceivedAtUtc, out var packet, out var error);
+
+        var positionPacket = Assert.IsType<PositionAprsPacket>(packet);
+        Assert.True(isValid);
+        Assert.True(positionPacket.IsValid);
+        Assert.Null(error);
+        Assert.Equal(expectedPositionType, positionPacket.PositionType);
+        Assert.Equal(expectedTimestamp, positionPacket.Timestamp);
+        Assert.Equal(expectedLatitude, positionPacket.Latitude!.Value, 6);
+        Assert.Equal(expectedLongitude, positionPacket.Longitude!.Value, 6);
+        Assert.Equal(expectedSymbolTable, positionPacket.SymbolTableIdentifier);
+        Assert.Equal(expectedSymbolCode, positionPacket.SymbolCode);
+        Assert.Equal(expectedComment, positionPacket.Comment);
+        Assert.Null(positionPacket.CourseDegrees);
+        Assert.Null(positionPacket.SpeedKnots);
+        Assert.Null(positionPacket.AltitudeFeet);
+        Assert.Equal(0, positionPacket.PositionAmbiguity);
+    }
+
+    [Fact]
+    public void TryParse_ExtractsCourseSpeedAndAltitude_FromPositionComment()
+    {
+        var parser = new AprsParser();
+
+        var isValid = parser.TryParse(
+            "MOBILE-9>APRS:!3903.50N/08430.50W>123/045/A=000789 Moving test",
+            ReceivedAtUtc,
+            out var packet,
+            out var error);
+
+        var positionPacket = Assert.IsType<PositionAprsPacket>(packet);
+        Assert.True(isValid);
+        Assert.Null(error);
+        Assert.Equal(123, positionPacket.CourseDegrees);
+        Assert.Equal(45, positionPacket.SpeedKnots);
+        Assert.Equal(789, positionPacket.AltitudeFeet);
+        Assert.Equal("123/045/A=000789 Moving test", positionPacket.Comment);
+    }
+
+    [Fact]
+    public void TryParse_TracksPositionAmbiguity_WhenCoordinatesContainSpaces()
+    {
+        var parser = new AprsParser();
+
+        var isValid = parser.TryParse(
+            "N0CALL>APRS:!3903.  N/08430.  W-Ambiguous position",
+            ReceivedAtUtc,
+            out var packet,
+            out var error);
+
+        var positionPacket = Assert.IsType<PositionAprsPacket>(packet);
+        Assert.True(isValid);
+        Assert.Null(error);
+        Assert.Equal(2, positionPacket.PositionAmbiguity);
+        Assert.Equal(39.05, positionPacket.Latitude!.Value, 6);
+        Assert.Equal(-84.5, positionPacket.Longitude!.Value, 6);
+    }
+
+    [Fact]
+    public void TryParse_ReturnsValidationErrors_ForBadPosition()
+    {
+        var parser = new AprsParser();
+
+        var exception = Record.Exception(() =>
+        {
+            var isValid = parser.TryParse(
+                "BADPOS>APRS:!9999.99N/99999.99W-Bad position",
+                ReceivedAtUtc,
+                out var packet,
+                out var error);
+
+            var positionPacket = Assert.IsType<PositionAprsPacket>(packet);
+            Assert.False(isValid);
+            Assert.False(positionPacket.IsValid);
+            Assert.Null(positionPacket.Latitude);
+            Assert.Null(positionPacket.Longitude);
+            Assert.Contains("Position packet latitude is invalid.", positionPacket.ValidationErrors);
+            Assert.Contains("Position packet longitude is invalid.", positionPacket.ValidationErrors);
+            Assert.Equal("Position packet latitude is invalid.", error);
+        });
+
+        Assert.Null(exception);
     }
 }
