@@ -9,10 +9,20 @@ public enum AprsPacketSource
     Simulation
 }
 
+public enum StationLifecycleState
+{
+    Active,
+    Stale,
+    Expired,
+    Hidden
+}
+
 public sealed record StationSnapshot(
     string Callsign,
     int? Ssid,
     string DisplayName,
+    StationLifecycleState LifecycleState,
+    bool IsManuallyHidden,
     double? Latitude,
     double? Longitude,
     char? SymbolTableIdentifier,
@@ -45,3 +55,20 @@ public sealed record StationWeatherSnapshot(
     int? SnowHundredthsInch,
     string RawWeatherBody,
     string? Comment);
+
+public sealed record StationAgingConfiguration(
+    TimeSpan ActiveThreshold,
+    TimeSpan StaleThreshold,
+    TimeSpan ExpiredThreshold,
+    TimeSpan HiddenThreshold,
+    bool ShowExpiredStations,
+    bool IncludeHiddenStationsInNormalLists)
+{
+    public static StationAgingConfiguration Default { get; } = new(
+        TimeSpan.FromMinutes(30),
+        TimeSpan.FromHours(2),
+        TimeSpan.FromHours(2),
+        TimeSpan.FromHours(24),
+        ShowExpiredStations: true,
+        IncludeHiddenStationsInNormalLists: false);
+}

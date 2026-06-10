@@ -18,9 +18,39 @@ public interface IStationDatabase
     IReadOnlyCollection<StationSnapshot> GetAllStations();
 
     /// <summary>
+    /// Returns stations that should appear in normal station lists.
+    /// </summary>
+    IReadOnlyCollection<StationSnapshot> GetVisibleStations();
+
+    /// <summary>
+    /// Returns stations currently classified as active.
+    /// </summary>
+    IReadOnlyCollection<StationSnapshot> GetActiveStations();
+
+    /// <summary>
     /// Returns one station by callsign or callsign-SSID.
     /// </summary>
     StationSnapshot? GetStation(string callsign);
+
+    /// <summary>
+    /// Recalculates station lifecycle states for the supplied time.
+    /// </summary>
+    void UpdateAgeStates(DateTimeOffset now);
+
+    /// <summary>
+    /// Manually hides one station.
+    /// </summary>
+    bool HideStation(string callsign);
+
+    /// <summary>
+    /// Clears manual hidden state for one station and recalculates its age state.
+    /// </summary>
+    bool UnhideStation(string callsign, DateTimeOffset now);
+
+    /// <summary>
+    /// Clears all manual hidden states and recalculates age states.
+    /// </summary>
+    void ClearHiddenState(DateTimeOffset now);
 
     /// <summary>
     /// Removes all station state.

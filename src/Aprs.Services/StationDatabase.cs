@@ -5,6 +5,17 @@ namespace Aprs.Services;
 public sealed class StationDatabase : IStationDatabase
 {
     private readonly Dictionary<string, StationSnapshot> stations = new(StringComparer.OrdinalIgnoreCase);
+    private readonly StationAgingConfiguration agingConfiguration;
+
+    public StationDatabase()
+        : this(StationAgingConfiguration.Default)
+    {
+    }
+
+    public StationDatabase(StationAgingConfiguration agingConfiguration)
+    {
+        this.agingConfiguration = agingConfiguration;
+    }
 
     public void ProcessPacket(AprsPacket packet, AprsPacketSource packetSource = AprsPacketSource.Unknown)
     {
@@ -28,9 +39,17 @@ public sealed class StationDatabase : IStationDatabase
 
     public IReadOnlyCollection<StationSnapshot> GetAllStations()
     {
-        return stations.Values
-            .OrderBy(station => station.Callsign, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        return SortStations(stations.Values);
+    }
+
+    public IReadOnlyCollection<StationSnapshot> GetVisibleStations()
+    {
+        return SortStations(stations.Values.Where(IsVisible));
+    }
+
+    public IReadOnlyCollection<StationSnapshot> GetActiveStations()
+    {
+        return SortStations(stations.Values.Where(station => station.LifecycleState == StationLifecycleState.Active));
     }
 
     public StationSnapshot? GetStation(string callsign)
@@ -38,6 +57,63 @@ public sealed class StationDatabase : IStationDatabase
         return stations.TryGetValue(NormalizeStationKey(callsign), out var station)
             ? station
             : null;
+    }
+
+    public void UpdateAgeStates(DateTimeOffset now)
+    {
+        foreach (var (stationKey, station) in stations.ToArray())
+        {
+            stations[stationKey] = station with
+            {
+                LifecycleState = CalculateLifecycleState(station, now)
+            };
+        }
+    }
+
+    public bool HideStation(string callsign)
+    {
+        var stationKey = NormalizeStationKey(callsign);
+        if (!stations.TryGetValue(stationKey, out var station))
+        {
+            return false;
+        }
+
+        stations[stationKey] = station with
+        {
+            IsManuallyHidden = true,
+            LifecycleState = StationLifecycleState.Hidden
+        };
+
+        return true;
+    }
+
+    public bool UnhideStation(string callsign, DateTimeOffset now)
+    {
+        var stationKey = NormalizeStationKey(callsign);
+        if (!stations.TryGetValue(stationKey, out var station))
+        {
+            return false;
+        }
+
+        var unhidden = station with { IsManuallyHidden = false };
+        stations[stationKey] = unhidden with
+        {
+            LifecycleState = CalculateLifecycleState(unhidden, now)
+        };
+
+        return true;
+    }
+
+    public void ClearHiddenState(DateTimeOffset now)
+    {
+        foreach (var (stationKey, station) in stations.ToArray())
+        {
+            var unhidden = station with { IsManuallyHidden = false };
+            stations[stationKey] = unhidden with
+            {
+                LifecycleState = CalculateLifecycleState(unhidden, now)
+            };
+        }
     }
 
     public void Clear()
@@ -57,6 +133,8 @@ public sealed class StationDatabase : IStationDatabase
             callsign,
             ssid,
             FormatDisplayName(callsign, ssid),
+            existing?.IsManuallyHidden == true ? StationLifecycleState.Hidden : StationLifecycleState.Active,
+            existing?.IsManuallyHidden ?? false,
             existing?.Latitude,
             existing?.Longitude,
             existing?.SymbolTableIdentifier,
@@ -170,5 +248,60 @@ public sealed class StationDatabase : IStationDatabase
         }
 
         return (stationKey, null);
+    }
+
+    private static IReadOnlyCollection<StationSnapshot> SortStations(IEnumerable<StationSnapshot> stationValues)
+    {
+        return stationValues
+            .OrderBy(station => station.Callsign, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(station => station.Ssid)
+            .ToArray();
+    }
+
+    private bool IsVisible(StationSnapshot station)
+    {
+        if (station.LifecycleState == StationLifecycleState.Hidden)
+        {
+            return agingConfiguration.IncludeHiddenStationsInNormalLists;
+        }
+
+        return station.LifecycleState != StationLifecycleState.Expired
+            || agingConfiguration.ShowExpiredStations;
+    }
+
+    private StationLifecycleState CalculateLifecycleState(StationSnapshot station, DateTimeOffset now)
+    {
+        if (station.IsManuallyHidden)
+        {
+            return StationLifecycleState.Hidden;
+        }
+
+        var age = now - station.LastHeardUtc;
+        if (age < TimeSpan.Zero)
+        {
+            age = TimeSpan.Zero;
+        }
+
+        if (age >= agingConfiguration.HiddenThreshold)
+        {
+            return StationLifecycleState.Hidden;
+        }
+
+        if (age >= agingConfiguration.ExpiredThreshold)
+        {
+            return StationLifecycleState.Expired;
+        }
+
+        if (age > agingConfiguration.ActiveThreshold && age < agingConfiguration.StaleThreshold)
+        {
+            return StationLifecycleState.Stale;
+        }
+
+        if (age >= agingConfiguration.StaleThreshold)
+        {
+            return StationLifecycleState.Expired;
+        }
+
+        return StationLifecycleState.Active;
     }
 }

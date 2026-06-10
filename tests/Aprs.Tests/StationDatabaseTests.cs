@@ -22,6 +22,7 @@ public sealed class StationDatabaseTests
         Assert.Equal("N0CALL", station.Callsign);
         Assert.Null(station.Ssid);
         Assert.Equal("N0CALL", station.DisplayName);
+        Assert.Equal(StationLifecycleState.Active, station.LifecycleState);
         Assert.Equal(39.058333, station.Latitude!.Value, 6);
         Assert.Equal(-84.508333, station.Longitude!.Value, 6);
         Assert.Equal('/', station.SymbolTableIdentifier);
@@ -150,6 +151,162 @@ public sealed class StationDatabaseTests
 
         Assert.Empty(database.GetAllStations());
         Assert.Null(database.GetStation("N0CALL"));
+    }
+
+    [Fact]
+    public void UpdateAgeStates_KeepsNewlyHeardStationActive()
+    {
+        var database = new StationDatabase();
+        database.ProcessPacket(Parse("N0CALL>APRS:!3903.50N/08430.50W-Test beacon", FirstHeardUtc));
+
+        database.UpdateAgeStates(FirstHeardUtc.AddMinutes(30));
+
+        var station = database.GetStation("N0CALL");
+        Assert.NotNull(station);
+        Assert.Equal(StationLifecycleState.Active, station.LifecycleState);
+    }
+
+    [Fact]
+    public void UpdateAgeStates_MarksStationStaleAfterActiveThreshold()
+    {
+        var database = new StationDatabase();
+        database.ProcessPacket(Parse("N0CALL>APRS:!3903.50N/08430.50W-Test beacon", FirstHeardUtc));
+
+        database.UpdateAgeStates(FirstHeardUtc.AddMinutes(31));
+
+        var station = database.GetStation("N0CALL");
+        Assert.NotNull(station);
+        Assert.Equal(StationLifecycleState.Stale, station.LifecycleState);
+    }
+
+    [Fact]
+    public void UpdateAgeStates_MarksStationExpiredAfterExpiredThreshold()
+    {
+        var database = new StationDatabase();
+        database.ProcessPacket(Parse("N0CALL>APRS:!3903.50N/08430.50W-Test beacon", FirstHeardUtc));
+
+        database.UpdateAgeStates(FirstHeardUtc.AddHours(2));
+
+        var station = database.GetStation("N0CALL");
+        Assert.NotNull(station);
+        Assert.Equal(StationLifecycleState.Expired, station.LifecycleState);
+    }
+
+    [Fact]
+    public void UpdateAgeStates_MarksStationHiddenAfterHiddenThreshold()
+    {
+        var database = new StationDatabase();
+        database.ProcessPacket(Parse("N0CALL>APRS:!3903.50N/08430.50W-Test beacon", FirstHeardUtc));
+
+        database.UpdateAgeStates(FirstHeardUtc.AddHours(24));
+
+        var station = database.GetStation("N0CALL");
+        Assert.NotNull(station);
+        Assert.Equal(StationLifecycleState.Hidden, station.LifecycleState);
+        Assert.False(station.IsManuallyHidden);
+    }
+
+    [Fact]
+    public void HideStation_ManuallyHiddenStationsRemainHiddenAfterNewPacket()
+    {
+        var database = new StationDatabase();
+        database.ProcessPacket(Parse("N0CALL>APRS:!3903.50N/08430.50W-Test beacon", FirstHeardUtc));
+
+        var hidden = database.HideStation("N0CALL");
+        database.ProcessPacket(Parse("N0CALL>APRS:>Back on frequency", SecondHeardUtc));
+
+        var station = database.GetStation("N0CALL");
+        Assert.True(hidden);
+        Assert.NotNull(station);
+        Assert.True(station.IsManuallyHidden);
+        Assert.Equal(StationLifecycleState.Hidden, station.LifecycleState);
+        Assert.Equal("Back on frequency", station.Comment);
+    }
+
+    [Fact]
+    public void UnhideStation_RestoresNormalAgeCalculation()
+    {
+        var database = new StationDatabase();
+        database.ProcessPacket(Parse("N0CALL>APRS:!3903.50N/08430.50W-Test beacon", FirstHeardUtc));
+        database.HideStation("N0CALL");
+
+        var unhidden = database.UnhideStation("N0CALL", FirstHeardUtc.AddMinutes(31));
+
+        var station = database.GetStation("N0CALL");
+        Assert.True(unhidden);
+        Assert.NotNull(station);
+        Assert.False(station.IsManuallyHidden);
+        Assert.Equal(StationLifecycleState.Stale, station.LifecycleState);
+    }
+
+    [Fact]
+    public void ClearHiddenState_UnhidesAllStationsAndRecalculatesAge()
+    {
+        var database = new StationDatabase();
+        database.ProcessPacket(Parse("N0CALL>APRS:!3903.50N/08430.50W-Test beacon", FirstHeardUtc));
+        database.ProcessPacket(Parse("W1AW>APRS:!4123.45N/07234.56W-Test beacon", FirstHeardUtc));
+        database.HideStation("N0CALL");
+        database.HideStation("W1AW");
+
+        database.ClearHiddenState(FirstHeardUtc.AddMinutes(31));
+
+        Assert.All(database.GetAllStations(), station =>
+        {
+            Assert.False(station.IsManuallyHidden);
+            Assert.Equal(StationLifecycleState.Stale, station.LifecycleState);
+        });
+    }
+
+    [Fact]
+    public void GetVisibleStations_ExcludesHiddenStations()
+    {
+        var database = new StationDatabase();
+        database.ProcessPacket(Parse("N0CALL>APRS:!3903.50N/08430.50W-Test beacon", FirstHeardUtc));
+        database.ProcessPacket(Parse("W1AW>APRS:!4123.45N/07234.56W-Test beacon", FirstHeardUtc));
+        database.HideStation("N0CALL");
+
+        var visibleStations = database.GetVisibleStations();
+
+        var visibleStation = Assert.Single(visibleStations);
+        Assert.Equal("W1AW", visibleStation.Callsign);
+    }
+
+    [Fact]
+    public void GetVisibleStations_CanExcludeExpiredStations()
+    {
+        var config = StationAgingConfiguration.Default with { ShowExpiredStations = false };
+        var database = new StationDatabase(config);
+        database.ProcessPacket(Parse("N0CALL>APRS:!3903.50N/08430.50W-Test beacon", FirstHeardUtc));
+
+        database.UpdateAgeStates(FirstHeardUtc.AddHours(2));
+
+        Assert.Empty(database.GetVisibleStations());
+        Assert.Single(database.GetAllStations());
+    }
+
+    [Fact]
+    public void GetVisibleStations_CanIncludeHiddenStationsWhenConfigured()
+    {
+        var config = StationAgingConfiguration.Default with { IncludeHiddenStationsInNormalLists = true };
+        var database = new StationDatabase(config);
+        database.ProcessPacket(Parse("N0CALL>APRS:!3903.50N/08430.50W-Test beacon", FirstHeardUtc));
+        database.HideStation("N0CALL");
+
+        var visibleStation = Assert.Single(database.GetVisibleStations());
+        Assert.Equal(StationLifecycleState.Hidden, visibleStation.LifecycleState);
+    }
+
+    [Fact]
+    public void GetActiveStations_ReturnsOnlyActiveStations()
+    {
+        var database = new StationDatabase();
+        database.ProcessPacket(Parse("N0CALL>APRS:!3903.50N/08430.50W-Test beacon", FirstHeardUtc));
+        database.ProcessPacket(Parse("W1AW>APRS:!4123.45N/07234.56W-Test beacon", FirstHeardUtc.AddHours(-1)));
+
+        database.UpdateAgeStates(FirstHeardUtc);
+
+        var activeStation = Assert.Single(database.GetActiveStations());
+        Assert.Equal("N0CALL", activeStation.Callsign);
     }
 
     private static AprsPacket Parse(string rawLine, DateTimeOffset receivedAtUtc)
