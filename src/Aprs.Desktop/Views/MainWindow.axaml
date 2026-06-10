@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Aprs.Desktop.ViewModels"
+        xmlns:views="using:Aprs.Desktop.Views"
         x:Class="Aprs.Desktop.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="CrossPlatform APRS"
@@ -8,7 +9,7 @@
         Height="760"
         MinWidth="900"
         MinHeight="620">
-  <Grid RowDefinitions="Auto,*">
+  <Grid RowDefinitions="Auto,*,Auto">
     <Border Grid.Row="0"
             Background="#18212B"
             Padding="18,14">
@@ -37,39 +38,30 @@
     </Border>
 
     <TabControl Grid.Row="1"
-                ItemsSource="{Binding Panes}"
                 Padding="12">
-      <TabControl.ItemTemplate>
-        <DataTemplate DataType="vm:PaneViewModel">
-          <TextBlock Text="{Binding Title}" />
-        </DataTemplate>
-      </TabControl.ItemTemplate>
-      <TabControl.ContentTemplate>
-        <DataTemplate DataType="vm:PaneViewModel">
-          <Grid RowDefinitions="Auto,*"
-                Margin="0,10,0,0">
-            <StackPanel Grid.Row="0"
-                        Margin="0,0,0,12">
-              <TextBlock Text="{Binding Title}"
-                         FontSize="24"
-                         FontWeight="SemiBold" />
-              <TextBlock Text="{Binding Description}"
-                         Foreground="#526173" />
-            </StackPanel>
-
-            <Border Grid.Row="1"
-                    BorderBrush="#CBD5E1"
-                    BorderThickness="1"
-                    CornerRadius="6"
-                    Background="#F8FAFC">
-              <TextBlock Text="{Binding EmptyState}"
-                         HorizontalAlignment="Center"
-                         VerticalAlignment="Center"
-                         Foreground="#526173" />
-            </Border>
-          </Grid>
-        </DataTemplate>
-      </TabControl.ContentTemplate>
+      <TabItem Header="Map">
+        <views:MapView />
+      </TabItem>
+      <TabItem Header="Station List">
+        <views:StationListView />
+      </TabItem>
+      <TabItem Header="Raw Packet Monitor">
+        <views:PacketMonitorView />
+      </TabItem>
+      <TabItem Header="Messages">
+        <views:MessageCenterView />
+      </TabItem>
+      <TabItem Header="Objects">
+        <views:ObjectManagerView />
+      </TabItem>
+      <TabItem Header="Weather">
+        <views:WeatherView />
+      </TabItem>
+      <TabItem Header="Settings">
+        <views:SettingsView />
+      </TabItem>
     </TabControl>
+
+    <views:MainStatusBarView Grid.Row="2" />
   </Grid>
 </Window>

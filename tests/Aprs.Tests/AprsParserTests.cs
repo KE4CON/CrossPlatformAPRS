@@ -544,4 +544,157 @@ public sealed class AprsParserTests
         Assert.True(messagePacket.IsQuery);
         Assert.Equal("?APRSD", messagePacket.QueryText);
     }
+
+    [Theory]
+    [InlineData(
+        "OBJ1>APRS:;CHECKPNT1*111111z3903.50N/08430.50W-Checkpoint 1",
+        "CHECKPNT1",
+        true,
+        false,
+        "111111z",
+        39.058333,
+        -84.508333,
+        '/',
+        '-',
+        "Checkpoint 1")]
+    [InlineData(
+        "OBJ2>APRS:;NETCTRL  *092345z3903.50N/08430.50W>Net control object",
+        "NETCTRL",
+        true,
+        false,
+        "092345z",
+        39.058333,
+        -84.508333,
+        '/',
+        '>',
+        "Net control object")]
+    [InlineData(
+        "OBJ3>APRS:;HAZARD   _111111z3903.50N/08430.50W-Hazard cleared",
+        "HAZARD",
+        false,
+        true,
+        "111111z",
+        39.058333,
+        -84.508333,
+        '/',
+        '-',
+        "Hazard cleared")]
+    public void TryParse_ReturnsObjectPacket_ForAprsObject(
+        string rawLine,
+        string expectedObjectName,
+        bool expectedIsAlive,
+        bool expectedIsKilled,
+        string expectedTimestamp,
+        double expectedLatitude,
+        double expectedLongitude,
+        char expectedSymbolTable,
+        char expectedSymbolCode,
+        string expectedComment)
+    {
+        var parser = new AprsParser();
+
+        var isValid = parser.TryParse(rawLine, ReceivedAtUtc, out var packet, out var error);
+
+        var objectPacket = Assert.IsType<ObjectAprsPacket>(packet);
+        Assert.True(isValid);
+        Assert.True(objectPacket.IsValid);
+        Assert.Null(error);
+        Assert.Equal(expectedObjectName, objectPacket.ObjectName);
+        Assert.Equal(expectedIsAlive, objectPacket.IsAlive);
+        Assert.Equal(expectedIsKilled, objectPacket.IsKilled);
+        Assert.Equal(expectedTimestamp, objectPacket.Timestamp);
+        Assert.Equal(expectedLatitude, objectPacket.Latitude!.Value, 6);
+        Assert.Equal(expectedLongitude, objectPacket.Longitude!.Value, 6);
+        Assert.Equal(expectedSymbolTable, objectPacket.SymbolTableIdentifier);
+        Assert.Equal(expectedSymbolCode, objectPacket.SymbolCode);
+        Assert.Equal(expectedComment, objectPacket.Comment);
+        Assert.NotEmpty(objectPacket.RawObjectBody);
+    }
+
+    [Theory]
+    [InlineData(
+        "ITEM1>APRS:)REPEATER!3903.50N/08430.50WrLocal repeater",
+        "REPEATER",
+        39.058333,
+        -84.508333,
+        '/',
+        'r',
+        "Local repeater")]
+    [InlineData(
+        "ITEM2>APRS:)SHELTER !3903.50N/08430.50W-Shelter location",
+        "SHELTER",
+        39.058333,
+        -84.508333,
+        '/',
+        '-',
+        "Shelter location")]
+    public void TryParse_ReturnsItemPacket_ForAprsItem(
+        string rawLine,
+        string expectedItemName,
+        double expectedLatitude,
+        double expectedLongitude,
+        char expectedSymbolTable,
+        char expectedSymbolCode,
+        string expectedComment)
+    {
+        var parser = new AprsParser();
+
+        var isValid = parser.TryParse(rawLine, ReceivedAtUtc, out var packet, out var error);
+
+        var itemPacket = Assert.IsType<ItemAprsPacket>(packet);
+        Assert.True(isValid);
+        Assert.True(itemPacket.IsValid);
+        Assert.Null(error);
+        Assert.Equal(expectedItemName, itemPacket.ItemName);
+        Assert.Equal(expectedLatitude, itemPacket.Latitude!.Value, 6);
+        Assert.Equal(expectedLongitude, itemPacket.Longitude!.Value, 6);
+        Assert.Equal(expectedSymbolTable, itemPacket.SymbolTableIdentifier);
+        Assert.Equal(expectedSymbolCode, itemPacket.SymbolCode);
+        Assert.Equal(expectedComment, itemPacket.Comment);
+        Assert.NotEmpty(itemPacket.RawItemBody);
+    }
+
+    [Fact]
+    public void TryParse_ReturnsValidationErrors_ForMalformedObject()
+    {
+        var parser = new AprsParser();
+
+        var exception = Record.Exception(() =>
+        {
+            var isValid = parser.TryParse("BADOBJ>APRS:;SHORT", ReceivedAtUtc, out var packet, out var error);
+
+            var objectPacket = Assert.IsType<ObjectAprsPacket>(packet);
+            Assert.False(isValid);
+            Assert.False(objectPacket.IsValid);
+            Assert.Equal("SHORT", objectPacket.ObjectName);
+            Assert.Contains("Object name is missing or incomplete.", objectPacket.ValidationErrors);
+            Assert.Contains("Object live/killed indicator is missing.", objectPacket.ValidationErrors);
+            Assert.Contains("Object timestamp is missing or incomplete.", objectPacket.ValidationErrors);
+            Assert.Contains("Object position latitude is missing or incomplete.", objectPacket.ValidationErrors);
+            Assert.Equal("Object name is missing or incomplete.", error);
+        });
+
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void TryParse_ReturnsValidationErrors_ForMalformedItem()
+    {
+        var parser = new AprsParser();
+
+        var exception = Record.Exception(() =>
+        {
+            var isValid = parser.TryParse("BADITEM>APRS:)BADITEM", ReceivedAtUtc, out var packet, out var error);
+
+            var itemPacket = Assert.IsType<ItemAprsPacket>(packet);
+            Assert.False(isValid);
+            Assert.False(itemPacket.IsValid);
+            Assert.Equal("BADITEM", itemPacket.ItemName);
+            Assert.Contains("Item position separator is missing.", itemPacket.ValidationErrors);
+            Assert.Contains("Item position latitude is missing or incomplete.", itemPacket.ValidationErrors);
+            Assert.Equal("Item position separator is missing.", error);
+        });
+
+        Assert.Null(exception);
+    }
 }

@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Aprs.Desktop.Views.PacketMonitorView">
+  <Grid RowDefinitions="Auto,*"
+        Margin="0,10,0,0">
+    <StackPanel Grid.Row="0"
+                Margin="0,0,0,12">
+      <TextBlock Text="Raw Packet Monitor"
+                 FontSize="24"
+                 FontWeight="SemiBold" />
+      <TextBlock Text="Incoming APRS packet lines"
+                 Foreground="#526173" />
+    </StackPanel>
+    <Border Grid.Row="1"
+            BorderBrush="#CBD5E1"
+            BorderThickness="1"
+            CornerRadius="6"
+            Background="#F8FAFC">
+      <TextBlock Text="Raw packet traffic will appear here."
+                 HorizontalAlignment="Center"
+                 VerticalAlignment="Center"
+                 Foreground="#526173" />
+    </Border>
+  </Grid>
+</UserControl>

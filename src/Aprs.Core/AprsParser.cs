@@ -5,6 +5,7 @@ public sealed class AprsParser : IAprsParser
     private readonly AprsPositionParser positionParser = new();
     private readonly AprsTelemetryParser telemetryParser = new();
     private readonly AprsMessageParser messageParser = new();
+    private readonly AprsObjectItemParser objectItemParser = new();
 
     public bool TryParse(string rawLine, DateTimeOffset receivedAtUtc, out AprsPacket? packet, out string? error)
     {
@@ -117,6 +118,11 @@ public sealed class AprsParser : IAprsParser
         if (messageParser.CanParse(rawPacket.Information))
         {
             return messageParser.Parse(rawPacket);
+        }
+
+        if (objectItemParser.CanParse(rawPacket.Information))
+        {
+            return objectItemParser.Parse(rawPacket);
         }
 
         if (rawPacket.Information.StartsWith('?'))
