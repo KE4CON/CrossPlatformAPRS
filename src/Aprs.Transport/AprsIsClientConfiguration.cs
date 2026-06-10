@@ -23,4 +23,15 @@ public sealed record AprsIsClientConfiguration(
         ReconnectEnabled: true,
         ReconnectDelay: TimeSpan.FromSeconds(10),
         ReceiveOnly: true);
+
+    public AprsIsClientConfiguration WithServer(AprsIsServerDefinition server)
+    {
+        ArgumentNullException.ThrowIfNull(server);
+
+        return this with
+        {
+            ServerHost = server.HostName,
+            ServerPort = server.Port
+        };
+    }
 }
