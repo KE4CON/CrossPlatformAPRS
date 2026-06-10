@@ -697,4 +697,105 @@ public sealed class AprsParserTests
 
         Assert.Null(exception);
     }
+
+    [Fact]
+    public void TryParse_ReturnsWeatherPacket_ForPositionWeather()
+    {
+        var parser = new AprsParser();
+
+        var isValid = parser.TryParse(
+            "WX9XYZ>APRS:!3903.50N/08430.50W_180/005g010t072r000p000P000h50b10132",
+            ReceivedAtUtc,
+            out var packet,
+            out var error);
+
+        var weatherPacket = Assert.IsType<WeatherAprsPacket>(packet);
+        Assert.True(isValid);
+        Assert.True(weatherPacket.IsValid);
+        Assert.Null(error);
+        Assert.Equal(39.058333, weatherPacket.Latitude!.Value, 6);
+        Assert.Equal(-84.508333, weatherPacket.Longitude!.Value, 6);
+        Assert.Equal('/', weatherPacket.SymbolTableIdentifier);
+        Assert.Equal('_', weatherPacket.SymbolCode);
+        Assert.Null(weatherPacket.Timestamp);
+        Assert.Equal("180/005g010t072r000p000P000h50b10132", weatherPacket.RawWeatherBody);
+        Assert.Equal(180, weatherPacket.WindDirectionDegrees);
+        Assert.Equal(5, weatherPacket.WindSpeedMph);
+        Assert.Equal(10, weatherPacket.WindGustMph);
+        Assert.Equal(72, weatherPacket.TemperatureFahrenheit);
+        Assert.Equal(0, weatherPacket.RainLastHourHundredthsInch);
+        Assert.Equal(0, weatherPacket.RainLast24HoursHundredthsInch);
+        Assert.Equal(0, weatherPacket.RainSinceMidnightHundredthsInch);
+        Assert.Equal(50, weatherPacket.HumidityPercent);
+        Assert.Equal(1013.2, weatherPacket.BarometricPressureMillibars);
+        Assert.Equal(string.Empty, weatherPacket.Comment);
+    }
+
+    [Fact]
+    public void TryParse_ReturnsWeatherPacket_ForWeatherWithoutPosition()
+    {
+        var parser = new AprsParser();
+
+        var isValid = parser.TryParse(
+            "WX9XYZ>APRS:_111111c180s005g010t072r000p000P000h50b10132",
+            ReceivedAtUtc,
+            out var packet,
+            out var error);
+
+        var weatherPacket = Assert.IsType<WeatherAprsPacket>(packet);
+        Assert.True(isValid);
+        Assert.True(weatherPacket.IsValid);
+        Assert.Null(error);
+        Assert.Null(weatherPacket.Latitude);
+        Assert.Null(weatherPacket.Longitude);
+        Assert.Equal("111111", weatherPacket.Timestamp);
+        Assert.Equal("c180s005g010t072r000p000P000h50b10132", weatherPacket.RawWeatherBody);
+        Assert.Equal(180, weatherPacket.WindDirectionDegrees);
+        Assert.Equal(5, weatherPacket.WindSpeedMph);
+        Assert.Equal(10, weatherPacket.WindGustMph);
+        Assert.Equal(72, weatherPacket.TemperatureFahrenheit);
+        Assert.Equal(50, weatherPacket.HumidityPercent);
+        Assert.Equal(1013.2, weatherPacket.BarometricPressureMillibars);
+    }
+
+    [Fact]
+    public void TryParse_PreservesWeatherCommentText()
+    {
+        var parser = new AprsParser();
+
+        var isValid = parser.TryParse(
+            "WX9XYZ>APRS:!3903.50N/08430.50W_180/005g010t072r000p000P000h50b10132Test weather station",
+            ReceivedAtUtc,
+            out var packet,
+            out var error);
+
+        var weatherPacket = Assert.IsType<WeatherAprsPacket>(packet);
+        Assert.True(isValid);
+        Assert.Null(error);
+        Assert.Equal("Test weather station", weatherPacket.Comment);
+        Assert.Equal("180/005g010t072r000p000P000h50b10132Test weather station", weatherPacket.RawWeatherBody);
+    }
+
+    [Theory]
+    [InlineData("BADWX>APRS:_badweather")]
+    [InlineData("BADWX2>APRS:!3903.50N/08430.50W_badweather")]
+    public void TryParse_ReturnsValidationErrors_ForMalformedWeather(string rawLine)
+    {
+        var parser = new AprsParser();
+
+        var exception = Record.Exception(() =>
+        {
+            var isValid = parser.TryParse(rawLine, ReceivedAtUtc, out var packet, out var error);
+
+            var weatherPacket = Assert.IsType<WeatherAprsPacket>(packet);
+            Assert.False(isValid);
+            Assert.False(weatherPacket.IsValid);
+            Assert.Equal("badweather", weatherPacket.RawWeatherBody);
+            Assert.Contains("Weather barometric pressure is invalid.", weatherPacket.ValidationErrors);
+            Assert.Contains("Weather packet contains no recognized weather fields.", weatherPacket.ValidationErrors);
+            Assert.Equal("Weather barometric pressure is invalid.", error);
+        });
+
+        Assert.Null(exception);
+    }
 }
