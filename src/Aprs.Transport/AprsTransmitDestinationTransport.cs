@@ -4,5 +4,6 @@ public enum AprsTransmitDestinationTransport
 {
     AprsIs,
     TcpKiss,
-    SerialKiss
+    SerialKiss,
+    Agwpe
 }
