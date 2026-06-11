@@ -26,4 +26,9 @@ public interface IBeaconScheduler
     /// Evaluates due scheduled beacons without requiring real-time delays.
     /// </summary>
     Task<BeaconNowResult?> TickAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Evaluates whether SmartBeaconing recommends a mobile beacon without transmitting.
+    /// </summary>
+    SmartBeaconingDecision EvaluateSmartBeaconing(MobilePositionInput currentPosition);
 }

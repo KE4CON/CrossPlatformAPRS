@@ -7,6 +7,7 @@ public sealed class BeaconScheduler : IBeaconScheduler
     private readonly ILocalStationProfileService profileService;
     private readonly IAprsBeaconFormatter beaconFormatter;
     private readonly IAprsIsClient aprsIsClient;
+    private readonly ISmartBeaconingDecisionService smartBeaconingDecisionService;
     private readonly IBeaconSchedulerClock clock;
     private BeaconSchedulerConfiguration configuration;
     private BeaconSchedulerState state;
@@ -16,13 +17,16 @@ public sealed class BeaconScheduler : IBeaconScheduler
         IAprsBeaconFormatter beaconFormatter,
         IAprsIsClient aprsIsClient,
         BeaconSchedulerConfiguration? configuration = null,
-        IBeaconSchedulerClock? clock = null)
+        IBeaconSchedulerClock? clock = null,
+        ISmartBeaconingDecisionService? smartBeaconingDecisionService = null)
     {
         this.profileService = profileService;
         this.beaconFormatter = beaconFormatter;
         this.aprsIsClient = aprsIsClient;
         this.configuration = configuration ?? BeaconSchedulerConfiguration.Default;
         this.clock = clock ?? new SystemBeaconSchedulerClock();
+        this.smartBeaconingDecisionService = smartBeaconingDecisionService
+            ?? new SmartBeaconingDecisionService(this.configuration.SmartBeaconing);
 
         state = new BeaconSchedulerState(
             this.configuration.SchedulerEnabled,
@@ -188,6 +192,11 @@ public sealed class BeaconScheduler : IBeaconScheduler
         }
 
         return await BeaconNowAsync(cancellationToken);
+    }
+
+    public SmartBeaconingDecision EvaluateSmartBeaconing(MobilePositionInput currentPosition)
+    {
+        return smartBeaconingDecisionService.Evaluate(currentPosition);
     }
 
     private BeaconSchedulerState CalculateNextBeaconTimes(BeaconSchedulerState currentState, DateTimeOffset now)
