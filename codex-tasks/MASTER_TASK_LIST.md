@@ -551,31 +551,362 @@ Acceptance criteria:
 
 ## Phase 10 — Weather
 
-### Task 10.1 — Weather station display
-Display APRS weather stations.
+Phase 10 is not only APRS weather display. It also includes local weather station input, common weather data normalization, APRS weather packet formatting, and safe optional weather beacon transmit.
 
-Features:
-- weather marker
-- weather details popup
-- last weather update
-- graph recent values later
+Design rules:
+- Prefer local/offline-capable weather sources when possible
+- Keep internet/cloud APIs optional
+- Never hardcode user credentials
+- Do not store credentials/tokens in plain text if avoidable
+- Keep all weather drivers modular so unsupported stations can be added later
+- Do not bundle vendor SDKs unless licensing is reviewed
+- Keep all weather transmit features disabled by default
+- Keep APRS-IS weather transmit and RF weather transmit separate
+- Never transmit stale weather data
+- Never transmit during unit tests
+
+### Task 10.1 — Weather Station Display
+Display APRS weather stations heard over APRS-IS/RF and display local weather station data if configured.
+
+Requirements:
+- Show weather station marker on map
+- Show weather details panel
+- Show wind direction
+- Show wind speed
+- Show wind gust
+- Show temperature
+- Show rain last hour
+- Show rain last 24 hours
+- Show rain since midnight
+- Show humidity
+- Show barometric pressure
+- Show luminosity/solar if available
+- Show snow if available
+- Show lightning/event information as display/log data if available
+- Show weather source
+- Show last update time
+- Show stale-data warning
+- Do not transmit weather packets in this task
 
 Acceptance criteria:
-- Weather packets update station state
+- APRS weather packets update station weather state
+- Local weather observations can be displayed if configured
+- Missing optional fields display safely
+- Stale weather data is visibly indicated
+- No weather packet is transmitted
 
-### Task 10.2 — Local WX beacon support
-Add optional local weather beaconing.
+### Task 10.2 — Common Weather Data Model and APRS Weather Formatter
+Create one common internal weather observation model that all weather station drivers use.
 
-Features:
-- manual weather input
-- file/API input plugin later
-- APRS-IS interval
-- RF interval
+Weather model should support:
+- source name
+- source type
+- station/device ID
+- timestamp
+- latitude
+- longitude
+- wind direction
+- wind speed
+- wind gust
+- temperature
+- rain last hour
+- rain last 24 hours
+- rain since midnight
+- humidity
+- barometric pressure
+- luminosity/solar radiation if available
+- UV if available
+- snow if available
+- lightning count/distance if available
+- battery/status/diagnostic fields if available
+- raw source payload if available
+- stale-data state
+- validation errors/warnings
+
+APRS weather formatter should:
+- convert the common weather model into APRS weather packets
+- support position + weather format
+- support weather report without position where appropriate
+- reject stale data
+- reject invalid weather values
+- reject missing required fields
+- generate a packet preview
+- not transmit anything in this task
+
+Acceptance criteria:
+- Common weather observations normalize data from APRS and future local station drivers
+- APRS weather packet preview can be generated from valid observations
+- Stale, invalid, or incomplete observations are rejected with clear validation errors
+- Unit tests cover formatting and validation
+
+### Task 10.3 — Weather Station Input Driver Framework
+Create a plugin/driver-style framework for local and network weather station inputs.
+
+Driver framework should support:
+- manual weather entry
+- file-based weather data import
+- serial weather station input
+- USB weather station input
+- TCP/UDP network weather station input
+- HTTP/REST weather station input
+- WebSocket weather station input
+- weather software file formats
+- weather software local web/API outputs
+- simulated weather source for testing
+
+Driver framework should include:
+- driver name
+- driver type
+- enabled flag
+- connection status
+- last observation
+- last error
+- stale-data threshold
+- validation result
+- start/stop methods
+- configuration model
+- unit-testable parser methods
+- no real hardware required for tests
+
+Acceptance criteria:
+- Weather drivers share a common interface/configuration shape
+- Drivers can be started/stopped and report status
+- Parser methods can be unit tested without hardware or internet
+- No weather packets are transmitted
+
+### Task 10.3A — WeatherFlow Tempest Local UDP Driver
+Support WeatherFlow Tempest local UDP broadcast.
+
+Requirements:
+- Listen for local UDP broadcast packets from the Tempest hub
+- Default UDP port 50222
+- Parse Tempest UDP JSON messages
+- Support `obs_st` station observations
+- Support `rapid_wind` where practical
+- Support `evt_precip` rain start events where practical
+- Support `evt_strike` lightning events as display/log data first
+- Support `device_status` and `hub_status` for diagnostics
+- Convert Tempest data into the common weather observation model
+- Work without internet when the Tempest hub and computer are on the same LAN/subnet
+- Do not require a Tempest cloud API token for local UDP mode
+- Do not transmit weather packets automatically
+- Add unit tests using sample Tempest UDP JSON messages
+- Do not require an actual Tempest station for tests
+
+Tempest mapping should include:
+- wind direction
+- wind speed
+- wind gust
+- air temperature
+- relative humidity
+- barometric pressure
+- rain accumulation where available
+- solar radiation / illuminance where available
+- UV where available
+- lightning event count/distance where available
+- station timestamp
+- device serial number
+- hub serial number
+- device/hub status
+
+Acceptance criteria:
+- Sample Tempest UDP JSON payloads parse into common weather observations
+- Local UDP mode does not require internet or cloud tokens
+- Lightning and status events are preserved for display/logging
+- No weather packets are transmitted
+
+### Task 10.3B — WeatherFlow Tempest Cloud API Driver
+Support optional internet-based Tempest data access.
+
+Requirements:
+- Optional feature
+- Requires internet
+- Requires user-provided API token/access token
+- Supports remote stations where allowed by the API
+- Supports REST current observations where practical
+- Supports WebSocket real-time observations where practical
+- Never stores access token in plain text if avoidable
+- Local UDP mode remains preferred for offline operation
+- Do not require live cloud access for tests
+- Use fake HTTP/WebSocket services in tests
+
+Acceptance criteria:
+- Fake REST/WebSocket services can feed sample Tempest cloud observations
+- Missing credentials block cloud access with clear validation errors
+- Tokens are not hardcoded or stored in plain text if avoidable
+
+### Task 10.3C — Peet Bros / Peet Brothers ULTIMETER Driver
+Support Peet Bros ULTIMETER APRS-ready weather stations.
+
+Requirements:
+- Support serial WeatherText-style data where practical
+- Support common ULTIMETER models where practical, including ULTIMETER 800, 2100, and related models
+- Support 2400/9600 baud options where configurable
+- Parse available weather fields into the common weather observation model
+- Support direct APRS-ready output recognition where practical
+- Support serial-port configuration
+- Do not require real Peet Bros hardware for tests
+- Use sample serial data strings in tests
+- Preserve raw serial payload for troubleshooting
+- Do not transmit weather packets automatically
+
+Acceptance criteria:
+- Sample Peet Bros serial payloads parse without hardware
+- Raw serial payloads are preserved for diagnostics
+- APRS-ready output can be recognized where practical
+- No weather packets are transmitted
+
+### Task 10.3D — Davis Weather Driver
+Support Davis weather stations and WeatherLink-based setups.
+
+Requirements:
+- Support WeatherLink v2 API as optional internet/cloud mode
+- Support user-provided API credentials/tokens/keys
+- Support WeatherLink.com-connected stations where authorized
+- Support local serial/IP data logger support where practical if documentation and access are available
+- Support Davis Vantage Vue and Vantage Pro2-style data through WeatherLink where practical
+- Convert Davis observation fields into the common weather observation model
+- Do not require live WeatherLink access for tests
+- Use fake HTTP services and sample payloads in tests
+- Never store credentials in plain text if avoidable
+- Do not transmit weather packets automatically
+
+Acceptance criteria:
+- Sample Davis/WeatherLink payloads normalize into the common weather model
+- Fake HTTP services cover cloud behavior
+- Missing credentials block cloud access safely
+- No weather packets are transmitted
+
+### Task 10.3E — Ambient Weather Driver
+Support Ambient Weather stations.
+
+Requirements:
+- Support Ambient Weather network/API style data where practical
+- Support local/network data if available from compatible devices
+- Use user-provided API credentials where required
+- Convert data into common weather model
+- Do not require live Ambient Weather access for tests
+- Use fake HTTP/sample payloads in tests
+- Do not transmit automatically
+
+Acceptance criteria:
+- Sample Ambient Weather payloads normalize into the common weather model
+- API credentials are not hardcoded
+- Tests do not require live Ambient Weather access
+
+### Task 10.3F — Ecowitt / Fine Offset / GW1000-compatible Driver
+Support common Ecowitt/Fine Offset/GW1000-style stations.
+
+Requirements:
+- Support local network gateway data where practical
+- Support HTTP/custom upload receiver style integration where practical
+- Convert observations into common weather model
+- Support extra sensors where practical as optional data
+- Do not require real hardware for tests
+- Do not transmit automatically
+
+Acceptance criteria:
+- Sample Ecowitt/Fine Offset/GW1000 payloads normalize into the common weather model
+- Extra sensors are preserved as optional data where practical
+- Tests do not require hardware
+
+### Task 10.3G — Cumulus MX / WeeWX / Weather Display / Weather Software File Driver
+Support weather station software that can already talk to many hardware stations.
+
+Requirements:
+- Support file-based imports such as `realtime.txt`-style outputs where practical
+- Support JSON/CSV/text weather data files
+- Support local HTTP endpoint polling where practical
+- Support Cumulus MX, WeeWX, Weather Display, and similar software as integration targets
+- Allow user-configurable field mapping if practical
+- Detect stale files/data
+- Preserve raw input for diagnostics
+- Do not require the actual software for tests
+- Use sample files/payloads in tests
+- Do not transmit automatically
+
+Acceptance criteria:
+- Sample realtime.txt, JSON, CSV, and text payloads can be parsed
+- Stale files/data are detected
+- Raw inputs are preserved for diagnostics
+- Tests do not require weather station software
+
+### Task 10.4 — Local Weather Beacon and APRS Weather Transmit Scheduler
+Safely transmit local weather station data as APRS weather packets over APRS-IS and/or RF only when explicitly enabled.
+
+Safety requirements:
+- disabled by default
+- APRS-IS weather transmit and RF weather transmit are separate settings
+- stale weather data must not be transmitted
+- invalid weather values must be rejected
+- station profile/callsign must be valid
+- weather source must be selected and valid
+- transmit interval must have safe minimum limits
+- all transmitted weather packets must be logged
+- packet preview must be available before enabling transmit
+- no live transmit during tests
+- must use existing APRS-IS/RF transmit safety interfaces
+- must not bypass global transmit safety settings
+
+Acceptance criteria:
+- Weather beaconing remains disabled by default
+- APRS-IS and RF weather transmit can be configured separately
+- Scheduler refuses stale, invalid, or unsafe observations
+- Tests use fake transmit services only
+
+### Task 10.5 — Weather Station Setup UI
+Add a UI page for configuring weather station input and weather beacon transmit settings.
+
+UI should include:
+- weather source type selector
+- source-specific settings panel
+- Tempest UDP settings
+- Tempest cloud settings
+- Peet Bros serial settings
+- Davis WeatherLink settings
+- Ambient Weather settings
+- Ecowitt/Fine Offset/GW1000 settings
+- weather software file/import settings
+- manual weather entry option
+- data preview
+- raw payload preview
+- last update time
 - stale data warning
+- diagnostics/status
+- APRS weather packet preview
+- APRS-IS weather transmit enable
+- RF weather transmit enable
+- transmit interval
+- manual preview button
+- manual test transmit button that requires explicit confirmation and respects all safety settings
 
 Acceptance criteria:
-- WX transmit disabled by default
-- Stale weather does not transmit without warning
+- Weather source settings are modular and source-specific
+- Packet preview is available without transmit
+- Manual test transmit requires explicit confirmation and respects all safety settings
+- No weather transmit is enabled by default
+
+### Task 10.6 — Weather Driver Tests and Sample Data
+Add a test/sample-data structure for weather station drivers.
+
+Requirements:
+- sample Tempest UDP JSON payloads
+- sample Peet Bros serial payloads
+- sample Davis WeatherLink payloads
+- sample Ambient Weather payloads
+- sample Ecowitt/Fine Offset/GW1000 payloads
+- sample realtime.txt / JSON / CSV weather software files
+- parser tests for each supported source
+- common weather model normalization tests
+- APRS weather packet formatting tests
+- stale data tests
+- invalid data tests
+- no tests should require real hardware, live internet, or real credentials
+
+Acceptance criteria:
+- Weather sample data is organized by source type
+- Driver parser tests run fully offline
+- Normalization, formatting, stale-data, and invalid-data tests cover the common model
 
 ---
 
