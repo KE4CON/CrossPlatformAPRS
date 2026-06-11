@@ -2,6 +2,17 @@
 
 Use this as the project backlog. Give Codex one task at a time. Do not ask Codex to build the whole app in one prompt.
 
+## Cross-cutting architecture rules
+
+These rules apply to all phases, including future refactors:
+- Add source tagging to all persisted/runtime data models that represent received, generated, imported, replayed, simulated, or transmitted data.
+- Keep internal domain models separate from future public DTOs/contracts. Internal models may evolve for app behavior; public contracts must be explicit, versionable, and mapped through adapters.
+- Keep transmit safety centralized. APRS-IS, RF/TNC, object, message, beacon, and weather transmit flows must go through shared safety gates rather than each feature inventing its own checks.
+- Keep weather, GPS, APRS-IS, RF/TNC, replay, simulation, and future inputs modular behind driver/service abstractions.
+- Avoid hardwiring services directly into UI views. UI should consume view models and application services so inputs/transports can be swapped, tested, or run headless later.
+- Current phases must keep data models modular, tag all incoming packet/weather/GPS/import data with source information, keep transmit safety centralized, and avoid tightly coupling UI directly to packet/weather/GPS input sources.
+- Future extension surfaces must use stable contracts/adapters rather than exposing mutable internal models directly.
+
 ## Phase 0 — Repository and build foundation
 
 ### Task 0.1 — Create solution structure
@@ -1074,3 +1085,297 @@ Create user documentation for:
 - maps
 - beacon safety
 - iGate/digipeater safety
+
+---
+
+## Phase 16 — Extension Hooks, Local API, and Architecture Boundaries
+
+Phase 16 prepares the application for long-term maintainability, extension hooks, local API access, WebSocket event streaming, import/export workflows, public DTO boundaries, plugin/driver support, and safer integration of multiple data sources and transmit paths.
+
+### Task 16.1 — Source Tagging Audit
+Audit and update all runtime data models so source/origin metadata is preserved consistently.
+
+Models to review include:
+- station snapshots
+- station trails
+- packet logs
+- decoded event logs
+- APRS messages
+- bulletins/announcements/queries
+- objects/items
+- weather observations
+- GPS fixes
+- beacon decisions
+- transmit logs/results
+- replay/simulation events
+- map markers and UI row view models where source display is needed
+
+Source tagging should include where practical:
+- source type
+- source ID/port ID/driver ID
+- source display name
+- transport/origin such as APRS-IS, RF, TCP KISS, Serial KISS, Direwolf, AGWPE, gpsd, NMEA, weather driver, replay, simulation, manual, or unknown
+- received/generated timestamp
+- raw source reference or payload where useful for diagnostics
+
+Acceptance criteria:
+- No received/generated domain record loses source identity.
+- Station, weather, GPS, message, object, and log records can display or export source information.
+- Existing tests still pass and new tests verify source preservation.
+
+### Task 16.2 — Internal Model vs Public DTO Boundary
+Create a clear boundary between internal app models and future public/export/API DTOs.
+
+Requirements:
+- Keep current domain/service models internal to app architecture where possible.
+- Add public DTO/contract models only in an explicit contracts/export layer when needed.
+- Add mapping/adapters between internal models and public DTOs.
+- Avoid exposing mutable internal service models directly as public contracts.
+- Prepare versioning strategy for future plugin/API/export contracts.
+
+Acceptance criteria:
+- Public DTOs are not the same types as mutable/internal domain models.
+- Mapping tests cover representative station, weather, GPS, object, message, and log records.
+- Future plugins/importers can target stable contracts without binding to UI or service internals.
+
+### Task 16.3 — Centralized Transmit Safety Service
+Consolidate transmit safety into a shared service/policy layer.
+
+Transmit flows covered:
+- APRS-IS packets
+- RF/TNC packets
+- manual beacons
+- scheduled beacons
+- SmartBeaconing
+- APRS messages
+- objects/items
+- weather beacons
+- iGate/digipeater functions
+
+Safety policy should enforce:
+- transmit disabled by default
+- global transmit safety gate
+- APRS-IS transmit separate from RF transmit
+- per-port transmit enable
+- connected-port requirement
+- valid local station profile/callsign
+- stale data rejection where applicable
+- interval/rate limits
+- explicit confirmation for manual test transmit actions
+- replay/training-mode transmit lockout
+- logging of allowed and blocked transmit attempts
+
+Acceptance criteria:
+- Feature-specific transmit code calls the shared safety service.
+- Unit tests cover allowed, blocked, stale, disconnected, replay, and confirmation-required cases.
+- No feature bypasses global or per-port transmit gates.
+
+### Task 16.4 — Modular Input Driver Registry
+Create or refine a registry/factory model for APRS, weather, GPS, replay, and simulation inputs.
+
+Input families:
+- APRS-IS
+- TCP KISS
+- Serial KISS
+- Direwolf
+- AGWPE
+- NMEA GPS
+- gpsd
+- weather station drivers
+- file import
+- replay
+- simulation
+- manual entry
+
+Registry behavior:
+- discover/register available drivers
+- expose driver metadata and configuration schema where practical
+- start/stop drivers through common lifecycle methods
+- report connection/status/health
+- publish normalized events to services
+- allow fake drivers in tests
+
+Acceptance criteria:
+- UI and services can enumerate input sources without hardcoding concrete drivers.
+- Tests can register fake drivers and verify lifecycle/status/event flow.
+- No hardware, internet, or credentials are required for tests.
+
+### Task 16.5 — UI Decoupling and Application Service Composition
+Refactor any direct UI-to-transport or UI-to-parser coupling into application services/view models.
+
+Requirements:
+- Views should bind to view models only.
+- View models should depend on service abstractions rather than concrete transport implementations where practical.
+- Long-running driver/client lifecycles should be owned by application services, not views.
+- UI screens should remain modular and movable.
+- Headless tests should exercise app behavior without launching Avalonia.
+
+Acceptance criteria:
+- Major UI sections remain separate views/components.
+- No view starts raw transport/network/serial work directly.
+- View model tests cover source selection, status display, and command safety behavior.
+
+### Task 16.6 — Architecture Documentation and Enforcement Tests
+Document and test architectural boundaries.
+
+Documentation should cover:
+- project responsibilities
+- source tagging strategy
+- internal model vs public DTO strategy
+- transmit safety flow
+- input driver lifecycle
+- UI composition rules
+
+Tests/checks should cover where practical:
+- no UI references from Core/Services/Transport/Mapping
+- no transport references from Core
+- no transmit path without centralized safety result
+- DTO mapping behavior
+- source tagging behavior
+
+Acceptance criteria:
+- Architecture docs are current.
+- Boundary tests or lightweight checks catch obvious layering violations.
+- Existing build/test suite remains green.
+
+### Task 16.7 — Extension Hook Registry
+Create a safe extension hook system for app events and integration points.
+
+Hook categories:
+- packet received
+- packet parsed
+- station updated
+- object/item updated
+- message received/sent/acknowledged
+- weather observation updated
+- GPS fix updated
+- port connection state changed
+- beacon generated
+- transmit requested/allowed/blocked
+- replay started/stopped
+- import/export completed
+
+Requirements:
+- Hooks use stable event contracts/DTOs, not mutable internal models.
+- Hook payloads include source tags and timestamps.
+- Hooks must not bypass transmit safety.
+- Hooks must not run directly on UI views.
+- Hook failures should be isolated and logged.
+- Hooks should be testable without external plugins.
+
+Acceptance criteria:
+- Extension hooks can be registered/unregistered through service abstractions.
+- Hook events include source metadata.
+- Tests verify hook isolation, ordering where important, and safety behavior.
+
+### Task 16.8 — Local API Foundation
+Add a local-only API foundation for status, diagnostics, and future integrations.
+
+API areas:
+- app health/status
+- port/source status
+- station list/details
+- object/item list/details
+- message summaries
+- weather observations
+- GPS status
+- packet logs
+- replay state
+- transmit safety status
+
+Requirements:
+- Disabled by default unless explicitly enabled.
+- Bind to loopback/local interfaces by default.
+- Use public DTO/contracts only.
+- Never expose credentials or secrets.
+- Do not expose unsafe transmit endpoints without centralized safety checks and explicit enablement.
+- Include versioned route/contract planning.
+
+Acceptance criteria:
+- Local API design documents endpoints and DTO boundaries.
+- Tests can exercise API handlers without live network dependencies where practical.
+- Transmit-related API calls route through centralized safety policy.
+
+### Task 16.9 — WebSocket Event Stream
+Add a WebSocket event stream design/foundation for local dashboards and integrations.
+
+Event stream should support:
+- packet events
+- station updates
+- object/item updates
+- message events
+- weather updates
+- GPS updates
+- port status updates
+- alert events
+- replay/training events
+- transmit safety events
+
+Requirements:
+- Disabled by default unless local API/event streaming is enabled.
+- Uses stable event DTOs with source tags.
+- Supports subscription/filtering where practical.
+- Does not expose mutable internal models.
+- Applies rate limiting/backpressure where practical.
+- Does not bypass transmit safety.
+
+Acceptance criteria:
+- WebSocket event contracts are versionable.
+- Tests verify event serialization and source metadata.
+- UI is not hardwired directly to the WebSocket implementation.
+
+### Task 16.10 — File Import/Export Framework
+Create a unified file import/export framework.
+
+Import/export targets:
+- raw APRS packet logs
+- decoded event logs
+- station lists
+- station trails
+- object/item data
+- messages/bulletins/queries
+- weather observations
+- GPS tracks/fixes
+- tactical labels
+- settings/profile backup
+- replay files
+
+Requirements:
+- Imported records are source-tagged as file/import/replay as appropriate.
+- Importers validate data and preserve raw payloads where useful.
+- Exporters use public DTO/contracts or explicit export models.
+- Do not import credentials from unsafe/plain text files without warnings.
+- No import path should trigger transmit automatically.
+- File parsing should be testable with sample files.
+
+Acceptance criteria:
+- Import/export framework can register file handlers.
+- Sample import/export tests run offline.
+- Imported data source tags are preserved through station/weather/GPS/message services.
+
+### Task 16.11 — Plugin and Driver Support Foundation
+Create a plugin/driver support foundation for future optional integrations.
+
+Plugin/driver areas:
+- APRS input transports
+- weather station drivers
+- GPS providers
+- file import/export handlers
+- map providers
+- alert notifiers
+- diagnostics exporters
+- simulation sources
+
+Requirements:
+- Plugins/drivers use explicit contracts and capability metadata.
+- Drivers declare permissions/capabilities such as network, serial, file, GPS, weather, transmit-request, or read-only.
+- Transmit-capable drivers cannot bypass centralized safety.
+- Drivers report lifecycle state, health, errors, and source identity.
+- Tests use fake plugins/drivers and do not require external hardware or services.
+- Licensing and trust boundaries are documented before third-party plugin loading is enabled.
+
+Acceptance criteria:
+- Plugin/driver registry can enumerate capabilities without instantiating UI views.
+- Fake drivers can publish normalized events with source tags.
+- Transmit requests from drivers route through centralized safety policy.
+- Unsupported drivers can be added later without rewriting UI or core services.

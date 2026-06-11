@@ -17,6 +17,7 @@ Build a modern amateur-radio APRS application with:
 - Weather packet support
 - Offline map cache
 - Logs, replay, and diagnostics
+- Extension hooks, local API, WebSocket events, file import/export, and plugin/driver support
 - Cross-platform desktop UI using Avalonia
 
 ## Architecture rules
@@ -29,6 +30,12 @@ Build a modern amateur-radio APRS application with:
 - Keep unit tests in `tests/Aprs.Tests`.
 - Do not put serial-port, TCP, file-system, or UI dependencies in `Aprs.Core`.
 - Prefer interfaces and dependency injection for services.
+- Add source tagging to all data models that represent received, generated, imported, replayed, simulated, or transmitted data.
+- Keep internal domain models separate from future public DTOs/contracts; use explicit mapping/adapters for public/export/API boundaries.
+- Keep transmit safety centralized so all APRS-IS, RF/TNC, beacon, object, message, weather, iGate, and digipeater transmit flows share the same safety gates.
+- Keep weather, GPS, APRS, replay, simulation, and future input sources modular behind driver/service abstractions.
+- Avoid hardwiring transports, parsers, or services directly into UI views; use view models and service abstractions.
+- Current feature phases should preserve modular data models, source-tag incoming data, centralize transmit safety, and avoid tight UI coupling to packet/weather/GPS input sources even before Phase 16 formalizes extension boundaries.
 - Write tests for parser, message ACK handling, object handling, station expiration, and beacon scheduling.
 - Do not transmit RF by default. Any RF transmit feature must require explicit user configuration.
 - Add safety warnings for high beacon rates, bad paths, and RF transmit enablement.
