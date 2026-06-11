@@ -44,6 +44,7 @@ public sealed class GpsService : IGpsService
             CurrentPosition = CurrentPosition with
             {
                 SatelliteCount = report.UsedSatelliteCount ?? report.SatelliteCount ?? CurrentPosition.SatelliteCount,
+                UsedSatelliteCount = report.UsedSatelliteCount ?? CurrentPosition.UsedSatelliteCount,
                 Hdop = report.Hdop ?? CurrentPosition.Hdop,
                 SourceName = sourceName,
                 RawNmeaSentence = report.RawJson,
@@ -77,6 +78,9 @@ public sealed class GpsService : IGpsService
             update.Hdop ?? current.Hdop,
             update.SourceName,
             update.RawNmeaSentence,
-            update.LastUpdateUtc);
+            update.LastUpdateUtc)
+        {
+            UsedSatelliteCount = update.UsedSatelliteCount ?? current.UsedSatelliteCount
+        };
     }
 }

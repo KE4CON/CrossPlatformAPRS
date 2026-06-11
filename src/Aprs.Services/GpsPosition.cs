@@ -15,6 +15,8 @@ public sealed record GpsPosition(
     string RawNmeaSentence,
     DateTimeOffset LastUpdateUtc)
 {
+    public int? UsedSatelliteCount { get; init; }
+
     public MobilePositionInput ToMobilePositionInput()
     {
         return new MobilePositionInput(

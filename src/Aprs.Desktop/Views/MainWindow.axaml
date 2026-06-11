@@ -75,7 +75,7 @@
           <views:WeatherView />
         </TabItem>
         <TabItem Header="Settings">
-          <views:SettingsView />
+          <views:SettingsView DataContext="{Binding}" />
         </TabItem>
       </TabControl>
     </Grid>

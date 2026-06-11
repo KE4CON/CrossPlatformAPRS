@@ -22,6 +22,15 @@
           <views:StationSetupView />
         </Border>
       </TabItem>
+      <TabItem Header="GPS">
+        <Border BorderBrush="#CBD5E1"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="12"
+                Background="#F8FAFC">
+          <views:GpsStatusView DataContext="{Binding GpsStatus}" />
+        </Border>
+      </TabItem>
       <TabItem Header="Offline Maps">
         <Border BorderBrush="#CBD5E1"
                 BorderThickness="1"
