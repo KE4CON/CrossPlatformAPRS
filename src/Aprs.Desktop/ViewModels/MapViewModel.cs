@@ -12,14 +12,32 @@ public sealed class MapViewModel : INotifyPropertyChanged
     private StationDetailsViewModel? selectedStationDetails;
 
     public MapViewModel(IEnumerable<StationMarker> markers)
+        : this(markers, MapTileCacheConfiguration.Default, CreateDefaultProvider())
+    {
+    }
+
+    public MapViewModel(
+        IEnumerable<StationMarker> markers,
+        MapTileCacheConfiguration tileCacheConfiguration,
+        MapTileProviderDefinition tileProvider)
     {
         Markers = new ObservableCollection<StationMarkerViewModel>(
             markers.Select(marker => new StationMarkerViewModel(marker)));
+        TileCacheConfiguration = tileCacheConfiguration;
+        TileProvider = tileProvider;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ObservableCollection<StationMarkerViewModel> Markers { get; }
+
+    public MapTileCacheConfiguration TileCacheConfiguration { get; }
+
+    public MapTileProviderDefinition TileProvider { get; }
+
+    public bool TileCacheEnabled => TileCacheConfiguration.CacheEnabled;
+
+    public bool InternetTileDownloadAllowed => TileCacheConfiguration.AllowInternetTileDownload && TileProvider.InternetDownloadAllowed;
 
     public StationMarkerViewModel? SelectedStation
     {
@@ -131,5 +149,17 @@ public sealed class MapViewModel : INotifyPropertyChanged
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    private static MapTileProviderDefinition CreateDefaultProvider()
+    {
+        return new MapTileProviderDefinition(
+            Name: "SampleGrid",
+            UrlTemplate: string.Empty,
+            MinimumZoom: 0,
+            MaximumZoom: 18,
+            AttributionText: "Placeholder grid, no external map tiles loaded.",
+            SupportsOfflineCaching: true,
+            InternetDownloadAllowed: false);
     }
 }
