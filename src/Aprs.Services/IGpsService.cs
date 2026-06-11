@@ -18,6 +18,11 @@ public interface IGpsService
     NmeaParseResult AcceptSentence(string rawSentence, string sourceName = "NMEA", DateTimeOffset? receivedAtUtc = null);
 
     /// <summary>
+    /// Accepts one parsed gpsd report and merges useful GPS state when parsing succeeds.
+    /// </summary>
+    void AcceptGpsdReport(GpsdParseResult report, string sourceName = "gpsd", DateTimeOffset? receivedAtUtc = null);
+
+    /// <summary>
     /// Clears all GPS state.
     /// </summary>
     void Reset();

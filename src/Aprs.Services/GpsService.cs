@@ -26,6 +26,32 @@ public sealed class GpsService : IGpsService
         return result;
     }
 
+    public void AcceptGpsdReport(GpsdParseResult report, string sourceName = "gpsd", DateTimeOffset? receivedAtUtc = null)
+    {
+        if (!report.IsParsed)
+        {
+            return;
+        }
+
+        if (report.Position is not null)
+        {
+            CurrentPosition = Merge(CurrentPosition, report.Position);
+            return;
+        }
+
+        if (report.ReportType == GpsdReportType.Sky && CurrentPosition is not null)
+        {
+            CurrentPosition = CurrentPosition with
+            {
+                SatelliteCount = report.UsedSatelliteCount ?? report.SatelliteCount ?? CurrentPosition.SatelliteCount,
+                Hdop = report.Hdop ?? CurrentPosition.Hdop,
+                SourceName = sourceName,
+                RawNmeaSentence = report.RawJson,
+                LastUpdateUtc = receivedAtUtc ?? DateTimeOffset.UtcNow
+            };
+        }
+    }
+
     public void Reset()
     {
         CurrentPosition = null;
