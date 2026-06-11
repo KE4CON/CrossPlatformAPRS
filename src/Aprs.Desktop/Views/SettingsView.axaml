@@ -12,13 +12,25 @@
       <TextBlock Text="Connection and safety settings"
                  Foreground="#526173" />
     </StackPanel>
-    <Border Grid.Row="1"
-            BorderBrush="#CBD5E1"
-            BorderThickness="1"
-            CornerRadius="6"
-            Padding="12"
-            Background="#F8FAFC">
-      <views:OfflineMapManagerView />
-    </Border>
+    <TabControl Grid.Row="1">
+      <TabItem Header="Station">
+        <Border BorderBrush="#CBD5E1"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="12"
+                Background="#F8FAFC">
+          <views:StationSetupView />
+        </Border>
+      </TabItem>
+      <TabItem Header="Offline Maps">
+        <Border BorderBrush="#CBD5E1"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="12"
+                Background="#F8FAFC">
+          <views:OfflineMapManagerView />
+        </Border>
+      </TabItem>
+    </TabControl>
   </Grid>
 </UserControl>
