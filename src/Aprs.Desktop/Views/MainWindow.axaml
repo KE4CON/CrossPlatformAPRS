@@ -69,7 +69,7 @@
           <views:MessageCenterView DataContext="{Binding MessageCenter}" />
         </TabItem>
         <TabItem Header="Objects">
-          <views:ObjectManagerView />
+          <views:ObjectManagerView DataContext="{Binding ObjectManager}" />
         </TabItem>
         <TabItem Header="Weather">
           <views:WeatherView />
