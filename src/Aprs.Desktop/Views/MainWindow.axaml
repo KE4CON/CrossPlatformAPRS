@@ -72,7 +72,7 @@
           <views:ObjectManagerView DataContext="{Binding ObjectManager}" />
         </TabItem>
         <TabItem Header="Weather">
-          <views:WeatherView />
+          <views:WeatherView DataContext="{Binding Weather}" />
         </TabItem>
         <TabItem Header="Settings">
           <views:SettingsView DataContext="{Binding}" />

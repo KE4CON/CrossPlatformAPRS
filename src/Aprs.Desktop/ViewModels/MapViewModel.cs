@@ -11,6 +11,7 @@ public sealed class MapViewModel : INotifyPropertyChanged
     private StationMarkerViewModel? selectedStation;
     private StationDetailsViewModel? selectedStationDetails;
     private ObjectMarkerViewModel? selectedObject;
+    private WeatherStationMarkerViewModel? selectedWeather;
     private ObjectManagerViewModel? objectManager;
     private readonly IMapCoordinateConverter coordinateConverter;
 
@@ -36,6 +37,7 @@ public sealed class MapViewModel : INotifyPropertyChanged
         Markers = new ObservableCollection<StationMarkerViewModel>(
             markers.Select(marker => new StationMarkerViewModel(marker)));
         ObjectMarkers = [];
+        WeatherMarkers = [];
         TileCacheConfiguration = tileCacheConfiguration;
         TileProvider = tileProvider;
         this.coordinateConverter = coordinateConverter;
@@ -48,6 +50,8 @@ public sealed class MapViewModel : INotifyPropertyChanged
     public ObservableCollection<StationMarkerViewModel> Markers { get; }
 
     public ObservableCollection<ObjectMarkerViewModel> ObjectMarkers { get; }
+
+    public ObservableCollection<WeatherStationMarkerViewModel> WeatherMarkers { get; }
 
     public MapTileCacheConfiguration TileCacheConfiguration { get; }
 
@@ -85,7 +89,9 @@ public sealed class MapViewModel : INotifyPropertyChanged
 
     public int ObjectMarkerCount => ObjectMarkers.Count;
 
-    public int TotalMarkerCount => MarkerCount + ObjectMarkerCount;
+    public int WeatherMarkerCount => WeatherMarkers.Count;
+
+    public int TotalMarkerCount => MarkerCount + ObjectMarkerCount + WeatherMarkerCount;
 
     public bool IsCreateObjectMode { get; private set; }
 
@@ -109,6 +115,24 @@ public sealed class MapViewModel : INotifyPropertyChanged
 
     public bool HasSelectedObject => SelectedObject is not null;
 
+    public WeatherStationMarkerViewModel? SelectedWeather
+    {
+        get => selectedWeather;
+        private set
+        {
+            if (ReferenceEquals(selectedWeather, value))
+            {
+                return;
+            }
+
+            selectedWeather = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HasSelectedWeather));
+        }
+    }
+
+    public bool HasSelectedWeather => SelectedWeather is not null;
+
     public DesktopCommand BeginCreateObjectCommand { get; }
 
     public DesktopCommand ClearObjectSelectionCommand { get; }
@@ -119,7 +143,28 @@ public sealed class MapViewModel : INotifyPropertyChanged
         {
             SelectedStation = marker;
             SelectedObject = null;
+            SelectedWeather = null;
         }
+    }
+
+    public void LoadWeatherStations(IEnumerable<WeatherStationDisplayRecord> stations)
+    {
+        WeatherMarkers.Clear();
+        foreach (var marker in stations
+            .Select(station => WeatherStationMarker.TryCreate(station, out var marker) ? marker : null)
+            .OfType<WeatherStationMarker>())
+        {
+            WeatherMarkers.Add(new WeatherStationMarkerViewModel(marker));
+        }
+
+        if (SelectedWeather is not null && WeatherMarkers.FirstOrDefault(marker => string.Equals(marker.StationId, SelectedWeather.StationId, StringComparison.OrdinalIgnoreCase)) is { } refreshed)
+        {
+            SelectedWeather = refreshed;
+        }
+
+        OnPropertyChanged(nameof(WeatherMarkers));
+        OnPropertyChanged(nameof(WeatherMarkerCount));
+        OnPropertyChanged(nameof(TotalMarkerCount));
     }
 
     public void AttachObjectManager(ObjectManagerViewModel manager)
@@ -159,6 +204,7 @@ public sealed class MapViewModel : INotifyPropertyChanged
         }
 
         SelectedStation = null;
+        SelectedWeather = null;
         SelectedObject = marker;
         objectManager?.SelectObjectByName(marker.ObjectName);
         ObjectPlacementStatus = $"Selected object {marker.ObjectName}.";
@@ -168,7 +214,22 @@ public sealed class MapViewModel : INotifyPropertyChanged
     public void ClearObjectSelection()
     {
         SelectedObject = null;
+        SelectedWeather = null;
         ObjectPlacementStatus = "Object selection cleared.";
+        OnPropertyChanged(nameof(ObjectPlacementStatus));
+    }
+
+    public void SelectWeather(WeatherStationMarkerViewModel marker)
+    {
+        if (!WeatherMarkers.Contains(marker))
+        {
+            return;
+        }
+
+        SelectedStation = null;
+        SelectedObject = null;
+        SelectedWeather = marker;
+        ObjectPlacementStatus = $"Selected weather station {marker.DisplayName}.";
         OnPropertyChanged(nameof(ObjectPlacementStatus));
     }
 
@@ -237,6 +298,7 @@ public sealed class MapViewModel : INotifyPropertyChanged
     public void ClearSelection()
     {
         SelectedStation = null;
+        SelectedWeather = null;
         ClearObjectSelection();
     }
 
@@ -252,7 +314,7 @@ public sealed class MapViewModel : INotifyPropertyChanged
     public static MapViewModel CreateDesignTime()
     {
         var now = DateTimeOffset.UtcNow;
-        return new MapViewModel(
+        var viewModel = new MapViewModel(
         [
             StationMarker.Create(
                 "N0CALL",
@@ -306,6 +368,35 @@ public sealed class MapViewModel : INotifyPropertyChanged
                 lastRawPacket: "WX9XYZ>APRS:!3903.50N/08430.50W_180/005g010t072r000p000P000h50b10132",
                 packetCount: 7)
         ]);
+
+        viewModel.LoadWeatherStations([
+            new WeatherStationDisplayRecord(
+                "WX9XYZ",
+                "Weather WX9XYZ",
+                WeatherStationSourceType.AprsWeatherStation,
+                38.6270,
+                -90.1994,
+                180,
+                5,
+                10,
+                72,
+                0,
+                0,
+                0,
+                50,
+                1013.2,
+                null,
+                null,
+                null,
+                null,
+                now.AddMinutes(-12),
+                TimeSpan.FromMinutes(12),
+                WeatherDataState.Current,
+                "WX9XYZ>APRS:!3903.50N/08430.50W_180/005g010t072r000p000P000h50b10132",
+                WeatherStationOrigin.Simulation)
+        ]);
+
+        return viewModel;
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
