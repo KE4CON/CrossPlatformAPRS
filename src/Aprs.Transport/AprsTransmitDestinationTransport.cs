@@ -3,5 +3,6 @@ namespace Aprs.Transport;
 public enum AprsTransmitDestinationTransport
 {
     AprsIs,
-    TcpKiss
+    TcpKiss,
+    SerialKiss
 }
