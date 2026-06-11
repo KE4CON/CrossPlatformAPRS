@@ -31,6 +31,11 @@ public sealed class ObjectManagerViewModel
 
     public string StatusText { get; private set; } = "No object saved yet.";
 
+    public IReadOnlyList<AprsObjectState> GetObjectStates()
+    {
+        return objectManager.GetAllObjects();
+    }
+
     public DesktopCommand NewObjectCommand { get; }
 
     public DesktopCommand EditSelectedCommand { get; }
@@ -82,6 +87,62 @@ public sealed class ObjectManagerViewModel
 
         Editor.Load(model);
         StatusText = $"Editing {SelectedObject.Name}.";
+    }
+
+    public bool SelectObjectByName(string objectName)
+    {
+        var row = objects.FirstOrDefault(candidate => string.Equals(candidate.Name, objectName, StringComparison.OrdinalIgnoreCase));
+        if (row is null)
+        {
+            return false;
+        }
+
+        SelectedObject = row;
+        EditSelectedObject();
+        return true;
+    }
+
+    public void CreateObjectDraftAt(double latitude, double longitude)
+    {
+        var draft = editorService.CreateNewDraft(DateTimeOffset.UtcNow) with
+        {
+            Latitude = latitude,
+            Longitude = longitude
+        };
+        Editor.Load(draft);
+        Editor.Validate();
+        StatusText = $"Object draft placed at {latitude:0.0000}, {longitude:0.0000}.";
+    }
+
+    public bool MoveObjectTo(string objectName, double latitude, double longitude, bool adoptIfRemote = false)
+    {
+        var model = editorService.LoadForEditing(objectName, DateTimeOffset.UtcNow);
+        if (model is null)
+        {
+            StatusText = "Selected object was not found.";
+            return false;
+        }
+
+        if (!model.IsLocallyOwned && !model.IsAdopted && !adoptIfRemote)
+        {
+            Editor.Load(model);
+            Editor.Validate();
+            StatusText = "Remote-owned objects must be adopted before local movement.";
+            return false;
+        }
+
+        var moved = model with
+        {
+            Latitude = latitude,
+            Longitude = longitude,
+            IsAdopted = model.IsAdopted || adoptIfRemote
+        };
+        var result = editorService.Save(moved, DateTimeOffset.UtcNow);
+        Editor.Load(result.Model);
+        StatusText = result.IsSuccess ? $"Moved {objectName} locally." : string.Join("; ", result.Errors);
+        Refresh();
+        SelectObjectByName(objectName);
+        return result.IsSuccess;
     }
 
     public AprsObjectEditorSaveResult Save()

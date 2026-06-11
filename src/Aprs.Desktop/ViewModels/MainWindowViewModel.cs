@@ -16,6 +16,7 @@ public sealed class MainWindowViewModel
         GpsStatus = gpsStatus;
         MessageCenter = messageCenter;
         ObjectManager = objectManager;
+        Map.AttachObjectManager(ObjectManager);
     }
 
     public MapViewModel Map { get; }
