@@ -57,7 +57,8 @@
           ColumnSpacing="10">
       <views:MapView DataContext="{Binding Map}" />
 
-      <views:StationListView Grid.Column="1" />
+      <views:StationListView Grid.Column="1"
+                             DataContext="{Binding StationList}" />
 
       <views:PacketMonitorView Grid.Row="1"
                                Grid.Column="0" />

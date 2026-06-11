@@ -3,16 +3,43 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Aprs.Desktop.ViewModels;
 using Aprs.Services;
+using System.ComponentModel;
 
 namespace Aprs.Desktop.Views;
 
 public sealed partial class MapView : UserControl
 {
+    private MapViewModel? currentViewModel;
+
     public MapView()
     {
         InitializeComponent();
-        DataContextChanged += (_, _) => RenderMarkers();
+        DataContextChanged += (_, _) => AttachViewModel();
         SizeChanged += (_, _) => RenderMarkers();
+    }
+
+    private void AttachViewModel()
+    {
+        if (currentViewModel is not null)
+        {
+            currentViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+        }
+
+        currentViewModel = DataContext as MapViewModel;
+        if (currentViewModel is not null)
+        {
+            currentViewModel.PropertyChanged += ViewModel_PropertyChanged;
+        }
+
+        RenderMarkers();
+    }
+
+    private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(MapViewModel.SelectedStation) or nameof(MapViewModel.SelectedStationDetails) or nameof(MapViewModel.HasSelectedStation))
+        {
+            RenderMarkers();
+        }
     }
 
     private void RenderMarkers()
