@@ -133,8 +133,16 @@ public sealed partial class AprsMessageStoreService : IAprsMessageStoreService
             Direction = AprsMessageDirection.Outgoing,
             Status = AprsMessageStatus.Failed,
             LastUpdatedAtUtc = failedAtUtc,
-            ValidationErrors = [.. record.ValidationErrors, string.IsNullOrWhiteSpace(failureReason) ? "Message failed." : failureReason]
+            ValidationErrors = [.. record.ValidationErrors, string.IsNullOrWhiteSpace(failureReason) ? "Message failed." : failureReason],
+            DeliveryState = AprsMessageDeliveryState.Failed,
+            FailedAtUtc = failedAtUtc,
+            FailureReason = string.IsNullOrWhiteSpace(failureReason) ? "Message failed." : failureReason
         });
+    }
+
+    public AprsMessageRecord UpdateDelivery(Guid messageRecordId, Func<AprsMessageRecord, AprsMessageRecord> update)
+    {
+        return UpdateRecord(messageRecordId, update);
     }
 
     public IReadOnlyList<AprsMessageRecord> GetAllMessages()

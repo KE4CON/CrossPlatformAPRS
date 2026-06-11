@@ -34,6 +34,11 @@ public interface IAprsMessageStoreService
     /// </summary>
     AprsMessageRecord MarkFailed(Guid messageRecordId, DateTimeOffset failedAtUtc, string failureReason);
 
+    /// <summary>
+    /// Updates delivery metadata for ACK/retry processing.
+    /// </summary>
+    AprsMessageRecord UpdateDelivery(Guid messageRecordId, Func<AprsMessageRecord, AprsMessageRecord> update);
+
     IReadOnlyList<AprsMessageRecord> GetAllMessages();
 
     IReadOnlyList<AprsMessageRecord> GetInboxMessages();

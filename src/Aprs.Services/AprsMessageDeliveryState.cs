@@ -1,16 +1,14 @@
 namespace Aprs.Services;
 
-public enum AprsMessageStatus
+public enum AprsMessageDeliveryState
 {
     Pending,
-    Received,
-    Draft,
     Queued,
     Sent,
     WaitingForAck,
-    RetryPending,
-    Failed,
     Acknowledged,
     Rejected,
+    RetryPending,
+    Failed,
     Cancelled
 }
