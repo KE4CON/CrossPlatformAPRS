@@ -42,6 +42,86 @@
             </ListBox.ItemTemplate>
           </ListBox>
         </TabItem>
+        <TabItem Header="Bulletins">
+          <ListBox ItemsSource="{Binding Bulletins}">
+            <ListBox.ItemTemplate>
+              <DataTemplate DataType="vm:BulletinRowViewModel">
+                <Border BorderBrush="#CBD5E1"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="8"
+                        Margin="0,3">
+                  <Grid ColumnDefinitions="Auto,Auto,*,Auto"
+                        ColumnSpacing="8">
+                    <TextBlock Text="{Binding Sender}"
+                               FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding BulletinId}"
+                               Foreground="#475569" />
+                    <TextBlock Grid.Column="2"
+                               Text="{Binding Text}"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="3"
+                               Text="{Binding Status}"
+                               Foreground="#64748B" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </TabItem>
+        <TabItem Header="Announcements">
+          <ListBox ItemsSource="{Binding Announcements}">
+            <ListBox.ItemTemplate>
+              <DataTemplate DataType="vm:AnnouncementRowViewModel">
+                <Border BorderBrush="#CBD5E1"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="8"
+                        Margin="0,3">
+                  <Grid ColumnDefinitions="Auto,Auto,*,Auto"
+                        ColumnSpacing="8">
+                    <TextBlock Text="{Binding Sender}"
+                               FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding AnnouncementId}"
+                               Foreground="#475569" />
+                    <TextBlock Grid.Column="2"
+                               Text="{Binding Text}"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="3"
+                               Text="{Binding Source}"
+                               Foreground="#64748B" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </TabItem>
+        <TabItem Header="Queries">
+          <ListBox ItemsSource="{Binding Queries}">
+            <ListBox.ItemTemplate>
+              <DataTemplate DataType="vm:QueryRowViewModel">
+                <Grid ColumnDefinitions="Auto,Auto,*,Auto"
+                      ColumnSpacing="8"
+                      Margin="0,3">
+                  <TextBlock Text="{Binding Sender}"
+                             FontWeight="SemiBold" />
+                  <TextBlock Grid.Column="1"
+                             Text="{Binding QueryType}"
+                             Foreground="#475569" />
+                  <TextBlock Grid.Column="2"
+                             Text="{Binding QueryBody}"
+                             TextTrimming="CharacterEllipsis" />
+                  <TextBlock Grid.Column="3"
+                             Text="{Binding Received}"
+                             Foreground="#64748B"
+                             FontSize="11" />
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </TabItem>
         <TabItem Header="Outbox">
           <ListBox ItemsSource="{Binding Outbox}">
             <ListBox.ItemTemplate>

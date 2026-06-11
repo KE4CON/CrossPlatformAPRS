@@ -16,6 +16,9 @@ public sealed class MessageCenterViewModelTests
         Assert.True(viewModel.InboxCount >= 1);
         Assert.True(viewModel.OutboxCount >= 1);
         Assert.True(viewModel.DraftCount >= 1);
+        Assert.True(viewModel.BulletinCount >= 1);
+        Assert.True(viewModel.AnnouncementCount >= 1);
+        Assert.True(viewModel.QueryCount >= 1);
         Assert.NotNull(viewModel.SelectedMessage);
     }
 
@@ -46,6 +49,41 @@ public sealed class MessageCenterViewModelTests
         Assert.Same(draft, viewModel.SelectedMessage);
         Assert.Single(viewModel.Conversation);
         Assert.Equal("K8ABC", viewModel.Conversation.Single().RemoteStation);
+    }
+
+    [Fact]
+    public void Constructor_LoadsBulletinAnnouncementAndQueryRows()
+    {
+        var store = new AprsMessageStoreService();
+        var bulletins = new AprsBulletinService();
+        var parser = new Aprs.Core.AprsParser();
+        bulletins.AcceptPacket(parser.Parse("W1AW>APRS::BLN0     :Club meeting", TestNow));
+        bulletins.AcceptPacket(parser.Parse("K8ABC>APRS::BLNQST  :ARES net", TestNow));
+        bulletins.AcceptPacket(parser.Parse("QUERY1>APRS:?APRSD", TestNow));
+
+        var viewModel = new MessageCenterViewModel(store, bulletins);
+
+        Assert.Equal("Club meeting", Assert.Single(viewModel.Bulletins).Text);
+        Assert.Equal("ARES net", Assert.Single(viewModel.Announcements).Text);
+        Assert.Equal("APRSD", Assert.Single(viewModel.Queries).QueryType);
+    }
+
+    [Fact]
+    public void Refresh_SeparatesPrivateInboxFromBulletins()
+    {
+        var store = new AprsMessageStoreService();
+        var bulletins = new AprsBulletinService();
+        var parser = new Aprs.Core.AprsParser();
+        store.AddIncomingMessage((Aprs.Core.MessageAprsPacket)parser.Parse("K8ABC>APRS::N0CALL   :Hello", TestNow), "N0CALL");
+        var bulletinPacket = (Aprs.Core.MessageAprsPacket)parser.Parse("W1AW>APRS::BLN0     :Club meeting", TestNow);
+        store.AddIncomingMessage(bulletinPacket, "N0CALL");
+        bulletins.AcceptPacket(bulletinPacket);
+
+        var viewModel = new MessageCenterViewModel(store, bulletins);
+
+        var inbox = Assert.Single(viewModel.Inbox);
+        Assert.Equal("K8ABC", inbox.RemoteStation);
+        Assert.Equal("Club meeting", Assert.Single(viewModel.Bulletins).Text);
     }
 
     [Fact]
