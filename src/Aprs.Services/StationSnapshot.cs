@@ -5,6 +5,10 @@ public enum AprsPacketSource
     Unknown,
     AprsIs,
     Rf,
+    TcpKiss,
+    SerialKiss,
+    Direwolf,
+    Agwpe,
     Replay,
     Simulation
 }

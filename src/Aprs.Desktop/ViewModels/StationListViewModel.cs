@@ -34,6 +34,10 @@ public sealed class StationListViewModel : INotifyPropertyChanged
         nameof(AprsPacketSource.Unknown),
         nameof(AprsPacketSource.AprsIs),
         nameof(AprsPacketSource.Rf),
+        nameof(AprsPacketSource.TcpKiss),
+        nameof(AprsPacketSource.SerialKiss),
+        nameof(AprsPacketSource.Direwolf),
+        nameof(AprsPacketSource.Agwpe),
         nameof(AprsPacketSource.Replay),
         nameof(AprsPacketSource.Simulation)
     ];

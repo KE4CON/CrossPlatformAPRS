@@ -49,6 +49,15 @@
           <views:DirewolfProfileView DataContext="{Binding DirewolfProfile}" />
         </Border>
       </TabItem>
+      <TabItem Header="Ports">
+        <Border BorderBrush="#CBD5E1"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="12"
+                Background="#F8FAFC">
+          <views:PortStatusView DataContext="{Binding PortStatus}" />
+        </Border>
+      </TabItem>
     </TabControl>
   </Grid>
 </UserControl>
