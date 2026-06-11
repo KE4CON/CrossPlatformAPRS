@@ -23,6 +23,11 @@ public interface ILocalStationProfileService
     StationProfileValidationResult ValidateProfile(LocalStationProfile profile);
 
     /// <summary>
+    /// Validates the supplied local APRS station profile for a specific transport configuration context.
+    /// </summary>
+    StationProfileValidationResult ValidateProfile(LocalStationProfile profile, StationProfileValidationOptions options);
+
+    /// <summary>
     /// Returns the formatted station identifier, including SSID when present.
     /// </summary>
     string GetFullStationIdentifier(LocalStationProfile profile);
@@ -31,4 +36,9 @@ public interface ILocalStationProfileService
     /// Returns whether the supplied profile is currently safe to transmit.
     /// </summary>
     bool IsSafeToTransmit(LocalStationProfile profile);
+
+    /// <summary>
+    /// Returns whether the supplied profile is safe to transmit for a specific transport configuration context.
+    /// </summary>
+    bool IsSafeToTransmit(LocalStationProfile profile, StationProfileValidationOptions options);
 }

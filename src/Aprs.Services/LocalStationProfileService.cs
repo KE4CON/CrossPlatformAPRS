@@ -45,6 +45,11 @@ public sealed partial class LocalStationProfileService : ILocalStationProfileSer
 
     public StationProfileValidationResult ValidateProfile(LocalStationProfile profile)
     {
+        return ValidateProfile(profile, StationProfileValidationOptions.Default);
+    }
+
+    public StationProfileValidationResult ValidateProfile(LocalStationProfile profile, StationProfileValidationOptions options)
+    {
         var errors = new List<string>();
         var warnings = new List<string>();
 
@@ -106,7 +111,10 @@ public sealed partial class LocalStationProfileService : ILocalStationProfileSer
                 errors.Add("APRS-IS transmit requires the master transmit flag.");
             }
 
-            errors.Add("APRS-IS transmit is not configured for the local station profile yet.");
+            if (!options.AprsIsTransmitConfigured)
+            {
+                errors.Add("APRS-IS transmit is not configured for the local station profile yet.");
+            }
         }
 
         if (profile.RfTransmitEnabled)
@@ -116,7 +124,10 @@ public sealed partial class LocalStationProfileService : ILocalStationProfileSer
                 errors.Add("RF transmit requires the master transmit flag.");
             }
 
-            errors.Add("RF transmit is not configured because no RF transport exists yet.");
+            if (!options.RfTransmitConfigured)
+            {
+                errors.Add("RF transmit is not configured because no RF transport exists yet.");
+            }
         }
 
         if (profile.TransmitEnabled && !profile.AprsIsTransmitEnabled && !profile.RfTransmitEnabled)
@@ -133,7 +144,8 @@ public sealed partial class LocalStationProfileService : ILocalStationProfileSer
 
         var safeToTransmit = errors.Count == 0
             && profile.TransmitEnabled
-            && (profile.AprsIsTransmitEnabled || profile.RfTransmitEnabled);
+            && ((profile.AprsIsTransmitEnabled && options.AprsIsTransmitConfigured)
+                || (profile.RfTransmitEnabled && options.RfTransmitConfigured));
 
         return new StationProfileValidationResult(
             IsValid: errors.Count == 0,
@@ -150,6 +162,11 @@ public sealed partial class LocalStationProfileService : ILocalStationProfileSer
     public bool IsSafeToTransmit(LocalStationProfile profile)
     {
         return ValidateProfile(profile).IsSafeToTransmit;
+    }
+
+    public bool IsSafeToTransmit(LocalStationProfile profile, StationProfileValidationOptions options)
+    {
+        return ValidateProfile(profile, options).IsSafeToTransmit;
     }
 
     [GeneratedRegex("^[A-Z0-9]{1,6}$", RegexOptions.IgnoreCase, "en-US")]
