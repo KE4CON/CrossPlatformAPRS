@@ -40,8 +40,10 @@ Recommended first package:
 
 1. Run `./scripts/publish-win-x64.sh` or `.\scripts\publish-win-x64.ps1`.
 2. Verify `artifacts/publish/win-x64/`.
-3. Create a ZIP from the publish folder in a later release packaging step.
-4. Include `docs/` inside the ZIP for offline Help.
+3. Run `./scripts/package-win-x64.sh` or `.\scripts\package-win-x64.ps1`.
+4. Verify `artifacts/packages/APRS-Command-win-x64.zip`.
+5. Verify `artifacts/checksums/APRS-Command-win-x64.zip.sha256`.
+6. Confirm `docs/` is inside the ZIP for offline Help.
 
 Future installer placeholders:
 
@@ -60,7 +62,9 @@ Recommended first package:
 1. Run `./scripts/publish-osx-arm64.sh` for Apple Silicon.
 2. Run `./scripts/publish-osx-x64.sh` for Intel while Intel support remains planned.
 3. Verify the publish folder and offline `docs/`.
-4. Package as a portable test folder or app bundle placeholder in a later release packaging step.
+4. Run `./scripts/package-osx-arm64.sh` or `./scripts/package-osx-x64.sh`.
+5. Verify `APRS-Command-osx-arm64.tar.gz` or `APRS-Command-osx-x64.tar.gz`.
+6. Verify the matching SHA256 checksum file.
 
 Future package placeholders:
 
@@ -82,8 +86,10 @@ Recommended first package:
 
 1. Run `./scripts/publish-linux-x64.sh` or `./scripts/publish-linux-arm64.sh`.
 2. Verify `artifacts/publish/<runtime-identifier>/`.
-3. Create a `tar.gz` from the publish folder in a later release packaging step.
-4. Include `docs/` inside the package for offline Help.
+3. Run `./scripts/package-linux-x64.sh` or `./scripts/package-linux-arm64.sh`.
+4. Verify `APRS-Command-linux-x64.tar.gz` or `APRS-Command-linux-arm64.tar.gz`.
+5. Verify the matching SHA256 checksum file.
+6. Confirm `docs/` is inside the package for offline Help.
 
 Future package placeholders:
 
@@ -104,10 +110,11 @@ Raspberry Pi 5 uses the `linux-arm64` publish output.
 Recommended first package:
 
 1. Run `./scripts/publish-linux-arm64.sh`.
-2. Copy or extract the publish folder to reliable storage.
-3. Prefer SSD or high-quality external storage when using large map caches.
-4. Add a desktop launcher in a later packaging step.
-5. Keep serial/USB permission notes visible for TNC and GPS setup.
+2. Run `./scripts/package-linux-arm64.sh`.
+3. Extract `artifacts/packages/APRS-Command-linux-arm64.tar.gz` to reliable storage.
+4. Prefer SSD or high-quality external storage when using large map caches.
+5. Use the included `.desktop` template as a launcher starting point.
+6. Keep serial/USB permission notes visible for TNC and GPS setup.
 
 Optional future placeholders:
 
@@ -127,6 +134,21 @@ Placeholder templates live under `packaging/templates/`:
 - `release-notes-template.md` for later release notes.
 
 These are not final package files.
+
+## Portable Package Scripts
+
+Portable packages are created by:
+
+```bash
+./scripts/package-win-x64.sh
+./scripts/package-osx-arm64.sh
+./scripts/package-osx-x64.sh
+./scripts/package-linux-x64.sh
+./scripts/package-linux-arm64.sh
+./scripts/package-all.sh
+```
+
+The shared implementation is `scripts/package-runtime.sh`. It runs the publish script, stages the output, copies README/Quick Start/Installation/Safety/Troubleshooting files, includes the published `docs/` folder for in-app Help, includes packaging templates, writes `VERSION.txt`, creates the package archive, and writes a SHA256 checksum.
 
 ## Release Folder Structure
 

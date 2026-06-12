@@ -1,6 +1,6 @@
 # APRS Command Packaging Preparation
 
-Phase 15.1 prepares APRS Command for packaging. Phase 15.2 adds repeatable publish scripts and MSBuild publish profiles. Phase 15.6 plans final installer/package strategy. These phases do not create final installers or release packages.
+Phase 15.1 prepares APRS Command for packaging. Phase 15.2 adds repeatable publish scripts and MSBuild publish profiles. Phase 15.6 plans final installer/package strategy. Phase 15.7 adds portable ZIP and `tar.gz` package scripts. These phases do not create full installers.
 
 ## Packaging Goals
 
@@ -53,6 +53,19 @@ dotnet publish src/Aprs.Desktop/Aprs.Desktop.csproj -c Release /p:PublishProfile
 See `docs/BUILD_AND_PUBLISH.md` for the full build and publish workflow.
 
 See `docs/INSTALLER_AND_PACKAGE_PLAN.md` for the planned Windows, macOS, Linux, and Raspberry Pi package strategy before final installers are created.
+
+Portable package commands:
+
+```bash
+./scripts/package-win-x64.sh
+./scripts/package-osx-arm64.sh
+./scripts/package-osx-x64.sh
+./scripts/package-linux-x64.sh
+./scripts/package-linux-arm64.sh
+./scripts/package-all.sh
+```
+
+Package archives are written to `artifacts/packages/`, and SHA256 checksum files are written to `artifacts/checksums/`.
 
 ## Platform Packaging Plan
 

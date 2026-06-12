@@ -56,6 +56,31 @@ Generic helper:
 ./scripts/publish-runtime.sh linux-arm64
 ```
 
+## Portable Package Scripts
+
+Phase 15.7 adds portable package scripts. Each package script runs the shared publish flow, stages the published app with user docs/help files and packaging templates, creates a ZIP or `tar.gz`, and writes a SHA256 checksum.
+
+```bash
+./scripts/package-win-x64.sh
+./scripts/package-osx-arm64.sh
+./scripts/package-osx-x64.sh
+./scripts/package-linux-x64.sh
+./scripts/package-linux-arm64.sh
+./scripts/package-all.sh
+```
+
+Windows PowerShell helper:
+
+```powershell
+.\scripts\package-win-x64.ps1
+```
+
+Generic helper:
+
+```bash
+./scripts/package-runtime.sh linux-arm64
+```
+
 ## Publish Profiles
 
 MSBuild publish profiles are stored under:
@@ -92,6 +117,28 @@ artifacts/
   release-notes/
 ```
 
+Portable package outputs use:
+
+```text
+artifacts/packages/APRS-Command-win-x64.zip
+artifacts/packages/APRS-Command-osx-arm64.tar.gz
+artifacts/packages/APRS-Command-osx-x64.tar.gz
+artifacts/packages/APRS-Command-linux-x64.tar.gz
+artifacts/packages/APRS-Command-linux-arm64.tar.gz
+artifacts/checksums/<package-file>.sha256
+artifacts/release-notes/RELEASE_NOTES_TEMPLATE.md
+```
+
+Verify a package checksum from the repository root:
+
+```bash
+cd artifacts/packages
+shasum -a 256 APRS-Command-linux-x64.tar.gz
+cat ../checksums/APRS-Command-linux-x64.tar.gz.sha256
+```
+
+The values should match.
+
 ## Publish Mode
 
 Phase 15.2 uses self-contained publish output by default so first-user testing does not depend on a separately installed runtime. The profiles deliberately avoid final installer decisions.
@@ -106,14 +153,17 @@ dotnet publish src/Aprs.Desktop/Aprs.Desktop.csproj -c Release -r linux-x64 --se
 
 Windows:
 - Verify `win-x64` output before creating future installers.
+- Portable package output is `artifacts/packages/APRS-Command-win-x64.zip`.
 - Later installer work should add Start Menu shortcuts, uninstall metadata, and display name `APRS Command`.
 
 macOS:
 - Verify `osx-arm64` and `osx-x64` output.
+- Portable package outputs are `APRS-Command-osx-arm64.tar.gz` and `APRS-Command-osx-x64.tar.gz`.
 - Later packaging work should handle `.app` layout, signing, notarization, and quarantine behavior.
 
 Linux:
 - Verify `linux-x64` and `linux-arm64` output.
+- Portable package outputs are `APRS-Command-linux-x64.tar.gz` and `APRS-Command-linux-arm64.tar.gz`.
 - Later package work should add `.desktop` metadata, icons, AppImage/deb/rpm decisions, and Raspberry Pi notes.
 
 ## Safety

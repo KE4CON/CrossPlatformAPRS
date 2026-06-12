@@ -1392,6 +1392,32 @@ Acceptance criteria:
 - package safety defaults are documented
 - no APRS behavior or transmit behavior changes
 
+### Task 15.7 — Portable release package support
+Create repeatable portable package scripts and ZIP/`tar.gz` output for supported platforms.
+
+Scope:
+- Windows x64 ZIP
+- macOS Apple Silicon `tar.gz`
+- macOS Intel `tar.gz`
+- Linux x64 `tar.gz`
+- Linux ARM64 / Raspberry Pi 5 `tar.gz`
+- package scripts that restore, build Release, test, publish, stage required docs/help files, include README/Quick Start/Installation/Safety/Troubleshooting, include version metadata, create package archives, and generate SHA256 checksums
+- release notes template
+- documentation updates for package commands, output folders, checksum verification, and portable execution
+- no full installers, signing, notarization, package-manager manifests, or transmit behavior changes
+
+Acceptance criteria:
+- `dotnet restore` succeeds
+- `dotnet build` succeeds
+- `dotnet test` succeeds
+- portable package scripts exist
+- package output structure is documented
+- docs/help files are included in package process
+- checksum generation exists
+- release notes template exists
+- scripts contain no credentials or transmit-enabling defaults
+- no APRS behavior or transmit behavior changes
+
 ---
 
 ## Phase 16 — Moved before packaging

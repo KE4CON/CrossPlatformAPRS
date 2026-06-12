@@ -40,6 +40,8 @@ The desktop opens to the original map-first shell: the map is the primary worksp
 
 Final installers are planned for a future release. Current first-run, repeatable publish, and installer/package planning guidance is documented in `docs/FIRST_RUN_SETUP.md`, `docs/PACKAGING_PREPARATION.md`, `docs/BUILD_AND_PUBLISH.md`, `docs/INSTALLER_AND_PACKAGE_PLAN.md`, and `docs/PUBLISHING.md`.
 
+Portable ZIP and `tar.gz` package scripts write archives to `artifacts/packages/` and SHA256 files to `artifacts/checksums/`. Full installers, signing, notarization, and package-manager manifests are planned for later work.
+
 ## User documentation
 
 APRS Command also includes an in-app Help button. Click Help in the application header to read the user manual, quick start guide, setup guides, safety guide, troubleshooting guide, and glossary offline from inside the desktop app.
