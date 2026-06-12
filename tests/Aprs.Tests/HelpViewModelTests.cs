@@ -13,6 +13,9 @@ public sealed class HelpViewModelTests : IDisposable
         Directory.CreateDirectory(docsRoot);
         File.WriteAllText(Path.Combine(docsRoot, "USER_MANUAL.md"), "# APRS Command User Manual\n\nMap-first user documentation with `inline code`.");
         File.WriteAllText(Path.Combine(docsRoot, "QUICK_START.md"), "# Quick Start\n\nStart APRS Command receive-only.");
+        File.WriteAllText(Path.Combine(docsRoot, "APRS_IS_SETUP_GUIDE.md"), "# APRS-IS Setup Guide\n\nConfigure APRS-IS receive only.");
+        File.WriteAllText(Path.Combine(docsRoot, "RF_TNC_SETUP_GUIDE.md"), "# RF/TNC Setup Guide\n\nConfigure a TNC for receive only.");
+        File.WriteAllText(Path.Combine(docsRoot, "MAP_AND_OFFLINE_MAPS_GUIDE.md"), "# Map and Offline Maps Guide\n\nUse the map and offline cache.");
         File.WriteAllText(Path.Combine(docsRoot, "SAFETY_AND_TRANSMIT_GUIDE.md"), "# Safety\n\nAPRS Command does not transmit by default.");
         File.WriteAllText(Path.Combine(docsRoot, "TROUBLESHOOTING.md"), "# Troubleshooting\n\nMap blank and APRS-IS connection checks.");
         File.WriteAllText(Path.Combine(docsRoot, "GLOSSARY.md"), "# Glossary\n\nAPRS, TNC, KISS, and iGate.");
@@ -89,6 +92,21 @@ public sealed class HelpViewModelTests : IDisposable
 
         Assert.Contains(viewModel.FilteredTopics, topic => topic.Title == "Troubleshooting");
         Assert.DoesNotContain(viewModel.FilteredTopics, topic => topic.Title == "Quick Start");
+    }
+
+    [Theory]
+    [InlineData("APRS-IS", "APRS-IS Setup Guide")]
+    [InlineData("TNC", "RF/TNC Setup Guide")]
+    [InlineData("map", "Map and Offline Maps Guide")]
+    [InlineData("safety", "Safety and Transmit Guide")]
+    [InlineData("troubleshooting", "Troubleshooting")]
+    public void SearchFindsReleaseReadinessTopics(string searchText, string expectedTopicTitle)
+    {
+        var viewModel = new HelpViewModel(new HelpDocumentService(docsRoot));
+
+        viewModel.SearchText = searchText;
+
+        Assert.Contains(viewModel.FilteredTopics, topic => topic.Title == expectedTopicTitle);
     }
 
     [Fact]

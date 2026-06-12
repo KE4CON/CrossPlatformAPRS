@@ -53,6 +53,7 @@ APRS Command also includes an in-app Help button. Click Help in the application 
 - [RF/TNC Setup Guide](docs/RF_TNC_SETUP_GUIDE.md)
 - [Map and Offline Maps Guide](docs/MAP_AND_OFFLINE_MAPS_GUIDE.md)
 - [Troubleshooting](docs/TROUBLESHOOTING.md)
+- [Glossary](docs/GLOSSARY.md)
 - [Developer Guide](docs/DEVELOPER_GUIDE.md)
 
 ## Project layout

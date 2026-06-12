@@ -15,6 +15,10 @@ APRS Command starts with these safety defaults:
 - weather beaconing disabled
 - object transmit disabled until configured
 - message transmit disabled until configured
+- REST API disabled
+- WebSocket disabled
+- file hooks disabled
+- plugin loading disabled
 - replay, simulation, and training cannot transmit
 - REST API, WebSocket, file hooks, and plugins cannot bypass safety
 

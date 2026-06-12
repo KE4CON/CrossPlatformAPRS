@@ -1356,7 +1356,9 @@ Run a focused polish pass before continuing final packaging work.
 Scope:
 - remove developer-only phase wording from normal-user docs where practical
 - ensure README documentation links are repository-relative
+- ensure README links to Quick Start, Installation Guide, User Manual, First-Run Setup, Safety and Transmit Guide, APRS-IS Setup Guide, RF/TNC Setup Guide, Map and Offline Maps Guide, Troubleshooting, Glossary, and Developer Guide
 - improve in-app Help plain-text readability
+- verify Help search finds APRS-IS, TNC, map, safety, and troubleshooting topics
 - keep Help topics, missing-document handling, and output/publish doc copy behavior intact
 - add or update tests that guard polished documentation/help behavior
 
@@ -1366,6 +1368,7 @@ Acceptance criteria:
 - `dotnet test` succeeds
 - user docs remain available through in-app Help
 - README links do not depend on a local absolute path
+- safety docs clearly state REST API, WebSocket, file hooks, and plugin loading are disabled by default
 - no APRS behavior or transmit behavior changes
 
 ---

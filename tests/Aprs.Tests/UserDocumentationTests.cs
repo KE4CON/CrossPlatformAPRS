@@ -48,8 +48,10 @@ public sealed class UserDocumentationTests
         Assert.Contains("RF/TNC Setup Guide", readme, StringComparison.Ordinal);
         Assert.Contains("Map and Offline Maps Guide", readme, StringComparison.Ordinal);
         Assert.Contains("Troubleshooting", readme, StringComparison.Ordinal);
+        Assert.Contains("Glossary", readme, StringComparison.Ordinal);
         Assert.Contains("Developer Guide", readme, StringComparison.Ordinal);
         Assert.Contains("(docs/QUICK_START.md)", readme, StringComparison.Ordinal);
+        Assert.Contains("(docs/GLOSSARY.md)", readme, StringComparison.Ordinal);
         Assert.DoesNotContain("/Users/", readme, StringComparison.Ordinal);
     }
 
@@ -84,6 +86,10 @@ public sealed class UserDocumentationTests
         Assert.Contains("weather beaconing disabled", safety, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("object transmit", safety, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("message transmit", safety, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("REST API disabled", safety, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("WebSocket disabled", safety, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("file hooks disabled", safety, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("plugin loading disabled", safety, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("disabled by default", manual, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("transmit disabled", firstRun, StringComparison.OrdinalIgnoreCase);
     }
