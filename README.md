@@ -38,7 +38,7 @@ The desktop opens to the original map-first shell: the map is the primary worksp
 
 ## Publish guidance
 
-Final installers are planned for Phase 15. Current publish guidance placeholders are documented in `docs/PUBLISHING.md`.
+Final installers are planned for Phase 15. Current first-run and publish guidance placeholders are documented in `docs/FIRST_RUN_SETUP.md`, `docs/PACKAGING_PREPARATION.md`, and `docs/PUBLISHING.md`.
 
 ## Project layout
 

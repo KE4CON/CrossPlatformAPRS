@@ -1,8 +1,13 @@
 # APRS Command Publishing Guidance
 
-Phase 14.13 upgrades APRS Command to target .NET 10 LTS. Phase 15 will verify and automate final packaging.
+Phase 14.13 upgrades APRS Command to target .NET 10 LTS. Phase 15 verifies first-run setup, publish output, and final packaging.
 
 This document is a placeholder for publish guidance only. It does not create installers.
+
+See also:
+
+- `docs/FIRST_RUN_SETUP.md`
+- `docs/PACKAGING_PREPARATION.md`
 
 ## SDK Requirement
 

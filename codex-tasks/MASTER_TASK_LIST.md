@@ -1261,8 +1261,16 @@ Acceptance criteria:
 
 Phase 15 must not begin until extension hook phases 14.5 through 14.12 and the .NET 10 LTS upgrade in Phase 14.13 are complete, buildable, tested, and documented.
 
-### Task 15.1 — Settings import/export
-Allow full app settings backup and restore.
+### Task 15.1 — First-user setup and packaging preparation
+Add the first-run setup model, safe application folder setup, placeholder configuration files, first-run UI foundation, and packaging preparation documentation.
+
+Acceptance criteria:
+- first-run setup defaults to incomplete
+- transmit, APRS-IS transmit, RF transmit, iGate, digipeater, beaconing, weather beaconing, REST API, WebSocket, file hooks, and plugin loading are disabled by default
+- application folders can be prepared under a platform-appropriate user data folder
+- placeholder configuration files contain no real credentials
+- packaging docs include Windows, macOS, Linux, and Raspberry Pi publish placeholders
+- no installers are created in this task
 
 ### Task 15.2 — Cross-platform packaging
 Create release packages for:

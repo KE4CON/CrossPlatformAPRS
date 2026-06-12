@@ -24,7 +24,8 @@ public sealed class MainWindowViewModel
             GeofenceEditorViewModel.CreateDesignTime(),
             SimulationViewModel.CreateDesignTime(),
             TrainingModeViewModel.CreateDesignTime(),
-            FileHooksViewModel.CreateDesignTime())
+            FileHooksViewModel.CreateDesignTime(),
+            FirstRunSetupViewModel.CreateDesignTime())
     {
     }
 
@@ -47,7 +48,8 @@ public sealed class MainWindowViewModel
         GeofenceEditorViewModel geofences,
         SimulationViewModel simulation,
         TrainingModeViewModel training,
-        FileHooksViewModel fileHooks)
+        FileHooksViewModel fileHooks,
+        FirstRunSetupViewModel firstRunSetup)
     {
         Map = map;
         StationList = new StationListViewModel(map);
@@ -69,6 +71,7 @@ public sealed class MainWindowViewModel
         Simulation = simulation;
         Training = training;
         FileHooks = fileHooks;
+        FirstRunSetup = firstRunSetup;
         Map.AttachObjectManager(ObjectManager);
     }
 
@@ -111,6 +114,8 @@ public sealed class MainWindowViewModel
     public TrainingModeViewModel Training { get; }
 
     public FileHooksViewModel FileHooks { get; }
+
+    public FirstRunSetupViewModel FirstRunSetup { get; }
 
     public static MainWindowViewModel CreateDesignTime()
     {

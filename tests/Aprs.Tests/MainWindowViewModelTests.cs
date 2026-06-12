@@ -15,6 +15,7 @@ public sealed class MainWindowViewModelTests
         Assert.NotNull(viewModel.Map);
         Assert.NotNull(viewModel.StationList);
         Assert.NotNull(viewModel.RawPacketLog);
+        Assert.NotNull(viewModel.FirstRunSetup);
     }
 
     [Fact]

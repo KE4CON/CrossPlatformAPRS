@@ -13,6 +13,15 @@
                  Foreground="#526173" />
     </StackPanel>
     <TabControl Grid.Row="1">
+      <TabItem Header="First Run">
+        <Border BorderBrush="#CBD5E1"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="12"
+                Background="#F8FAFC">
+          <views:FirstRunSetupView DataContext="{Binding FirstRunSetup}" />
+        </Border>
+      </TabItem>
       <TabItem Header="Station">
         <Border BorderBrush="#CBD5E1"
                 BorderThickness="1"
