@@ -90,6 +90,9 @@
         <TabItem Header="Geofence">
           <views:GeofenceEditorView DataContext="{Binding Geofences}" />
         </TabItem>
+        <TabItem Header="Sim">
+          <views:SimulationView DataContext="{Binding Simulation}" />
+        </TabItem>
         <TabItem Header="Settings">
           <views:SettingsView DataContext="{Binding}" />
         </TabItem>
