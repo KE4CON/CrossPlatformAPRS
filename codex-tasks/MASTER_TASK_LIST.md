@@ -43,6 +43,9 @@ Initial UI panes:
 - Weather
 - Settings
 
+Current desktop layout note:
+- The shell uses the original map-first arrangement with the map in the main workspace, station list on the right, raw packet monitor below the map, and secondary feature panels in the lower-right tab area.
+
 Acceptance criteria:
 - App launches on desktop
 - No APRS logic is inside the view layer

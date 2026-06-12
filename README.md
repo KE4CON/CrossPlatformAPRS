@@ -34,6 +34,8 @@ The repository pins SDK selection with `global.json`. Install the .NET 10 SDK be
 dotnet run --project src/Aprs.Desktop
 ```
 
+The desktop opens to the original map-first shell: the map is the primary workspace, the station list stays on the right, the raw packet monitor stays below the map, and feature panels such as Messages, Objects, Weather, Events, Event Bus, Replay, RF Diagnostics, Alerts, Geofence, Simulation, Training, Files, and Settings remain available in the lower-right tab area.
+
 ## Publish guidance
 
 Final installers are planned for Phase 15. Current publish guidance placeholders are documented in `docs/PUBLISHING.md`.

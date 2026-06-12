@@ -39,6 +39,7 @@ Architecture scope notes:
 - Transmit safety should be centralized and shared across APRS-IS, RF/TNC, beaconing, messaging, objects, weather, iGate, and digipeater features.
 - Weather, GPS, APRS, replay, simulation, and future inputs should remain modular and driver/service based.
 - UI should consume view models/application services rather than hardwiring directly to concrete inputs or transports.
+- The desktop shell uses the original map-first layout: map in the main workspace, station list on the right, raw packet monitor below the map, and secondary feature panels in the lower-right tab area.
 - Current implementation phases should keep data models modular, tag all incoming packet/weather/GPS/import data with source information, keep transmit safety centralized, and avoid tightly coupling UI directly to packet/weather/GPS input sources.
 - Future extension surfaces should expose stable contracts through local APIs, WebSocket events, import/export formats, and plugin/driver abstractions rather than leaking mutable internal models.
 - Phase 14.5 through Phase 14.12 complete the extension hook, local API, WebSocket, file import/export, plugin/driver, and developer documentation sequence before packaging. Phase 14.13 upgrades the solution baseline to .NET 10 LTS before Phase 15 packaging begins.
