@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using AprsCommand.Contracts;
 
 namespace Aprs.Services;
 
@@ -6,14 +7,17 @@ public sealed partial class DecodedEventLogService : IDecodedEventLogService
 {
     private readonly IBeaconSchedulerClock clock;
     private readonly DecodedEventLogConfiguration configuration;
+    private readonly IAprsEventBus? eventBus;
     private readonly List<DecodedEventLogEntry> entries = [];
 
     public DecodedEventLogService(
         DecodedEventLogConfiguration? configuration = null,
-        IBeaconSchedulerClock? clock = null)
+        IBeaconSchedulerClock? clock = null,
+        IAprsEventBus? eventBus = null)
     {
         this.configuration = configuration ?? DecodedEventLogConfiguration.Default;
         this.clock = clock ?? new SystemBeaconSchedulerClock();
+        this.eventBus = eventBus;
     }
 
     public DecodedEventLogEntry? AddEvent(
@@ -59,6 +63,7 @@ public sealed partial class DecodedEventLogService : IDecodedEventLogService
 
         entries.Add(entry);
         TrimEntries();
+        PublishAprsEvent(entry);
         return entry;
     }
 
@@ -245,4 +250,141 @@ public sealed partial class DecodedEventLogService : IDecodedEventLogService
 
     [GeneratedRegex(@"(?i)\b((?:api[_-]?key|token|password|passcode|secret)\s*[:=]\s*)([^\s,;]+)")]
     private static partial Regex CredentialKeyValueRegex();
+
+    private void PublishAprsEvent(DecodedEventLogEntry entry)
+    {
+        if (eventBus is null)
+        {
+            return;
+        }
+
+        var metadata = new AprsEventMetadata(
+            entry.EventId,
+            MapEventType(entry.EventType),
+            MapEventCategory(entry.EventCategory),
+            entry.EventTimestampUtc,
+            CreateSourceMetadata(entry),
+            MapSeverity(entry.Severity),
+            RelatedCallsign: entry.SourceCallsign,
+            RelatedObjectName: entry.EventCategory == DecodedEventCategory.Object ? entry.RelatedEntity : null,
+            RelatedMessageId: entry.EventCategory is DecodedEventCategory.Message or DecodedEventCategory.Bulletin ? entry.RelatedEntity : null,
+            RelatedPacketId: entry.RelatedRawPacketLogEntryId?.ToString(),
+            Summary: entry.Summary,
+            Notes: entry.Notes);
+
+        var attributes = entry.StructuredEventData
+            .Concat(new[]
+            {
+                new KeyValuePair<string, string>("DecodedEventCategory", entry.EventCategory.ToString()),
+                new KeyValuePair<string, string>("DecodedEventSeverity", entry.Severity.ToString())
+            })
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
+
+        eventBus.Publish(new AprsEventEnvelope<DecodedEventLogEntry>(metadata, entry, attributes));
+    }
+
+    private static ExternalSourceMetadata CreateSourceMetadata(DecodedEventLogEntry entry)
+    {
+        var sourceType = entry.PacketSource is null
+            ? ExternalSourceType.Unknown
+            : MapPacketSource(entry.PacketSource.Value);
+
+        return new ExternalSourceMetadata(
+            SourceName: entry.RelatedEntity ?? entry.SourceCallsign,
+            SourceType: sourceType,
+            SourceId: entry.RelatedEntity ?? entry.SourceCallsign,
+            Timestamp: entry.EventTimestampUtc,
+            Origin: ContractDataOrigin.Generated,
+            TrustLevel: ExternalTrustLevel.Internal);
+    }
+
+    private static ExternalSourceType MapPacketSource(AprsPacketSource packetSource)
+    {
+        return packetSource switch
+        {
+            AprsPacketSource.AprsIs => ExternalSourceType.AprsIs,
+            AprsPacketSource.Rf => ExternalSourceType.Rf,
+            AprsPacketSource.TcpKiss => ExternalSourceType.TcpKiss,
+            AprsPacketSource.SerialKiss => ExternalSourceType.SerialKiss,
+            AprsPacketSource.Direwolf => ExternalSourceType.Direwolf,
+            AprsPacketSource.Agwpe => ExternalSourceType.Agwpe,
+            AprsPacketSource.Replay => ExternalSourceType.Replay,
+            AprsPacketSource.Simulation => ExternalSourceType.Simulation,
+            AprsPacketSource.External => ExternalSourceType.Plugin,
+            AprsPacketSource.LocalGenerated => ExternalSourceType.LocalApi,
+            _ => ExternalSourceType.Unknown
+        };
+    }
+
+    private static AprsEventCategory MapEventCategory(DecodedEventCategory category)
+    {
+        return category switch
+        {
+            DecodedEventCategory.Packet => AprsEventCategory.Packet,
+            DecodedEventCategory.Station => AprsEventCategory.Station,
+            DecodedEventCategory.Object => AprsEventCategory.Object,
+            DecodedEventCategory.Weather => AprsEventCategory.Weather,
+            DecodedEventCategory.Message => AprsEventCategory.Message,
+            DecodedEventCategory.Bulletin => AprsEventCategory.Message,
+            DecodedEventCategory.GPS => AprsEventCategory.GPS,
+            DecodedEventCategory.Port => AprsEventCategory.Port,
+            DecodedEventCategory.AprsIs => AprsEventCategory.AprsIs,
+            DecodedEventCategory.RF => AprsEventCategory.RF,
+            DecodedEventCategory.Beacon => AprsEventCategory.Beacon,
+            DecodedEventCategory.IGate => AprsEventCategory.IGate,
+            DecodedEventCategory.Digipeater => AprsEventCategory.Digipeater,
+            DecodedEventCategory.Alert => AprsEventCategory.Alert,
+            _ => AprsEventCategory.System
+        };
+    }
+
+    private static AprsEventSeverity MapSeverity(DecodedEventSeverity severity)
+    {
+        return severity switch
+        {
+            DecodedEventSeverity.Debug => AprsEventSeverity.Trace,
+            DecodedEventSeverity.Warning => AprsEventSeverity.Warning,
+            DecodedEventSeverity.Error => AprsEventSeverity.Error,
+            DecodedEventSeverity.Critical => AprsEventSeverity.Critical,
+            _ => AprsEventSeverity.Info
+        };
+    }
+
+    private static AprsEventType MapEventType(DecodedEventType eventType)
+    {
+        return eventType switch
+        {
+            DecodedEventType.StationCreated => AprsEventType.StationCreated,
+            DecodedEventType.StationUpdated => AprsEventType.StationUpdated,
+            DecodedEventType.StationExpired => AprsEventType.StationExpired,
+            DecodedEventType.ObjectCreated => AprsEventType.ObjectCreated,
+            DecodedEventType.ObjectUpdated => AprsEventType.ObjectUpdated,
+            DecodedEventType.ObjectKilled => AprsEventType.ObjectKilled,
+            DecodedEventType.WeatherUpdated => AprsEventType.WeatherUpdated,
+            DecodedEventType.MessageReceived => AprsEventType.MessageReceived,
+            DecodedEventType.MessageSent => AprsEventType.MessageSent,
+            DecodedEventType.MessageAcknowledged => AprsEventType.MessageAcknowledged,
+            DecodedEventType.MessageRejected => AprsEventType.MessageRejected,
+            DecodedEventType.BulletinReceived => AprsEventType.BulletinReceived,
+            DecodedEventType.GpsUpdated => AprsEventType.GpsUpdated,
+            DecodedEventType.PortConnected => AprsEventType.PortConnected,
+            DecodedEventType.PortDisconnected => AprsEventType.PortDisconnected,
+            DecodedEventType.AprsIsConnected => AprsEventType.AprsIsConnected,
+            DecodedEventType.AprsIsDisconnected => AprsEventType.AprsIsDisconnected,
+            DecodedEventType.BeaconGenerated => AprsEventType.BeaconGenerated,
+            DecodedEventType.BeaconTransmitted => AprsEventType.BeaconTransmitted,
+            DecodedEventType.WeatherBeaconGenerated => AprsEventType.WeatherBeaconGenerated,
+            DecodedEventType.WeatherBeaconTransmitted => AprsEventType.WeatherBeaconTransmitted,
+            DecodedEventType.PacketTransmitBlocked => AprsEventType.PacketTransmitBlocked,
+            DecodedEventType.PacketTransmitted => AprsEventType.PacketTransmitted,
+            DecodedEventType.IGateCandidateDetected => AprsEventType.IGateCandidateDetected,
+            DecodedEventType.IGatePacketGated => AprsEventType.IGatePacketGated,
+            DecodedEventType.IGatePacketBlocked => AprsEventType.IGatePacketBlocked,
+            DecodedEventType.DigipeaterPacketRepeated => AprsEventType.DigipeaterPacketRepeated,
+            DecodedEventType.DigipeaterPacketBlocked => AprsEventType.DigipeaterPacketBlocked,
+            DecodedEventType.AlertTriggered => AprsEventType.AlertTriggered,
+            DecodedEventType.TrainingScenarioUpdated => AprsEventType.TrainingStateChanged,
+            _ => AprsEventType.ExtensionEvent
+        };
+    }
 }

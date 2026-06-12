@@ -7,5 +7,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Aprs.Core\Aprs.Core.csproj" />
     <ProjectReference Include="..\Aprs.Transport\Aprs.Transport.csproj" />
+    <ProjectReference Include="..\AprsCommand.Contracts\AprsCommand.Contracts.csproj" />
   </ItemGroup>
 </Project>

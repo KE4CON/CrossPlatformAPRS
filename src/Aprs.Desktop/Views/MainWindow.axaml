@@ -78,6 +78,9 @@
         <TabItem Header="Events">
           <views:DecodedEventLogView DataContext="{Binding DecodedEventLog}" />
         </TabItem>
+        <TabItem Header="Event Bus">
+          <views:EventMonitorView DataContext="{Binding EventMonitor}" />
+        </TabItem>
         <TabItem Header="Replay">
           <views:ReplayView DataContext="{Binding Replay}" />
         </TabItem>

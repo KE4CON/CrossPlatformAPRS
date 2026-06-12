@@ -92,6 +92,8 @@ Initial event types include:
 
 The event bus is not intended to become an enterprise messaging system. It should stay simple, testable, and isolated from Avalonia views.
 
+See `docs/INTERNAL_EVENT_BUS.md` for the Phase 14.7 event bus model, categories, event types, publishing guidance, event monitor foundation, and transmit-safety boundary.
+
 ## Extension Permission Model
 
 External software, future APIs, file imports, and plugins must default to read-only permissions.
