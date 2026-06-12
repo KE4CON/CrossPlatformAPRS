@@ -4,6 +4,17 @@ This guide is the entry point for third-party developers who want to integrate s
 
 APRS Command extension hooks are the documented boundaries that let outside tools observe APRS data, submit local data, export records, or provide future drivers without linking against mutable internal application models.
 
+## Build Baseline
+
+APRS Command targets .NET 10 LTS. Install the .NET 10 SDK and use the repository `global.json` when building, testing, or running examples.
+
+```bash
+dotnet --version
+dotnet restore
+dotnet build
+dotnet test
+```
+
 ## Supported Integration Methods
 
 - Public DTO contracts in `AprsCommand.Contracts`

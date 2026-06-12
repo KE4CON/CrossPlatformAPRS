@@ -234,11 +234,15 @@ Non-breaking changes should add optional fields. Breaking changes should use a n
 ```json
 {
   "schemaVersion": "1.0",
+  "transmitId": "tx-sim-001",
   "timestamp": "2026-06-12T10:15:30+00:00",
-  "rawPacket": "N0CALL-SIM>APRS:>Blocked example",
-  "destinationTransport": "APRS-IS",
-  "success": false,
-  "failureReason": "Transmit disabled by policy",
+  "packetText": "N0CALL-SIM>APRS:>Blocked example",
+  "transmitType": "APRS-IS",
+  "requestedBy": "Simulation",
+  "permissionUsed": "ReadOnly",
+  "allowed": false,
+  "blockReason": "Transmit disabled by policy",
+  "result": "Blocked",
   "sourceMetadata": {
     "sourceType": "Simulation",
     "origin": "Simulated"

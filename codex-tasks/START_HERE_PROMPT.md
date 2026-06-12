@@ -5,7 +5,7 @@ You are working in this repository. Read `AGENTS.md`, `README.md`, `docs/FEATURE
 Start with Phase 0, Task 0.1 and Task 0.2 only.
 
 Goal:
-Create a buildable .NET 8 cross-platform C# solution for a modern amateur-radio APRS desktop client using Avalonia.
+Create a buildable cross-platform C# solution for a modern amateur-radio APRS desktop client using Avalonia. The original scaffold began on .NET 8; the current project baseline is .NET 10 LTS after Phase 14.13.
 
 Important:
 - Do not implement APRS protocol logic yet.

@@ -45,7 +45,7 @@ public sealed class AprsIsServerManagerTests
         Assert.Equal("noam.aprs2.net", selected.HostName);
         Assert.True(selected.IsDefault);
         Assert.Equal("noam.aprs2.net", manager.GetDefaultServer().HostName);
-        Assert.Single(manager.GetAllServers().Where(server => server.IsDefault));
+        Assert.Single(manager.GetAllServers(), server => server.IsDefault);
     }
 
     [Fact]

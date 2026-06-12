@@ -9,7 +9,7 @@ Target platforms:
 - macOS
 
 Recommended stack:
-- .NET 8 or newer currently; Phase 14.13 upgrades the project baseline to .NET 10 LTS before packaging
+- .NET 10 LTS SDK
 - Avalonia UI for the desktop app
 - Mapsui or equivalent map rendering layer
 - SQLite for local station/history storage
@@ -20,9 +20,23 @@ This repository is intentionally scaffolded for Codex-driven development. Start 
 
 ```bash
 dotnet --info
+dotnet --version
 dotnet restore
 dotnet build
+dotnet test
 ```
+
+The repository pins SDK selection with `global.json`. Install the .NET 10 SDK before building.
+
+## Desktop smoke run
+
+```bash
+dotnet run --project src/Aprs.Desktop
+```
+
+## Publish guidance
+
+Final installers are planned for Phase 15. Current publish guidance placeholders are documented in `docs/PUBLISHING.md`.
 
 ## Project layout
 

@@ -16,7 +16,7 @@ These rules apply to all phases, including future refactors:
 ## Phase 0 — Repository and build foundation
 
 ### Task 0.1 — Create solution structure
-Create a .NET 8 solution with these projects:
+Create the initial .NET solution structure. This started on .NET 8; the current project baseline is .NET 10 LTS after Phase 14.13.
 - Aprs.Core
 - Aprs.Transport
 - Aprs.Services
@@ -1233,7 +1233,7 @@ Acceptance criteria:
 - Documentation explains that transmit-capable extensions need explicit permissions and central safety checks.
 
 ### Task 14.13 — Upgrade project to .NET 10 LTS
-Upgrade the solution from .NET 8 to .NET 10 LTS before packaging.
+Upgrade the solution baseline from .NET 8 to .NET 10 LTS before packaging.
 
 Requirements:
 - Update project target frameworks to `net10.0`.
@@ -1264,6 +1264,8 @@ Allow full app settings backup and restore.
 ### Task 15.2 — Cross-platform packaging
 Create release packages for:
 - Windows x64
+- macOS Apple Silicon
+- macOS Intel if supported
 - Linux x64
 - Linux ARM64/Raspberry Pi
 - macOS
