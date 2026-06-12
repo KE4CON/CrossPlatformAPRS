@@ -1,6 +1,6 @@
 # APRS Command Packaging Preparation
 
-Phase 15.1 prepares APRS Command for packaging. It does not create final installers or release packages.
+Phase 15.1 prepares APRS Command for packaging. Phase 15.2 adds repeatable publish scripts and MSBuild publish profiles. These phases do not create final installers or release packages.
 
 ## Packaging Goals
 
@@ -21,32 +21,36 @@ Self-contained publish:
 - Carries the .NET runtime with APRS Command.
 - Preferred for first-user testing when runtime installation should be minimized.
 
-## Placeholder Publish Commands
+## Repeatable Publish Commands
 
-These are examples for future packaging verification, not final release commands:
+Phase 15.2 publish scripts restore, build in Release, run tests, and publish the desktop app into `artifacts/publish/<runtime-identifier>/`:
 
 ```bash
-dotnet publish src/Aprs.Desktop -c Release -r win-x64 --self-contained true
-dotnet publish src/Aprs.Desktop -c Release -r osx-arm64 --self-contained true
-dotnet publish src/Aprs.Desktop -c Release -r osx-x64 --self-contained true
-dotnet publish src/Aprs.Desktop -c Release -r linux-x64 --self-contained true
-dotnet publish src/Aprs.Desktop -c Release -r linux-arm64 --self-contained true
+./scripts/publish-win-x64.sh
+./scripts/publish-osx-arm64.sh
+./scripts/publish-osx-x64.sh
+./scripts/publish-linux-x64.sh
+./scripts/publish-linux-arm64.sh
+./scripts/publish-all.sh
 ```
 
 Raspberry Pi 5 ARM64 uses the `linux-arm64` runtime identifier:
 
 ```bash
-dotnet publish src/Aprs.Desktop -c Release -r linux-arm64 --self-contained true
+./scripts/publish-linux-arm64.sh
 ```
 
-Framework-dependent examples:
+The matching MSBuild publish profiles are stored in `src/Aprs.Desktop/Properties/PublishProfiles/`.
+
+Direct publish profile examples:
 
 ```bash
-dotnet publish src/Aprs.Desktop -c Release -r win-x64 --self-contained false
-dotnet publish src/Aprs.Desktop -c Release -r osx-arm64 --self-contained false
-dotnet publish src/Aprs.Desktop -c Release -r linux-x64 --self-contained false
-dotnet publish src/Aprs.Desktop -c Release -r linux-arm64 --self-contained false
+dotnet publish src/Aprs.Desktop/Aprs.Desktop.csproj -c Release /p:PublishProfile=win-x64
+dotnet publish src/Aprs.Desktop/Aprs.Desktop.csproj -c Release /p:PublishProfile=osx-arm64
+dotnet publish src/Aprs.Desktop/Aprs.Desktop.csproj -c Release /p:PublishProfile=linux-arm64
 ```
+
+See `docs/BUILD_AND_PUBLISH.md` for the full build and publish workflow.
 
 ## Platform Packaging Plan
 

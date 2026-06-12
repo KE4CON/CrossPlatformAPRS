@@ -1272,34 +1272,101 @@ Acceptance criteria:
 - packaging docs include Windows, macOS, Linux, and Raspberry Pi publish placeholders
 - no installers are created in this task
 
-### Task 15.2 — Cross-platform packaging
-Create release packages for:
+### Task 15.2 — Repeatable build and publish profiles
+Add repeatable publish profiles, scripts, and documentation for:
 - Windows x64
 - macOS Apple Silicon
 - macOS Intel if supported
 - Linux x64
 - Linux ARM64/Raspberry Pi
-- macOS
 
-### Task 15.3 — First-user setup wizard
-Wizard steps:
-- callsign
-- location
-- APRS-IS settings
-- map cache location
-- receive-only test
-- optional RF/TNC setup
+Scope:
+- restore/build/test before publish
+- publish `src/Aprs.Desktop` in Release mode
+- write outputs under `artifacts/publish/<runtime-identifier>/`
+- document supported runtime identifiers and platform notes
+- add validation tests for publish profiles/scripts where practical
+- do not create final installers, signed packages, package-manager manifests, or release archives
 
-### Task 15.4 — Documentation
-Create user documentation for:
-- receive-only APRS-IS operation
-- RF/TNC setup
-- Direwolf setup
-- messaging
-- objects
-- maps
-- beacon safety
-- iGate/digipeater safety
+Acceptance criteria:
+- `dotnet restore` succeeds
+- `dotnet build` succeeds
+- `dotnet test` succeeds
+- publish scripts exist for Windows x64, macOS Apple Silicon, macOS Intel, Linux x64, and Linux ARM64/Raspberry Pi
+- publish profiles exist for the same runtime identifiers
+- documentation explains output folders, self-contained publish defaults, and platform notes
+- transmit, APRS-IS transmit, RF transmit, iGate, digipeater, beaconing, weather beaconing, REST API, WebSocket, file hooks, and plugin loading remain disabled by default
+- no installers are created in this task
+
+### Task 15.3 — User documentation
+Create complete normal-user documentation for APRS Command.
+
+Scope:
+- main user manual
+- quick start guide
+- installation guide
+- first-run setup guide
+- safety and transmit guide
+- APRS-IS setup guide
+- RF/TNC setup guide
+- map and offline maps guide
+- feature-specific guides for messages, objects, weather, alerts/geofences, replay/simulation/training, RF diagnostics, logs/events/exports
+- troubleshooting guide
+- glossary
+- README links to user docs
+
+Acceptance criteria:
+- documentation is step-by-step and written for normal users
+- docs consistently use `APRS Command`
+- docs reflect the map-first layout with station list on the right and packet monitor below the map
+- docs explain transmit, APRS-IS transmit, RF transmit, iGate, digipeater, beaconing, weather beaconing, object transmit, and message transmit are disabled by default
+- docs do not include real passcodes, API tokens, private credentials, or instructions that bypass safety
+- `dotnet restore` succeeds
+- `dotnet build` succeeds
+- `dotnet test` succeeds
+
+### Task 15.4 — In-app Help viewer
+Add an in-app Help entry point and viewer for the Phase 15.3 user documentation.
+
+Scope:
+- visible Help button or menu item
+- Help viewer window or panel
+- help topic list for user manual, quick start, installation, first-run setup, safety, APRS-IS, RF/TNC, map/offline maps, messages, objects, weather, alerts/geofences, replay/simulation/training, RF diagnostics, logs/events/exports, troubleshooting, glossary, and About APRS Command
+- plain-text Markdown display is acceptable
+- search/filter by topic title and document content where practical
+- missing documents show a friendly message instead of crashing
+- user docs are copied to output and publish folders for offline help
+- README, User Manual, and Quick Start mention in-app Help
+
+Acceptance criteria:
+- `dotnet restore` succeeds
+- `dotnet build` succeeds
+- `dotnet test` succeeds
+- `dotnet run --project src/Aprs.Desktop` opens APRS Command
+- Help button/menu exists
+- Help viewer opens from the UI
+- selected documentation content displays
+- missing docs do not crash the app
+- docs are copied to output/publish folder
+- no APRS behavior or transmit behavior changes
+
+### Task 15.5 — Documentation and Help polish
+Run a focused polish pass before continuing final packaging work.
+
+Scope:
+- remove developer-only phase wording from normal-user docs where practical
+- ensure README documentation links are repository-relative
+- improve in-app Help plain-text readability
+- keep Help topics, missing-document handling, and output/publish doc copy behavior intact
+- add or update tests that guard polished documentation/help behavior
+
+Acceptance criteria:
+- `dotnet restore` succeeds
+- `dotnet build` succeeds
+- `dotnet test` succeeds
+- user docs remain available through in-app Help
+- README links do not depend on a local absolute path
+- no APRS behavior or transmit behavior changes
 
 ---
 

@@ -1,13 +1,14 @@
 # APRS Command Publishing Guidance
 
-Phase 14.13 upgrades APRS Command to target .NET 10 LTS. Phase 15 verifies first-run setup, publish output, and final packaging.
+Phase 14.13 upgrades APRS Command to target .NET 10 LTS. Phase 15 verifies first-run setup and publish output before final packaging.
 
-This document is a placeholder for publish guidance only. It does not create installers.
+This document summarizes publish guidance. It does not create installers.
 
 See also:
 
 - `docs/FIRST_RUN_SETUP.md`
 - `docs/PACKAGING_PREPARATION.md`
+- `docs/BUILD_AND_PUBLISH.md`
 
 ## SDK Requirement
 
@@ -28,9 +29,9 @@ The repository includes `global.json` pinned to the current .NET 10 SDK feature 
 dotnet run --project src/Aprs.Desktop
 ```
 
-## Future Runtime Identifiers
+## Runtime Identifiers
 
-Phase 15 should verify final publish commands for:
+Phase 15.2 includes repeatable publish profiles and scripts for:
 
 - Windows x64: `win-x64`
 - macOS Apple Silicon: `osx-arm64`
@@ -39,19 +40,23 @@ Phase 15 should verify final publish commands for:
 - Linux ARM64: `linux-arm64`
 - Raspberry Pi 5 ARM64: `linux-arm64`
 
-## Placeholder Publish Commands
+## Repeatable Publish Scripts
 
-These are guidance placeholders, not final release commands:
+These scripts restore, build in Release, test, and publish the desktop app into `artifacts/publish/<runtime-identifier>/`:
 
 ```bash
-dotnet publish src/Aprs.Desktop -c Release -r win-x64 --self-contained true
-dotnet publish src/Aprs.Desktop -c Release -r osx-arm64 --self-contained true
-dotnet publish src/Aprs.Desktop -c Release -r osx-x64 --self-contained true
-dotnet publish src/Aprs.Desktop -c Release -r linux-x64 --self-contained true
-dotnet publish src/Aprs.Desktop -c Release -r linux-arm64 --self-contained true
+./scripts/publish-win-x64.sh
+./scripts/publish-osx-arm64.sh
+./scripts/publish-osx-x64.sh
+./scripts/publish-linux-x64.sh
+./scripts/publish-linux-arm64.sh
 ```
 
-Phase 15 should confirm Avalonia app packaging, signing/notarization needs, settings storage, first-run setup, and platform-specific dependencies.
+Use `./scripts/publish-all.sh` to run every supported target. Windows users can also run `.\scripts\publish-win-x64.ps1`.
+
+Direct publish profiles are available under `src/Aprs.Desktop/Properties/PublishProfiles/`.
+
+Phase 15.3 and later should confirm Avalonia app packaging, signing/notarization needs, settings storage, first-run setup, and platform-specific dependencies.
 
 ## Safety
 

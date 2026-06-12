@@ -20,4 +20,10 @@
     <ProjectReference Include="..\Aprs.Mapping\Aprs.Mapping.csproj" />
     <ProjectReference Include="..\AprsCommand.Api\AprsCommand.Api.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\docs\*.md"
+             Link="docs\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
