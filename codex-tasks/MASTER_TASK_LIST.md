@@ -564,6 +564,8 @@ Acceptance criteria:
 
 Phase 10 is not only APRS weather display. It also includes local weather station input, common weather data normalization, APRS weather packet formatting, and safe optional weather beacon transmit.
 
+Implemented Phase 10 coverage includes APRS weather display, common weather observation normalization, APRS weather packet formatting, the modular weather driver framework, WeatherFlow Tempest UDP and Cloud, Peet Bros / ULTIMETER, Davis WeatherLink / Davis stations, Ambient Weather, Ecowitt / Fine Offset / GW1000, Cumulus MX / WeeWX / Weather Display / generic weather software imports, safe APRS weather beacon scheduling, Weather Station Setup UI, and organized offline weather test/sample data.
+
 Design rules:
 - Prefer local/offline-capable weather sources when possible
 - Keep internet/cloud APIs optional
@@ -918,6 +920,7 @@ Acceptance criteria:
 - Weather sample data is organized by source type
 - Driver parser tests run fully offline
 - Normalization, formatting, stale-data, and invalid-data tests cover the common model
+- Sample data includes a README describing fixture purpose, units, validity, and the absence of real credentials or identifying data
 
 ---
 

@@ -27,6 +27,7 @@ In scope:
 
 Weather scope notes:
 - Phase 10 is not only APRS weather display. It also includes local weather station input, common weather data normalization, APRS weather packet formatting, and safe optional weather beacon transmit.
+- Phase 10 weather support includes APRS weather display, a common weather model, APRS weather formatting, modular weather driver framework, Tempest UDP, Tempest Cloud, Peet Bros / ULTIMETER, Davis WeatherLink / Davis stations, Ambient Weather, Ecowitt / Fine Offset / GW1000, Cumulus MX / WeeWX / Weather Display / generic weather software imports, safe weather beacon scheduling, Weather Station Setup UI, and offline test/sample data coverage.
 - Local/offline-capable weather sources should be preferred when possible.
 - Internet/cloud weather APIs are optional and must use user-provided credentials where required.
 - Weather credentials/tokens must not be stored in plain text if avoidable.
