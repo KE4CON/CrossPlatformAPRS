@@ -6,7 +6,7 @@ Extensions, local APIs, file imports, plugins, and external drivers must be trea
 
 - External permissions default to `ReadOnly`.
 - Source metadata defaults to unknown and untrusted.
-- Runtime extension systems are disabled until explicitly enabled in a future phase.
+- Runtime extension systems remain disabled by default and must be explicitly enabled by the operator as the Phase 14.6-14.12 hook sequence is implemented.
 - No extension can transmit by default.
 
 ## Central Transmit Safety Rule

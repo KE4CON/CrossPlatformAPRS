@@ -1,6 +1,6 @@
 # Extension Hook Foundation
 
-Phase 14.5 prepares APRS Command for future local APIs, event streams, file import/export, plugins, and third-party drivers without implementing those runtime systems yet.
+Phase 14.5 prepares APRS Command for the full pre-packaging extension hook sequence. The project direction is to complete extension hooks before Phase 15 packaging rather than deferring the runtime work until a later Phase 16.
 
 ## What Phase 14.5 Adds
 
@@ -10,7 +10,7 @@ Phase 14.5 prepares APRS Command for future local APIs, event streams, file impo
 - A future-facing extension permission model.
 - Documentation for extension safety and architecture boundaries.
 
-This phase is intentionally foundational. The REST API, WebSocket server, file watcher/import runtime, plugin loader, SDK packaging, and developer examples remain Phase 16 work.
+This phase is intentionally foundational. The REST API, WebSocket server, file import/export runtime, plugin/driver framework, and developer examples are planned as Phase 14.6 through Phase 14.12, all before Phase 15 packaging.
 
 ## Public DTO Contract Strategy
 
@@ -28,7 +28,7 @@ Initial placeholder DTOs include:
 - `AlertDto`
 - `TransmitLogDto`
 
-Each public DTO carries a `SchemaVersion`, source metadata, validation warnings, validation errors, and notes where appropriate. Future Phase 16 work should add mapping/adapters between internal models and these contracts rather than exposing internal records directly.
+Each public DTO carries a `SchemaVersion`, source metadata, validation warnings, validation errors, and notes where appropriate. Phase 14.6 should finalize mapping/adapters between internal models and these contracts rather than exposing internal records directly.
 
 ## Source Tagging Standard
 
@@ -106,16 +106,21 @@ Planned permission levels:
 
 Transmit-related permissions must never be granted implicitly. Operator configuration and centralized transmit safety checks are required before any extension can queue or request transmit-capable work.
 
-## Intentionally Deferred to Phase 16
+## Pre-Packaging Extension Sequence
 
-Phase 16 builds the runtime hook system:
+Phase 14.5 through Phase 14.12 build the extension hook system before packaging:
 
-- Phase 16.1: Public Data Contracts Finalization
-- Phase 16.2: Local REST API
-- Phase 16.3: WebSocket Event Streams
-- Phase 16.4: File Import/Export Hooks
-- Phase 16.5: Plugin/Driver Framework
-- Phase 16.6: Extension Permission Enforcement
-- Phase 16.7: Developer Documentation and Examples
+- Phase 14.5: Extension Hook Foundation
+- Phase 14.6: Public Data Contracts
+- Phase 14.7: Internal Event Bus
+- Phase 14.8: Local REST API
+- Phase 14.9: WebSocket Event Streams
+- Phase 14.10: File Import/Export Hooks
+- Phase 14.11: Plugin/Driver Framework
+- Phase 14.12: Developer Documentation and Examples
 
-Phase 14.5 should not add network listeners, WebSocket endpoints, plugin loading, file watchers, SDK packaging, or public transmit endpoints.
+Phase 14.5 should not add network listeners, WebSocket endpoints, plugin loading, file watchers, SDK packaging, or public transmit endpoints. Those runtime pieces are now scheduled immediately afterward in Phase 14.8 through Phase 14.12, before Phase 15 packaging.
+
+## Why Hooks Move Before Packaging
+
+Packaging and first-user setup should ship around stable integration boundaries. Completing hooks before packaging reduces later breaking changes to settings, source tagging, external contracts, local API authorization, file schemas, plugin permissions, and transmit safety enforcement.

@@ -35,7 +35,7 @@ Build a modern amateur-radio APRS application with:
 - Keep transmit safety centralized so all APRS-IS, RF/TNC, beacon, object, message, weather, iGate, and digipeater transmit flows share the same safety gates.
 - Keep weather, GPS, APRS, replay, simulation, and future input sources modular behind driver/service abstractions.
 - Avoid hardwiring transports, parsers, or services directly into UI views; use view models and service abstractions.
-- Current feature phases should preserve modular data models, source-tag incoming data, centralize transmit safety, and avoid tight UI coupling to packet/weather/GPS input sources even before Phase 16 formalizes extension boundaries.
+- Current feature phases should preserve modular data models, source-tag incoming data, centralize transmit safety, and avoid tight UI coupling to packet/weather/GPS input sources while the Phase 14.5-14.12 extension work formalizes extension boundaries before packaging.
 - Write tests for parser, message ACK handling, object handling, station expiration, and beacon scheduling.
 - Do not transmit RF by default. Any RF transmit feature must require explicit user configuration.
 - Add safety warnings for high beacon rates, bad paths, and RF transmit enablement.

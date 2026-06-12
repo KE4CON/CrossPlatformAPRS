@@ -1056,25 +1056,187 @@ Acceptance criteria:
 - RF and APRS-IS TX are disabled
 
 ### Task 14.5 — Extension hook foundation before packaging
-Add the architectural foundation for future extension hooks before Phase 15 packaging.
+Establish the architecture for external hooks before Phase 15 packaging.
 
 Scope:
-- Add or prepare a public contracts project for stable external DTO placeholders.
-- Add a common source/origin metadata standard for received, generated, imported, replayed, simulated, training, API, file, and plugin data.
-- Add a lightweight internal event bus abstraction so services can publish app events without hardwiring future API/WebSocket/plugin hooks.
-- Add a future-facing extension permission model that defaults to read-only.
-- Document that all transmit-capable actions must pass through centralized transmit safety checks.
-- Do not add REST API, WebSocket server, plugin loader, SDK packaging, or file watcher runtime in this phase.
+- Define source tagging rules.
+- Define central transmit safety rules.
+- Define the external permission model.
+- Prepare the architecture for public contracts, REST API, WebSocket streams, file import/export, plugin/driver hooks, and developer documentation.
+- Explain why extension hooks are being completed before packaging.
+- Do not add REST API, WebSocket server, plugin loader, SDK packaging, or file watcher runtime in this task.
 
 Acceptance criteria:
-- Public contract placeholders exist or are explicitly planned.
-- Source metadata, event bus, and extension permissions have focused tests if code is added.
-- Extension documentation explains what is deferred to Phase 16.
+- Source tagging and extension security documentation exists.
+- Central transmit safety expectations are documented.
+- The remaining full hook work is listed as Phase 14.6 through Phase 14.12 before Phase 15.
 - No extension hook can bypass transmit safety.
+
+### Task 14.6 — Public data contracts
+Create the public contracts project/layer for stable external DTOs.
+
+Requirements:
+- Add stable DTOs for outside software.
+- Keep external contracts separate from internal models.
+- Include schema versioning.
+- Include source metadata.
+- Include validation warnings/errors and notes.
+- Add mapping/adapters where needed without exposing mutable internal models.
+
+Acceptance criteria:
+- Public contracts are buildable and versionable.
+- Representative DTO tests pass.
+- Existing internal domain models remain separate from public contracts.
+
+### Task 14.7 — Internal event bus
+Add a lightweight internal publish/subscribe event system.
+
+Event support should include:
+- station events
+- object events
+- weather events
+- message events
+- GPS events
+- port events
+- alert events
+- raw packet events
+- decoded event events
+- transmit events
+- iGate events
+- digipeater events
+- replay events
+- simulation events
+- training events
+
+Acceptance criteria:
+- UI, logs, future APIs, and plugins can subscribe without tight coupling.
+- Publishing with no subscribers is safe.
+- Event payloads include source metadata where practical.
+- Tests cover publish/subscribe behavior.
+
+### Task 14.8 — Local REST API
+Add an optional local REST API.
+
+Requirements:
+- Disabled by default.
+- Localhost-only by default.
+- Token/API-key protected.
+- Read-only by default.
+- Provide read endpoints for stations, objects, weather, messages, GPS, ports, alerts, raw packets, decoded events, and diagnostics.
+- Provide carefully controlled submit endpoints for external station/weather/object data.
+- Transmit-related endpoints must require explicit permission and central safety checks.
+
+Acceptance criteria:
+- API configuration defaults are disabled and localhost-only.
+- Read endpoints use public DTO contracts.
+- Submit endpoints validate and source-tag data.
+- No REST endpoint can bypass transmit safety.
+
+### Task 14.9 — WebSocket event streams
+Add optional live WebSocket streams.
+
+Requirements:
+- Disabled by default.
+- Localhost-only by default.
+- Token/API-key protected.
+- Stream live events for stations, objects, weather, messages, raw packets, decoded events, alerts, GPS, ports, diagnostics, replay, simulation, and training.
+- Do not support transmit through WebSocket unless explicitly designed later with safety permissions.
+
+Acceptance criteria:
+- Streams use public DTO/event contracts.
+- Stream payloads include source metadata.
+- WebSocket runtime is disabled until the operator enables it.
+- No transmit path is exposed through WebSocket in this task.
+
+### Task 14.10 — File import/export hooks
+Add safe file-based import/export hooks.
+
+Export examples:
+- `stations.json`
+- `weather.json`
+- `objects.geojson`
+- `raw-packets.log`
+- `messages.csv`
+- `alerts.json`
+- `diagnostics.json`
+
+Import examples:
+- external weather data
+- station data
+- object data
+- GPS data
+- raw packet data
+
+Requirements:
+- Use `schemaVersion` and source metadata.
+- Validate imported data.
+- Imported data must be tagged as `FileImport`.
+- File imports must not trigger transmit by default.
+
+Acceptance criteria:
+- Export files use stable contracts or documented schemas.
+- Import tests run offline with sample data.
+- Invalid imports produce validation errors.
+- File imports do not transmit packets automatically.
+
+### Task 14.11 — Plugin/driver framework
+Add the basic plugin/driver interface framework.
+
+Do not require dynamic third-party binary loading if that is too much for this phase.
+
+At minimum, define stable interfaces for:
+- `WeatherInputDriver`
+- `PacketInputDriver`
+- `GpsInputDriver`
+- `ObjectProvider`
+- `MapLayerProvider`
+- `StationDataExporter`
+- `AlertRuleProvider`
+- `ExternalDisplayProvider`
+
+Plugins/drivers must declare:
+- name
+- version
+- source type
+- capabilities
+- permissions requested
+- safety limits
+
+Acceptance criteria:
+- Plugin loading is disabled by default unless the operator enables it.
+- Plugins/drivers cannot bypass transmit safety.
+- Interface tests use fake drivers and require no hardware, internet, credentials, or UI.
+
+### Task 14.12 — Developer documentation and examples
+Create developer documentation for extension hooks.
+
+Documentation should cover:
+- public DTOs
+- source tagging
+- REST API
+- WebSocket streams
+- file import/export schemas
+- plugin/driver interfaces
+- permission model
+- transmit safety rules
+
+Add simple examples where practical:
+- external weather submitter
+- external dashboard reader
+- file export reader
+- sample plugin/driver stub
+
+Acceptance criteria:
+- Developers can build a read-only integration from examples without referencing internal mutable models.
+- Examples avoid live transmit.
+- Examples run without external hardware or credentials where practical.
+- Documentation explains that transmit-capable extensions need explicit permissions and central safety checks.
 
 ---
 
-## Phase 15 — Packaging and release
+## Phase 15 — Packaging and First-User Setup
+
+Phase 15 must not begin until extension hook phases 14.5 through 14.12 are complete, buildable, tested, and documented.
 
 ### Task 15.1 — Settings import/export
 Allow full app settings backup and restore.
@@ -1108,76 +1270,8 @@ Create user documentation for:
 
 ---
 
-## Phase 16 — Extension Hooks, Local API, WebSocket Events, Import/Export, and Plugins
+## Phase 16 — Moved before packaging
 
-Phase 14.5 adds the foundation: public DTO placeholders, source metadata, a lightweight internal event bus, extension permissions, and documentation. Phase 16 builds the full runtime hook system on top of that foundation.
+The extension hook work that previously lived in Phase 16 has moved to Phase 14.5 through Phase 14.12 so it is completed before Phase 15 packaging and first-user setup.
 
-### Task 16.1 — Public Data Contracts Finalization
-Finalize versioned public data contracts and mapping adapters for stations, packets, objects, weather, GPS, messages, ports, alerts, and transmit logs.
-
-Acceptance criteria:
-- Public DTOs are stable, documented, versioned, and separate from mutable internal models.
-- Mapping tests cover representative internal-to-contract conversions.
-- Contracts include source metadata and validation information.
-
-### Task 16.2 — Local REST API
-Add a local-only REST API for app health, port status, station/object/message/weather/GPS summaries, packet logs, replay state, alert status, and transmit safety status.
-
-Acceptance criteria:
-- API is disabled by default and binds to loopback by default.
-- API uses public contracts only.
-- No credentials or secrets are exposed.
-- Any transmit-capable endpoint routes through central transmit safety checks and explicit operator enablement.
-
-### Task 16.3 — WebSocket Event Streams
-Add local WebSocket streams for packet, parser, station, object, weather, GPS, message, port, alert, replay, simulation, training, and transmit safety events.
-
-Acceptance criteria:
-- Event payloads use public contracts and source metadata.
-- Event streaming is disabled by default unless explicitly enabled.
-- Streams support filtering/subscription where practical.
-- Event streaming does not couple directly to Avalonia views.
-
-### Task 16.4 — File Import/Export Hooks
-Create file import/export hooks for packet logs, decoded events, station lists, trails, objects/items, messages, weather observations, GPS tracks/fixes, tactical labels, settings backups, and replay files.
-
-Acceptance criteria:
-- Imported data is source-tagged as file import/replay/manual as appropriate.
-- Importers validate data, preserve raw payloads where useful, and never trigger transmit automatically.
-- Exporters use public contracts or explicit export models.
-- Tests run offline with sample files.
-
-### Task 16.5 — Plugin/Driver Framework
-Create a plugin and driver framework for optional APRS inputs, weather drivers, GPS providers, file handlers, map providers, alert notifiers, diagnostics exporters, and simulation sources.
-
-Acceptance criteria:
-- Plugins/drivers declare capability metadata, lifecycle status, configuration requirements, and source identity.
-- Plugins publish normalized events through application service abstractions.
-- Plugin failures are isolated and logged.
-- Tests use fake plugins/drivers and require no external hardware, internet, credentials, or UI.
-
-### Task 16.6 — Extension Permission Enforcement
-Enforce extension permissions for local API clients, file imports, plugins, and drivers.
-
-Permissions:
-- ReadOnly
-- SubmitLocalData
-- CreateLocalObjects
-- QueuePackets
-- TransmitAprsIs
-- TransmitRf
-- Admin
-
-Acceptance criteria:
-- Default external permission is read-only.
-- Transmit permissions require explicit operator enablement.
-- API/plugin/file-import packet requests cannot bypass central transmit safety.
-- Enforcement tests cover allowed, blocked, transmit-disabled, training/replay lockout, and admin scenarios.
-
-### Task 16.7 — Developer Documentation and Examples
-Add developer-facing documentation and examples for contracts, REST, WebSocket streams, file import/export, plugin/driver development, source tagging, permissions, and transmit safety expectations.
-
-Acceptance criteria:
-- Developers can build a read-only integration from examples without referencing internal models.
-- Documentation explains source metadata, event types, permission boundaries, and transmit safety rules.
-- Examples avoid live transmit and run without external hardware or credentials.
+Do not add new extension-hook tasks here unless they are follow-up hardening items after the pre-packaging hook sequence is complete.
