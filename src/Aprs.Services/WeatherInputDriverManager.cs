@@ -105,12 +105,12 @@ public sealed class WeatherInputDriverManager : IWeatherInputDriverManager
         registration.LastObservationTimeUtc = args.ReceivedAtUtc;
         registration.LastValidationResult = validationResult;
 
-        if (registration.Driver is ManualWeatherInputDriver manualDriver)
+        if (registration.Driver is IWeatherInputDriverStatusSink statusSink)
         {
-            manualDriver.SetValidationResult(validationResult);
-            manualDriver.SetStatus(validationResult.Warnings.Any(IsStaleWarning)
+            statusSink.SetValidationResult(validationResult);
+            statusSink.SetStatus(validationResult.Warnings.Any(IsStaleWarning)
                 ? WeatherInputDriverStatus.Stale
-                : manualDriver.Status is WeatherInputDriverStatus.Disabled ? WeatherInputDriverStatus.Disabled : WeatherInputDriverStatus.Running);
+                : registration.Driver.Status is WeatherInputDriverStatus.Disabled ? WeatherInputDriverStatus.Disabled : WeatherInputDriverStatus.Running);
         }
 
         if (!validationResult.IsValid)

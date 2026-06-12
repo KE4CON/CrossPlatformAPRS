@@ -1,6 +1,6 @@
 namespace Aprs.Services;
 
-public sealed class ManualWeatherInputDriver : IWeatherInputDriver
+public sealed class ManualWeatherInputDriver : IWeatherInputDriver, IWeatherInputDriverStatusSink
 {
     public ManualWeatherInputDriver(WeatherInputDriverConfiguration configuration)
     {
@@ -52,12 +52,12 @@ public sealed class ManualWeatherInputDriver : IWeatherInputDriver
             new WeatherObservationReceivedEventArgs(DriverId, observation, receivedAtUtc ?? DateTimeOffset.UtcNow));
     }
 
-    internal void SetValidationResult(WeatherObservationValidationResult validationResult)
+    public void SetValidationResult(WeatherObservationValidationResult validationResult)
     {
         LastValidationResult = validationResult;
     }
 
-    internal void SetStatus(WeatherInputDriverStatus status)
+    public void SetStatus(WeatherInputDriverStatus status)
     {
         Status = status;
     }

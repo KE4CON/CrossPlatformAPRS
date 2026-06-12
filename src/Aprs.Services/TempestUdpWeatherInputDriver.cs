@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Aprs.Services;
 
-public sealed class TempestUdpWeatherInputDriver : IWeatherInputDriver, IAsyncDisposable
+public sealed class TempestUdpWeatherInputDriver : IWeatherInputDriver, IWeatherInputDriverStatusSink, IAsyncDisposable
 {
     private readonly TempestUdpConfiguration tempestConfiguration;
     private readonly TempestUdpJsonParser parser;
@@ -114,6 +114,16 @@ public sealed class TempestUdpWeatherInputDriver : IWeatherInputDriver, IAsyncDi
         LastObservation = result.Observation;
         Status = Enabled ? WeatherInputDriverStatus.Running : WeatherInputDriverStatus.Disabled;
         ObservationReceived?.Invoke(this, new WeatherObservationReceivedEventArgs(DriverId, result.Observation, receivedAt));
+    }
+
+    public void SetValidationResult(WeatherObservationValidationResult validationResult)
+    {
+        LastValidationResult = validationResult;
+    }
+
+    public void SetStatus(WeatherInputDriverStatus status)
+    {
+        Status = status;
     }
 
     public async ValueTask DisposeAsync()
