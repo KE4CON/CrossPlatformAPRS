@@ -114,6 +114,140 @@ Phase 14.6 defines DTOs for:
 - `SimulationStatusDto`
 - `ReplayStatusDto`
 
+## DTO Naming Conventions
+
+Public DTOs use a `Dto` suffix and describe an external contract shape rather than an internal service object. DTO properties should remain JSON-friendly and avoid Avalonia, transport, file handle, serial port, or mutable service dependencies.
+
+## Serialization Notes
+
+Use `System.Text.Json` with web-style JSON names and string enum conversion where practical. Consumers should ignore unknown fields so APRS Command can add optional fields without breaking older integrations.
+
+## Backward Compatibility Notes
+
+Non-breaking changes should add optional fields. Breaking changes should use a new schema version or compatibility adapter. REST responses, WebSocket payloads, file exports, and plugin payloads should all preserve the schema version.
+
+## DTO Examples
+
+### StationUpdateDto
+
+```json
+{
+  "schemaVersion": "1.0",
+  "callsign": "SIM001",
+  "displayName": "Sim Station 1",
+  "latitude": 39.058333,
+  "longitude": -84.508333,
+  "sourceMetadata": {
+    "sourceName": "Simulation",
+    "sourceType": "Simulation",
+    "sourceId": "sim",
+    "origin": "Simulated",
+    "trustLevel": "Internal"
+  },
+  "validationWarnings": [],
+  "validationErrors": []
+}
+```
+
+### WeatherObservationDto
+
+```json
+{
+  "schemaVersion": "1.0",
+  "stationId": "TESTWX",
+  "temperature": 72,
+  "humidity": 50,
+  "windDirection": 180,
+  "windSpeed": 5,
+  "sourceMetadata": {
+    "sourceName": "Example Weather Driver",
+    "sourceType": "WeatherDriver",
+    "sourceId": "testwx-driver",
+    "origin": "Imported",
+    "trustLevel": "External"
+  },
+  "validationWarnings": [],
+  "validationErrors": []
+}
+```
+
+### AprsObjectDto
+
+```json
+{
+  "schemaVersion": "1.0",
+  "objectName": "OBJTEST",
+  "objectType": "object",
+  "latitude": 39.06,
+  "longitude": -84.51,
+  "symbolTable": "/",
+  "symbolCode": "-",
+  "comment": "Example object",
+  "sourceMetadata": {
+    "sourceType": "FileImport",
+    "origin": "Imported",
+    "trustLevel": "External"
+  },
+  "validationWarnings": [],
+  "validationErrors": []
+}
+```
+
+### RawPacketDto
+
+```json
+{
+  "schemaVersion": "1.0",
+  "rawPacket": "N0CALL-SIM>APRS:>Example packet",
+  "sourceCallsign": "N0CALL-SIM",
+  "direction": "Received",
+  "sourceMetadata": {
+    "sourceType": "FileImport",
+    "origin": "Imported"
+  },
+  "validationWarnings": [],
+  "validationErrors": []
+}
+```
+
+### AlertDto
+
+```json
+{
+  "schemaVersion": "1.0",
+  "alertId": "alert-sim-001",
+  "alertType": "StationEnteredArea",
+  "severity": "Warning",
+  "summary": "SIM001 entered training area",
+  "acknowledged": false,
+  "sourceMetadata": {
+    "sourceType": "Simulation",
+    "origin": "Simulated"
+  },
+  "validationWarnings": [],
+  "validationErrors": []
+}
+```
+
+### TransmitLogDto
+
+```json
+{
+  "schemaVersion": "1.0",
+  "timestamp": "2026-06-12T10:15:30+00:00",
+  "rawPacket": "N0CALL-SIM>APRS:>Blocked example",
+  "destinationTransport": "APRS-IS",
+  "success": false,
+  "failureReason": "Transmit disabled by policy",
+  "sourceMetadata": {
+    "sourceType": "Simulation",
+    "origin": "Simulated"
+  },
+  "validationWarnings": [],
+  "validationErrors": []
+}
+```
+
 ## Future Use
 
 Later pre-packaging phases should use these DTOs as the shared payload model for:
@@ -127,3 +261,4 @@ Later pre-packaging phases should use these DTOs as the shared payload model for
 See `docs/LOCAL_REST_API.md` for the Phase 14.8 local API foundation and endpoint plan.
 See `docs/WEBSOCKET_EVENT_STREAMS.md` for the Phase 14.9 WebSocket event envelope and stream plan.
 See `docs/FILE_IMPORT_EXPORT_HOOKS.md` for the Phase 14.10 file import/export schemas and safety rules.
+See `docs/DEVELOPER_GUIDE.md` for the Phase 14.12 developer entry point.

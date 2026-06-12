@@ -224,6 +224,71 @@ WX9XYZ>APRS:!3903.50N/08430.50W_180/005g010t072r000p000P000
 }
 ```
 
+## Example Weather Export
+
+```json
+{
+  "schemaVersion": "1.0",
+  "itemCount": 1,
+  "data": [
+    {
+      "schemaVersion": "1.0",
+      "stationId": "TESTWX",
+      "temperature": 72,
+      "sourceMetadata": {
+        "sourceType": "WeatherDriver",
+        "origin": "Imported"
+      }
+    }
+  ],
+  "validationWarnings": [],
+  "validationErrors": []
+}
+```
+
+## Example Alerts Export
+
+```json
+{
+  "schemaVersion": "1.0",
+  "itemCount": 1,
+  "data": [
+    {
+      "schemaVersion": "1.0",
+      "alertId": "alert-sim-001",
+      "severity": "Warning",
+      "summary": "SIM001 entered training area"
+    }
+  ],
+  "validationWarnings": [],
+  "validationErrors": []
+}
+```
+
+## Example Diagnostics Export
+
+```json
+{
+  "schemaVersion": "1.0",
+  "itemCount": 1,
+  "data": [
+    {
+      "schemaVersion": "1.0",
+      "packetId": "pkt-sim-001",
+      "callsign": "SIM001",
+      "seenOnRf": true,
+      "seenOnAprsIs": false
+    }
+  ],
+  "validationWarnings": [],
+  "validationErrors": []
+}
+```
+
+## Processed and Rejected Files
+
+Manual folder scanning can move accepted imports to `processed/` and rejected imports to `rejected/`. Rejected files should be reviewed by the operator or external tool author; APRS Command should not silently repair unsafe imports.
+
 ## External Tool Guidance
 
 External tools should:

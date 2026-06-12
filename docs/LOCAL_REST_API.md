@@ -126,6 +126,36 @@ Authorization: Bearer test-token
 
 Example response body is a JSON array of `StationUpdateDto`.
 
+Health check:
+
+```bash
+curl -H "Authorization: Bearer LOCAL_TOKEN" http://127.0.0.1:8765/api/health
+```
+
+Get stations:
+
+```bash
+curl -H "Authorization: Bearer LOCAL_TOKEN" http://127.0.0.1:8765/api/stations
+```
+
+Get weather:
+
+```bash
+curl -H "Authorization: Bearer LOCAL_TOKEN" http://127.0.0.1:8765/api/weather
+```
+
+Get objects:
+
+```bash
+curl -H "Authorization: Bearer LOCAL_TOKEN" http://127.0.0.1:8765/api/objects
+```
+
+Get alerts:
+
+```bash
+curl -H "Authorization: Bearer LOCAL_TOKEN" http://127.0.0.1:8765/api/alerts
+```
+
 ## Example External Weather Submit
 
 ```json
@@ -159,6 +189,42 @@ Example response body is a JSON array of `StationUpdateDto`.
 }
 ```
 
+Example external station submit:
+
+```bash
+curl -X POST \
+  -H "Authorization: Bearer LOCAL_TOKEN" \
+  -H "Content-Type: application/json" \
+  --data @examples/rest/submit-station.example.json \
+  http://127.0.0.1:8765/api/external/station
+```
+
+Example external weather submit:
+
+```bash
+curl -X POST \
+  -H "Authorization: Bearer LOCAL_TOKEN" \
+  -H "Content-Type: application/json" \
+  --data @examples/rest/submit-weather.example.json \
+  http://127.0.0.1:8765/api/external/weather
+```
+
+Example external object submit:
+
+```json
+{
+  "schemaVersion": "1.0",
+  "objectName": "OBJTEST",
+  "objectType": "object",
+  "latitude": 39.06,
+  "longitude": -84.51,
+  "sourceMetadata": {
+    "sourceType": "LocalApi",
+    "origin": "LocalApi"
+  }
+}
+```
+
 ## Example Blocked Transmit Request
 
 ```text
@@ -173,6 +239,18 @@ Expected Phase 14.8 behavior is a policy error such as:
   "error": "Transmit queue endpoint is disabled."
 }
 ```
+
+Example blocked transmit request body:
+
+```json
+{
+  "schemaVersion": "1.0",
+  "rawPacket": "N0CALL-SIM>APRS:>Blocked example",
+  "requestedTransport": "APRS-IS"
+}
+```
+
+The expected result is a policy rejection unless future operator settings and central transmit safety explicitly allow the request.
 
 ## Runtime Hosting Note
 

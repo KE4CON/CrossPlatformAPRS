@@ -49,6 +49,19 @@ Example connection URL:
 ws://127.0.0.1:8766/ws/events?token=YOUR_LOCAL_TOKEN
 ```
 
+Simple client pseudocode:
+
+```text
+connect ws://127.0.0.1:8766/ws/events?token=LOCAL_TOKEN
+send {"command":"subscribe","filter":{"eventCategories":["Station","Weather"],"minimumSeverity":"Info"}}
+for each message:
+  parse envelope
+  inspect eventType and payloadType
+  update dashboard
+on disconnect:
+  wait, then reconnect if the operator still has streams enabled
+```
+
 ## Message Envelope
 
 Every outbound message uses a stable envelope:
@@ -115,6 +128,30 @@ Payloads use `AprsCommand.Contracts` DTOs where practical, including:
 }
 ```
 
+## Example Weather Message
+
+```json
+{
+  "schemaVersion": "1.0",
+  "streamName": "weather",
+  "eventType": "WeatherUpdated",
+  "eventCategory": "Weather",
+  "payloadType": "WeatherObservationDto",
+  "payload": {
+    "schemaVersion": "1.0",
+    "stationId": "TESTWX",
+    "temperature": 72,
+    "humidity": 50,
+    "sourceMetadata": {
+      "sourceType": "WeatherDriver",
+      "origin": "Imported"
+    }
+  },
+  "warnings": [],
+  "errors": []
+}
+```
+
 ## Example Raw Packet Message
 
 ```json
@@ -174,6 +211,8 @@ The service supports basic server-side and client-side filtering:
 - minimum severity
 
 Dedicated endpoints apply a default category filter. For example, `/ws/stations` defaults to station events and `/ws/weather` defaults to weather events.
+
+If a client disconnects unexpectedly, the service drops the client safely. External dashboards should reconnect with backoff and should not assume that missed events are replayed.
 
 Inbound client messages are limited to safe stream controls:
 
