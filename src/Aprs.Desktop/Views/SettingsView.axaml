@@ -67,6 +67,15 @@
           <views:IGateStatusView DataContext="{Binding IGateStatus}" />
         </Border>
       </TabItem>
+      <TabItem Header="Digipeater">
+        <Border BorderBrush="#CBD5E1"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="12"
+                Background="#F8FAFC">
+          <views:DigipeaterStatusView DataContext="{Binding DigipeaterStatus}" />
+        </Border>
+      </TabItem>
     </TabControl>
   </Grid>
 </UserControl>
