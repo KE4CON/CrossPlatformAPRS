@@ -7,14 +7,15 @@ namespace Aprs.Desktop.ViewModels;
 public sealed class WeatherViewModel
 {
     public WeatherViewModel(IWeatherDisplayService weatherService, DateTimeOffset now)
-        : this(weatherService, now, WeatherBeaconSettingsViewModel.CreateDesignTime())
+        : this(weatherService, now, WeatherBeaconSettingsViewModel.CreateDesignTime(), WeatherStationSetupViewModel.CreateDesignTime())
     {
     }
 
     public WeatherViewModel(
         IWeatherDisplayService weatherService,
         DateTimeOffset now,
-        WeatherBeaconSettingsViewModel beaconSettings)
+        WeatherBeaconSettingsViewModel beaconSettings,
+        WeatherStationSetupViewModel setup)
     {
         weatherService.UpdateStaleStates(now);
         Rows = new ObservableCollection<WeatherStationRowViewModel>(
@@ -22,6 +23,7 @@ public sealed class WeatherViewModel
         SelectedStation = Rows.FirstOrDefault();
         Summary = $"{Rows.Count} weather stations";
         BeaconSettings = beaconSettings;
+        Setup = setup;
     }
 
     public ObservableCollection<WeatherStationRowViewModel> Rows { get; }
@@ -33,6 +35,8 @@ public sealed class WeatherViewModel
     public bool HasStations => Rows.Count > 0;
 
     public WeatherBeaconSettingsViewModel BeaconSettings { get; }
+
+    public WeatherStationSetupViewModel Setup { get; }
 
     public static WeatherViewModel CreateDesignTime()
     {

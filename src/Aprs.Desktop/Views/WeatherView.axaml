@@ -201,6 +201,9 @@
       <TabItem Header="Beacon">
         <views:WeatherBeaconSettingsView DataContext="{Binding BeaconSettings}" />
       </TabItem>
+      <TabItem Header="Setup">
+        <views:WeatherStationSetupView DataContext="{Binding Setup}" />
+      </TabItem>
     </TabControl>
   </Grid>
 </UserControl>
