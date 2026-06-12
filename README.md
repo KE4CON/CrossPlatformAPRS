@@ -9,7 +9,7 @@ Target platforms:
 - macOS
 
 Recommended stack:
-- .NET 8 or newer
+- .NET 8 or newer currently; Phase 14.13 upgrades the project baseline to .NET 10 LTS before packaging
 - Avalonia UI for the desktop app
 - Mapsui or equivalent map rendering layer
 - SQLite for local station/history storage

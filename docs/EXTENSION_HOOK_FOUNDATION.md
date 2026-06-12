@@ -1,6 +1,6 @@
 # Extension Hook Foundation
 
-Phase 14.5 prepares APRS Command for the full pre-packaging extension hook sequence. The project direction is to complete extension hooks before Phase 15 packaging rather than deferring the runtime work until a later Phase 16.
+Phase 14.5 prepares APRS Command for the full pre-packaging extension hook sequence. The project direction is to complete extension hooks before Phase 15 packaging rather than deferring the runtime work until a later Phase 16. After Phase 14.12, Phase 14.13 upgrades the solution to .NET 10 LTS before packaging.
 
 ## What Phase 14.5 Adds
 
@@ -10,7 +10,7 @@ Phase 14.5 prepares APRS Command for the full pre-packaging extension hook seque
 - A future-facing extension permission model.
 - Documentation for extension safety and architecture boundaries.
 
-This phase is intentionally foundational. The REST API, WebSocket server, file import/export runtime, plugin/driver framework, and developer examples are planned as Phase 14.6 through Phase 14.12, all before Phase 15 packaging.
+This phase is intentionally foundational. The REST API, WebSocket server, file import/export runtime, plugin/driver framework, and developer examples are planned as Phase 14.6 through Phase 14.12, followed by the .NET 10 LTS upgrade in Phase 14.13, all before Phase 15 packaging.
 
 ## Public DTO Contract Strategy
 
@@ -112,7 +112,7 @@ Transmit-related permissions must never be granted implicitly. Operator configur
 
 ## Pre-Packaging Extension Sequence
 
-Phase 14.5 through Phase 14.12 build the extension hook system before packaging:
+Phase 14.5 through Phase 14.13 complete the pre-packaging integration and runtime baseline:
 
 - Phase 14.5: Extension Hook Foundation
 - Phase 14.6: Public Data Contracts
@@ -122,6 +122,7 @@ Phase 14.5 through Phase 14.12 build the extension hook system before packaging:
 - Phase 14.10: File Import/Export Hooks
 - Phase 14.11: Plugin/Driver Framework
 - Phase 14.12: Developer Documentation and Examples
+- Phase 14.13: Upgrade Project to .NET 10 LTS
 
 Phase 14.5 should not add network listeners, WebSocket endpoints, plugin loading, file watchers, SDK packaging, or public transmit endpoints. Those runtime pieces are now scheduled immediately afterward in Phase 14.8 through Phase 14.12, before Phase 15 packaging.
 

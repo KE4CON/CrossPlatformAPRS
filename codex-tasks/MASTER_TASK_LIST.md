@@ -1069,7 +1069,7 @@ Scope:
 Acceptance criteria:
 - Source tagging and extension security documentation exists.
 - Central transmit safety expectations are documented.
-- The remaining full hook work is listed as Phase 14.6 through Phase 14.12 before Phase 15.
+- The remaining pre-packaging work is listed as Phase 14.6 through Phase 14.13 before Phase 15.
 - No extension hook can bypass transmit safety.
 
 ### Task 14.6 — Public data contracts
@@ -1232,11 +1232,31 @@ Acceptance criteria:
 - Examples run without external hardware or credentials where practical.
 - Documentation explains that transmit-capable extensions need explicit permissions and central safety checks.
 
+### Task 14.13 — Upgrade project to .NET 10 LTS
+Upgrade the solution from .NET 8 to .NET 10 LTS before packaging.
+
+Requirements:
+- Update project target frameworks to `net10.0`.
+- Update package references where needed for .NET 10 compatibility.
+- Update build and developer documentation to mention .NET 10 LTS.
+- Verify Avalonia desktop compatibility.
+- Verify contracts, API foundation, services, mapping, transport, and tests build on .NET 10.
+- Do not combine the runtime upgrade with feature work.
+- Do not change transmit behavior.
+
+Acceptance criteria:
+- .NET 10 SDK is required and documented.
+- `dotnet restore` succeeds.
+- `dotnet build` succeeds.
+- `dotnet test` succeeds.
+- `dotnet run --project src/Aprs.Desktop` opens the app.
+- Existing Phase 1 through Phase 14.12 tests still pass.
+
 ---
 
 ## Phase 15 — Packaging and First-User Setup
 
-Phase 15 must not begin until extension hook phases 14.5 through 14.12 are complete, buildable, tested, and documented.
+Phase 15 must not begin until extension hook phases 14.5 through 14.12 and the .NET 10 LTS upgrade in Phase 14.13 are complete, buildable, tested, and documented.
 
 ### Task 15.1 — Settings import/export
 Allow full app settings backup and restore.
@@ -1272,6 +1292,6 @@ Create user documentation for:
 
 ## Phase 16 — Moved before packaging
 
-The extension hook work that previously lived in Phase 16 has moved to Phase 14.5 through Phase 14.12 so it is completed before Phase 15 packaging and first-user setup.
+The extension hook work that previously lived in Phase 16 has moved to Phase 14.5 through Phase 14.12, followed by the .NET 10 LTS upgrade in Phase 14.13, so these are completed before Phase 15 packaging and first-user setup.
 
 Do not add new extension-hook tasks here unless they are follow-up hardening items after the pre-packaging hook sequence is complete.
