@@ -1,4 +1,4 @@
-# Plugin / Driver Framework
+# APRS Command Plugin / Driver Framework
 
 Phase 14.11 establishes the plugin/driver framework foundation for future APRS Command extensions.
 

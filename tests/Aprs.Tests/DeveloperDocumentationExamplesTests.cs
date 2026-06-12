@@ -73,8 +73,7 @@ public sealed class DeveloperDocumentationExamplesTests
         var current = AppContext.BaseDirectory;
         while (!string.IsNullOrWhiteSpace(current))
         {
-            if (File.Exists(Path.Combine(current, "CrossPlatformAprs.sln"))
-                || File.Exists(Path.Combine(current, "CrossPlatformAPRS.sln")))
+            if (Directory.EnumerateFiles(current, "*.sln").Any())
             {
                 return current;
             }

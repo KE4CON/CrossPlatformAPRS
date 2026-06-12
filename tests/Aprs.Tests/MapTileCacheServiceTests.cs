@@ -5,7 +5,7 @@ namespace Aprs.Tests;
 
 public sealed class MapTileCacheServiceTests : IDisposable
 {
-    private readonly string cacheRoot = Path.Combine(Path.GetTempPath(), "CrossPlatformAprsTests", Guid.NewGuid().ToString("N"));
+    private readonly string cacheRoot = Path.Combine(Path.GetTempPath(), "APRSCommandTests", Guid.NewGuid().ToString("N"));
 
     public void Dispose()
     {

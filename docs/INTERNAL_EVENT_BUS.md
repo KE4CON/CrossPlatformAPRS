@@ -1,4 +1,4 @@
-# Internal Event Bus
+# APRS Command Internal Event Bus
 
 Phase 14.7 adds a lightweight internal event bus for APRS Command.
 

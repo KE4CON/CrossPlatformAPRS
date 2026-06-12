@@ -13,7 +13,7 @@ public sealed class AprsIsClientTests
 
         Assert.Equal("rotate.aprs2.net", configuration.ServerHost);
         Assert.Equal(14580, configuration.ServerPort);
-        Assert.Equal("CrossPlatformAprs", configuration.ApplicationName);
+        Assert.Equal("APRSCommand", configuration.ApplicationName);
         Assert.True(configuration.ReceiveOnly);
         Assert.False(configuration.TransmitEnabled);
         Assert.True(configuration.RequireTransmitConfirmation);
@@ -34,7 +34,7 @@ public sealed class AprsIsClientTests
 
         var loginLine = AprsIsLoginLineBuilder.Build(configuration);
 
-        Assert.Equal("user N0CALL pass 12345 vers CrossPlatformAprs 1.2.3 filter m/50", loginLine);
+        Assert.Equal("user N0CALL pass 12345 vers APRSCommand 1.2.3 filter m/50", loginLine);
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public sealed class AprsIsClientTests
         await client.DisconnectAsync(CancellationToken.None);
 
         Assert.Equal(
-            "user N0CALL pass 12345 vers CrossPlatformAprs 1.2.3 filter m/50\r\n",
+            "user N0CALL pass 12345 vers APRSCommand 1.2.3 filter m/50\r\n",
             stream.WrittenText);
     }
 
@@ -275,7 +275,7 @@ public sealed class AprsIsClientTests
         Assert.Equal(AprsTransmitDestinationTransport.AprsIs, result.DestinationTransport);
         Assert.Equal(AprsIsConnectionState.Connected, result.ConnectedStateAtRequest);
         Assert.Equal(
-            "user N0CALL pass 12345 vers CrossPlatformAprs 1.2.3 filter m/50\r\nN0CALL>APRS:>Online\r\n",
+            "user N0CALL pass 12345 vers APRSCommand 1.2.3 filter m/50\r\nN0CALL>APRS:>Online\r\n",
             stream.WrittenText);
     }
 

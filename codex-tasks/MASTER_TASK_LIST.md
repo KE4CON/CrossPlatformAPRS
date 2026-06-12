@@ -1,4 +1,4 @@
-# Codex Master Task List — CrossPlatform APRS Client
+# Codex Master Task List — APRS Command
 
 Use this as the project backlog. Give Codex one task at a time. Do not ask Codex to build the whole app in one prompt.
 

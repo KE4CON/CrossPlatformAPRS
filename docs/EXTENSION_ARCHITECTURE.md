@@ -1,4 +1,4 @@
-# Extension Architecture
+# APRS Command Extension Architecture
 
 APRS Command keeps internal application models separate from external integration contracts.
 

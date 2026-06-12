@@ -1,4 +1,4 @@
-# Extension Hook Foundation
+# APRS Command Extension Hook Foundation
 
 Phase 14.5 prepares APRS Command for the full pre-packaging extension hook sequence. The project direction is to complete extension hooks before Phase 15 packaging rather than deferring the runtime work until a later Phase 16. After Phase 14.12, Phase 14.13 upgrades the solution baseline to .NET 10 LTS before packaging.
 

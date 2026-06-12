@@ -12,7 +12,7 @@ public sealed record MapTileCacheConfiguration(
         CacheEnabled: true,
         CacheRootFolder: Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "CrossPlatformAprs",
+            "APRS Command",
             "TileCache"),
         MaximumCacheSizeBytes: 1024L * 1024L * 1024L,
         TileExpirationAge: TimeSpan.FromDays(30),

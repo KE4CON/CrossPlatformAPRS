@@ -1,4 +1,4 @@
-# Feature Scope — Ham Radio APRS Only
+# APRS Command Feature Scope — Ham Radio APRS Only
 
 This project is limited to amateur-radio APRS features.
 

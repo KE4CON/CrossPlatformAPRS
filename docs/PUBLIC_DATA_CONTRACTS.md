@@ -1,4 +1,4 @@
-# Public Data Contracts
+# APRS Command Public Data Contracts
 
 Phase 14.6 establishes `AprsCommand.Contracts` as the stable DTO layer for future extension hooks.
 

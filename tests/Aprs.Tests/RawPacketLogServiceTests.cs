@@ -170,7 +170,7 @@ public sealed class RawPacketLogServiceTests
         var service = CreateService();
 
         var entry = service.AddBlockedPacket(
-            "user N0CALL pass 12345 vers CrossPlatformAprs 1.0",
+            "user N0CALL pass 12345 vers APRSCommand 1.0",
             AprsPacketSource.External,
             timestampUtc: Now,
             relatedTransmitResult: "token=abcdef api_key=secret password:hunter2",

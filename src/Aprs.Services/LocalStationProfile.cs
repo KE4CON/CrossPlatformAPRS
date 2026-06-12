@@ -40,7 +40,7 @@ public sealed record LocalStationProfile(
             SymbolTableIdentifier: '/',
             SymbolCode: '-',
             Overlay: null,
-            StationComment: "CrossPlatform APRS",
+            StationComment: "APRS Command",
             PhgData: null,
             BeaconPath: "WIDE1-1,WIDE2-1",
             AprsIsBeaconInterval: TimeSpan.FromMinutes(30),

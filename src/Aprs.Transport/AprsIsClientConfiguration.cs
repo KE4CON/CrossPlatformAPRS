@@ -21,7 +21,7 @@ public sealed record AprsIsClientConfiguration(
         ServerPort: 14580,
         Callsign: string.Empty,
         Passcode: "-1",
-        ApplicationName: "CrossPlatformAprs",
+        ApplicationName: "APRSCommand",
         ApplicationVersion: "0.1.0",
         Filter: null,
         ReconnectEnabled: true,

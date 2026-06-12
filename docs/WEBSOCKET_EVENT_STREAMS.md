@@ -1,4 +1,4 @@
-# WebSocket Event Streams
+# APRS Command WebSocket Event Streams
 
 Phase 14.9 adds the optional WebSocket event stream foundation for APRS Command.
 

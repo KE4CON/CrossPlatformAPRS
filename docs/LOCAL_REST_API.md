@@ -1,4 +1,4 @@
-# Local REST API
+# APRS Command Local REST API
 
 Phase 14.8 adds the local REST API foundation for APRS Command.
 

@@ -1,4 +1,4 @@
-# Extension Security Model
+# APRS Command Extension Security Model
 
 Extensions, local APIs, file imports, plugins, and external drivers must be treated as untrusted until explicitly configured by the operator.
 

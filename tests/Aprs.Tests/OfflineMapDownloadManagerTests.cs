@@ -5,7 +5,7 @@ namespace Aprs.Tests;
 
 public sealed class OfflineMapDownloadManagerTests : IDisposable
 {
-    private readonly string cacheRoot = Path.Combine(Path.GetTempPath(), "CrossPlatformAprsDownloadTests", Guid.NewGuid().ToString("N"));
+    private readonly string cacheRoot = Path.Combine(Path.GetTempPath(), "APRSCommandDownloadTests", Guid.NewGuid().ToString("N"));
 
     public void Dispose()
     {

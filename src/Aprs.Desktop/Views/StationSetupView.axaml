@@ -79,7 +79,7 @@
           <TextBlock Text="Station comment"
                      FontSize="11"
                      Foreground="#64748B" />
-          <TextBox Text="CrossPlatform APRS" />
+          <TextBox Text="APRS Command" />
         </StackPanel>
         <StackPanel Grid.Row="2"
                     Grid.Column="2"

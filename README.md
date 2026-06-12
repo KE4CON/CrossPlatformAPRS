@@ -1,6 +1,6 @@
-# CrossPlatform APRS Client
+# APRS Command
 
-A modern C# / .NET cross-platform APRS client inspired by UI-View32, focused only on amateur-radio APRS features.
+APRS Command is a modern C# / .NET cross-platform APRS client inspired by UI-View32, focused only on amateur-radio APRS features.
 
 Target platforms:
 - Windows

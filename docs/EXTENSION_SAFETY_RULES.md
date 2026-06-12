@@ -1,4 +1,4 @@
-# Extension Safety Rules
+# APRS Command Extension Safety Rules
 
 Extensions are read-only by default.
 

@@ -4,7 +4,7 @@
         xmlns:views="using:Aprs.Desktop.Views"
         x:Class="Aprs.Desktop.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Title="CrossPlatform APRS"
+        Title="APRS Command"
         Width="1200"
         Height="760"
         MinWidth="900"
@@ -16,7 +16,7 @@
       <Grid ColumnDefinitions="*,Auto,Auto"
             ColumnSpacing="10">
         <StackPanel Spacing="1">
-          <TextBlock Text="CrossPlatform APRS"
+          <TextBlock Text="APRS Command"
                      FontSize="19"
                      FontWeight="SemiBold"
                      Foreground="#F8FAFC" />

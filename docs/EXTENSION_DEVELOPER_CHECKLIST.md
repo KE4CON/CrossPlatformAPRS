@@ -1,4 +1,4 @@
-# Extension Developer Checklist
+# APRS Command Extension Developer Checklist
 
 Use this checklist before building or sharing an APRS Command integration.
 

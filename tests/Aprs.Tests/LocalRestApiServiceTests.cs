@@ -49,6 +49,20 @@ public class LocalRestApiServiceTests
     }
 
     [Fact]
+    public async Task VersionEndpointReportsAprsCommandApplicationName()
+    {
+        var service = CreateService();
+        await service.StartAsync();
+
+        var response = await service.HandleAsync(Get("/api/version"));
+
+        Assert.True(response.Success);
+        Assert.NotNull(response.Body);
+        var app = response.Body.GetType().GetProperty("app")?.GetValue(response.Body);
+        Assert.Equal("APRS Command", app);
+    }
+
+    [Fact]
     public async Task ReadEndpointReturnsSampleStationDto()
     {
         var provider = new InMemoryLocalRestApiDataProvider();
