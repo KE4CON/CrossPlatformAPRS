@@ -4,7 +4,7 @@ Phase 14.8 adds the local REST API foundation for APRS Command.
 
 The API is intended for local tools, dashboards, scripts, and future integrations that need to read APRS Command data or submit carefully controlled local data.
 
-This phase does not add WebSocket streams, file watchers, plugin loading, or public transmit execution.
+Phase 14.9 adds a separate optional WebSocket event stream foundation. This REST API phase does not add file watchers, plugin loading, or public transmit execution.
 
 ## Safe Defaults
 
@@ -115,7 +115,7 @@ The local API foundation publishes internal events where practical:
 - external raw packet submitted
 - transmit request blocked
 
-Future WebSocket streams, file exports, dashboards, and plugin callbacks can subscribe to these events.
+WebSocket streams, file exports, dashboards, and plugin callbacks can subscribe to these events. See `docs/WEBSOCKET_EVENT_STREAMS.md` for the Phase 14.9 stream foundation.
 
 ## Example GET
 

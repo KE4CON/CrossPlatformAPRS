@@ -192,6 +192,8 @@ Later phases can subscribe to the event bus to feed:
 
 Those integrations must use public DTO contracts at external boundaries.
 
+Phase 14.9 adds `WebSocketEventStreamService` as a read-only subscriber that converts internal events into public WebSocket envelopes. It observes the bus only; it does not transmit, execute commands, or mutate configuration.
+
 ## Transmit Safety
 
 The event bus must never transmit by itself.
