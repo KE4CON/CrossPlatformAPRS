@@ -68,7 +68,7 @@ Message transmit is disabled by default. Check:
 
 - local callsign
 - recipient callsign
-- APRS-IS or RF transmit enabled state
+- APRS-IS and RF transmit setting state
 - receive-only state
 - connection state
 - safety block reason

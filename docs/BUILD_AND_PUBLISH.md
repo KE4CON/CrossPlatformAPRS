@@ -2,7 +2,7 @@
 
 Phase 15.2 adds repeatable build and publish scripts for APRS Command. These scripts create publish folders only. They do not create installers, package managers, signed bundles, notarized apps, or final release archives.
 
-See `docs/INSTALLER_AND_PACKAGE_PLAN.md` for the planned installer/package strategy that will consume these publish folders in a later release step.
+See `docs/INSTALLER_AND_PACKAGE_PLAN.md` for the planned installer/package strategy that will consume these publish folders in a later release step. Before producing public packages, run the source-level validation script and complete `docs/FINAL_RELEASE_VALIDATION_CHECKLIST.md`.
 
 ## Prerequisites
 
@@ -13,11 +13,20 @@ See `docs/INSTALLER_AND_PACKAGE_PLAN.md` for the planned installer/package strat
 ## Verify the Repository
 
 ```bash
+dotnet --version
 dotnet restore
 dotnet build
 dotnet test
 dotnet run --project src/Aprs.Desktop
 ```
+
+For the automated release-readiness subset that does not launch hardware, require internet access, or enable transmit, run:
+
+```bash
+./scripts/validate-release.sh
+```
+
+The final manual release gate is `docs/FINAL_RELEASE_VALIDATION_CHECKLIST.md`.
 
 ## Supported Runtime Identifiers
 
