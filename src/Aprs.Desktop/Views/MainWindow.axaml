@@ -75,6 +75,9 @@
         <TabItem Header="Weather">
           <views:WeatherView DataContext="{Binding Weather}" />
         </TabItem>
+        <TabItem Header="Events">
+          <views:DecodedEventLogView DataContext="{Binding DecodedEventLog}" />
+        </TabItem>
         <TabItem Header="Settings">
           <views:SettingsView DataContext="{Binding}" />
         </TabItem>

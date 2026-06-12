@@ -9,6 +9,7 @@ public sealed class MainWindowViewModel
             map,
             GpsStatusViewModel.CreateDesignTime(),
             RawPacketLogViewModel.CreateDesignTime(),
+            DecodedEventLogViewModel.CreateDesignTime(),
             MessageCenterViewModel.CreateDesignTime(),
             ObjectManagerViewModel.CreateDesignTime(),
             DirewolfProfileViewModel.CreateDesignTime(),
@@ -23,6 +24,7 @@ public sealed class MainWindowViewModel
         MapViewModel map,
         GpsStatusViewModel gpsStatus,
         RawPacketLogViewModel rawPacketLog,
+        DecodedEventLogViewModel decodedEventLog,
         MessageCenterViewModel messageCenter,
         ObjectManagerViewModel objectManager,
         DirewolfProfileViewModel direwolfProfile,
@@ -35,6 +37,7 @@ public sealed class MainWindowViewModel
         StationList = new StationListViewModel(map);
         GpsStatus = gpsStatus;
         RawPacketLog = rawPacketLog;
+        DecodedEventLog = decodedEventLog;
         MessageCenter = messageCenter;
         ObjectManager = objectManager;
         DirewolfProfile = direwolfProfile;
@@ -52,6 +55,8 @@ public sealed class MainWindowViewModel
     public GpsStatusViewModel GpsStatus { get; }
 
     public RawPacketLogViewModel RawPacketLog { get; }
+
+    public DecodedEventLogViewModel DecodedEventLog { get; }
 
     public MessageCenterViewModel MessageCenter { get; }
 
