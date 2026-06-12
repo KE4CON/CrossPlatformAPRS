@@ -64,9 +64,7 @@ public sealed class WeatherDisplayService : IWeatherDisplayService
     {
         var updated = record with
         {
-            StationId = NormalizeStationId(record.StationId),
-            DataState = CalculateState(record.LastUpdateUtc, record.LastUpdateUtc),
-            DataAge = TimeSpan.Zero
+            StationId = NormalizeStationId(record.StationId)
         };
         stations[updated.StationId] = updated;
         return updated;
