@@ -16,7 +16,8 @@ public sealed class MainWindowViewModel
             PortStatusViewModel.CreateDesignTime(),
             IGateStatusViewModel.CreateDesignTime(),
             DigipeaterStatusViewModel.CreateDesignTime(),
-            WeatherViewModel.CreateDesignTime())
+            WeatherViewModel.CreateDesignTime(),
+            ReplayViewModel.CreateDesignTime())
     {
     }
 
@@ -31,7 +32,8 @@ public sealed class MainWindowViewModel
         PortStatusViewModel portStatus,
         IGateStatusViewModel iGateStatus,
         DigipeaterStatusViewModel digipeaterStatus,
-        WeatherViewModel weather)
+        WeatherViewModel weather,
+        ReplayViewModel replay)
     {
         Map = map;
         StationList = new StationListViewModel(map);
@@ -45,6 +47,7 @@ public sealed class MainWindowViewModel
         IGateStatus = iGateStatus;
         DigipeaterStatus = digipeaterStatus;
         Weather = weather;
+        Replay = replay;
         Map.AttachObjectManager(ObjectManager);
     }
 
@@ -71,6 +74,8 @@ public sealed class MainWindowViewModel
     public DigipeaterStatusViewModel DigipeaterStatus { get; }
 
     public WeatherViewModel Weather { get; }
+
+    public ReplayViewModel Replay { get; }
 
     public static MainWindowViewModel CreateDesignTime()
     {

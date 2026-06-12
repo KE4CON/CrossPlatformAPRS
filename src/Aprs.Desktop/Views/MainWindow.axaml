@@ -78,6 +78,9 @@
         <TabItem Header="Events">
           <views:DecodedEventLogView DataContext="{Binding DecodedEventLog}" />
         </TabItem>
+        <TabItem Header="Replay">
+          <views:ReplayView DataContext="{Binding Replay}" />
+        </TabItem>
         <TabItem Header="Settings">
           <views:SettingsView DataContext="{Binding}" />
         </TabItem>
