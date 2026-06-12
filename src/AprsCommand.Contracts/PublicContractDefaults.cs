@@ -2,5 +2,5 @@ namespace AprsCommand.Contracts;
 
 public static class PublicContractDefaults
 {
-    public const string SchemaVersion = "1.0";
+    public const string SchemaVersion = ContractSchemaVersion.Current;
 }

@@ -1,6 +1,6 @@
 namespace AprsCommand.Contracts;
 
-public enum ContractSourceTrustLevel
+public enum ExternalTrustLevel
 {
     Unknown,
     Untrusted,

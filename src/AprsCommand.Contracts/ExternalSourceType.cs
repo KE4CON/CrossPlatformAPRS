@@ -1,6 +1,6 @@
 namespace AprsCommand.Contracts;
 
-public enum ContractSourceType
+public enum ExternalSourceType
 {
     Unknown,
     AprsIs,
@@ -17,6 +17,5 @@ public enum ContractSourceType
     ManualEntry,
     FileImport,
     LocalApi,
-    Plugin,
-    LocalGenerated
+    Plugin
 }

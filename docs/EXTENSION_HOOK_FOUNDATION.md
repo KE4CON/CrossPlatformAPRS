@@ -30,6 +30,8 @@ Initial placeholder DTOs include:
 
 Each public DTO carries a `SchemaVersion`, source metadata, validation warnings, validation errors, and notes where appropriate. Phase 14.6 should finalize mapping/adapters between internal models and these contracts rather than exposing internal records directly.
 
+See `docs/PUBLIC_DATA_CONTRACTS.md` for the Phase 14.6 contract strategy, DTO list, serialization expectations, validation pattern, and transmit safety reminder.
+
 ## Source Tagging Standard
 
 All incoming, generated, imported, replayed, simulated, training, API, file, plugin, packet, station, object, weather, GPS, message, alert, and transmit-log data should carry source metadata.

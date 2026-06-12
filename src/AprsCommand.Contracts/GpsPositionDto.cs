@@ -1,19 +1,21 @@
 namespace AprsCommand.Contracts;
 
-public sealed record GpsPositionDto(
-    string SchemaVersion = PublicContractDefaults.SchemaVersion,
-    DtoSourceMetadata? Source = null,
-    double? Latitude = null,
-    double? Longitude = null,
-    double? AltitudeMeters = null,
-    double? SpeedKnots = null,
-    double? CourseDegrees = null,
-    bool FixValid = false,
-    int? FixQuality = null,
-    int? SatelliteCount = null,
-    int? UsedSatelliteCount = null,
-    double? Hdop = null,
-    DateTimeOffset? FixTimestampUtc = null,
-    IReadOnlyList<string>? ValidationWarnings = null,
-    IReadOnlyList<string>? ValidationErrors = null,
-    string? Notes = null);
+public sealed record GpsPositionDto : IContractDto
+{
+    public string SchemaVersion { get; init; } = ContractSchemaVersion.Current;
+    public ExternalSourceMetadata SourceMetadata { get; init; } = new();
+    public DateTimeOffset? Timestamp { get; init; }
+    public List<ValidationMessageDto> ValidationWarnings { get; init; } = [];
+    public List<ValidationMessageDto> ValidationErrors { get; init; } = [];
+    public string? Notes { get; init; }
+    public double? Latitude { get; init; }
+    public double? Longitude { get; init; }
+    public double? Altitude { get; init; }
+    public double? Speed { get; init; }
+    public double? Course { get; init; }
+    public string? FixQuality { get; init; }
+    public int? Satellites { get; init; }
+    public int? UsedSatellites { get; init; }
+    public double? Hdop { get; init; }
+    public bool FixValid { get; init; }
+}

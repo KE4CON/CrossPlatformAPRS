@@ -1,6 +1,6 @@
 namespace AprsCommand.Contracts;
 
-public sealed record RawPacketDto : IContractDto
+public sealed record ReplayStatusDto : IContractDto
 {
     public string SchemaVersion { get; init; } = ContractSchemaVersion.Current;
     public ExternalSourceMetadata SourceMetadata { get; init; } = new();
@@ -8,11 +8,11 @@ public sealed record RawPacketDto : IContractDto
     public List<ValidationMessageDto> ValidationWarnings { get; init; } = [];
     public List<ValidationMessageDto> ValidationErrors { get; init; } = [];
     public string? Notes { get; init; }
-    public string? RawPacket { get; init; }
-    public string? ParsedPacketType { get; init; }
-    public string? SourceCallsign { get; init; }
-    public string? Destination { get; init; }
-    public List<string> Path { get; init; } = [];
-    public ContractDirection Direction { get; init; } = ContractDirection.Unknown;
-    public DateTimeOffset? ReceivedTime { get; init; }
+    public bool Enabled { get; init; }
+    public string? ReplayState { get; init; }
+    public int CurrentPosition { get; init; }
+    public int TotalEntries { get; init; }
+    public DateTimeOffset? CurrentReplayTimestamp { get; init; }
+    public double SpeedMultiplier { get; init; } = 1;
+    public bool TransmitDisabled { get; init; } = true;
 }

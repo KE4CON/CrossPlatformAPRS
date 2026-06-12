@@ -1,6 +1,6 @@
 namespace AprsCommand.Contracts;
 
-public sealed record RawPacketDto : IContractDto
+public sealed record TrainingScenarioDto : IContractDto
 {
     public string SchemaVersion { get; init; } = ContractSchemaVersion.Current;
     public ExternalSourceMetadata SourceMetadata { get; init; } = new();
@@ -8,11 +8,11 @@ public sealed record RawPacketDto : IContractDto
     public List<ValidationMessageDto> ValidationWarnings { get; init; } = [];
     public List<ValidationMessageDto> ValidationErrors { get; init; } = [];
     public string? Notes { get; init; }
-    public string? RawPacket { get; init; }
-    public string? ParsedPacketType { get; init; }
-    public string? SourceCallsign { get; init; }
-    public string? Destination { get; init; }
-    public List<string> Path { get; init; } = [];
-    public ContractDirection Direction { get; init; } = ContractDirection.Unknown;
-    public DateTimeOffset? ReceivedTime { get; init; }
+    public string? ScenarioId { get; init; }
+    public string? Name { get; init; }
+    public string? Description { get; init; }
+    public string? Difficulty { get; init; }
+    public string? ScenarioType { get; init; }
+    public TimeSpan? EstimatedDuration { get; init; }
+    public List<TrainingScenarioTaskDto> Tasks { get; init; } = [];
 }

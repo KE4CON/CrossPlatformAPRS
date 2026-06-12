@@ -1,6 +1,7 @@
 using Aprs.Services;
 using AprsCommand.Contracts;
 using Xunit;
+using ServiceExtensionPermission = Aprs.Services.ExtensionPermission;
 
 namespace Aprs.Tests;
 
@@ -9,34 +10,34 @@ public class ExtensionHookFoundationTests
     [Fact]
     public void PublicDtosCanBeInstantiatedWithSafeContractMetadata()
     {
-        var source = new DtoSourceMetadata(
+        var source = new ExternalSourceMetadata(
             "APRS-IS",
-            ContractSourceType.AprsIs,
+            ExternalSourceType.AprsIs,
             "aprs-is",
             DateTimeOffset.UtcNow,
             ContractDataOrigin.Received,
-            ContractSourceTrustLevel.OperatorConfigured);
+            ExternalTrustLevel.OperatorConfigured);
 
-        var station = new StationUpdateDto(Source: source, Callsign: "N0CALL", DisplayName: "Net Control");
-        var weather = new WeatherObservationDto(Source: source, StationId: "WX9XYZ", TemperatureFahrenheit: 72);
-        var aprsObject = new AprsObjectDto(Source: source, Name: "CHECKPNT1", OwnerCallsign: "OBJ1");
-        var gps = new GpsPositionDto(Source: source, Latitude: 39.058333, Longitude: -84.508333, FixValid: true);
-        var raw = new RawPacketDto(Source: source, RawPacketText: "N0CALL>APRS:>Test");
-        var message = new MessageDto(Source: source, Sender: "K8ABC", Recipient: "N0CALL", Body: "Hello");
-        var port = new PortStatusDto(Source: source, PortId: "aprs-is", PortName: "APRS-IS");
-        var alert = new AlertDto(Source: source, AlertId: "alert-1", Title: "Station heard");
-        var transmit = new TransmitLogDto(Source: source, RawPacketText: "N0CALL>APRS:>Test", Success: false);
+        var station = new StationUpdateDto { SourceMetadata = source, Callsign = "N0CALL", DisplayName = "Net Control" };
+        var weather = new WeatherObservationDto { SourceMetadata = source, StationId = "WX9XYZ", Temperature = 72 };
+        var aprsObject = new AprsObjectDto { SourceMetadata = source, ObjectName = "CHECKPNT1", CreatedBy = "OBJ1" };
+        var gps = new GpsPositionDto { SourceMetadata = source, Latitude = 39.058333, Longitude = -84.508333, FixValid = true };
+        var raw = new RawPacketDto { SourceMetadata = source, RawPacket = "N0CALL>APRS:>Test" };
+        var message = new MessageDto { SourceMetadata = source, From = "K8ABC", To = "N0CALL", Text = "Hello" };
+        var port = new PortStatusDto { SourceMetadata = source, PortId = "aprs-is", PortName = "APRS-IS" };
+        var alert = new AlertDto { SourceMetadata = source, AlertId = "alert-1", Summary = "Station heard" };
+        var transmit = new TransmitLogDto { SourceMetadata = source, PacketText = "N0CALL>APRS:>Test", Allowed = false };
 
         Assert.Equal(PublicContractDefaults.SchemaVersion, station.SchemaVersion);
-        Assert.Equal(ContractSourceType.AprsIs, station.Source?.SourceType);
+        Assert.Equal(ExternalSourceType.AprsIs, station.SourceMetadata.SourceType);
         Assert.Equal("WX9XYZ", weather.StationId);
-        Assert.Equal("CHECKPNT1", aprsObject.Name);
+        Assert.Equal("CHECKPNT1", aprsObject.ObjectName);
         Assert.True(gps.FixValid);
-        Assert.Equal("N0CALL>APRS:>Test", raw.RawPacketText);
-        Assert.Equal("Hello", message.Body);
+        Assert.Equal("N0CALL>APRS:>Test", raw.RawPacket);
+        Assert.Equal("Hello", message.Text);
         Assert.Equal("aprs-is", port.PortId);
-        Assert.Equal("Station heard", alert.Title);
-        Assert.False(transmit.Success);
+        Assert.Equal("Station heard", alert.Summary);
+        Assert.False(transmit.Allowed);
     }
 
     [Fact]
@@ -71,16 +72,16 @@ public class ExtensionHookFoundationTests
     {
         var permissions = ExtensionPermissionSet.Default;
 
-        Assert.True(permissions.HasPermission(ExtensionPermission.ReadOnly));
-        Assert.False(permissions.HasPermission(ExtensionPermission.SubmitLocalData));
+        Assert.True(permissions.HasPermission(ServiceExtensionPermission.ReadOnly));
+        Assert.False(permissions.HasPermission(ServiceExtensionPermission.SubmitLocalData));
         Assert.False(permissions.HasTransmitPermission);
     }
 
     [Theory]
-    [InlineData(ExtensionPermission.TransmitAprsIs)]
-    [InlineData(ExtensionPermission.TransmitRf)]
-    [InlineData(ExtensionPermission.QueuePackets)]
-    public void TransmitRelatedPermissionsAreNotEnabledByDefault(ExtensionPermission permission)
+    [InlineData(ServiceExtensionPermission.TransmitAprsIs)]
+    [InlineData(ServiceExtensionPermission.TransmitRf)]
+    [InlineData(ServiceExtensionPermission.QueuePackets)]
+    public void TransmitRelatedPermissionsAreNotEnabledByDefault(ServiceExtensionPermission permission)
     {
         Assert.False(ExtensionPermissionSet.Default.HasPermission(permission));
     }
