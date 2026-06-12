@@ -17,5 +17,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\AprsCommand.Contracts\AprsCommand.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\AprsCommand.Api\AprsCommand.Api.csproj" />
   </ItemGroup>
 </Project>

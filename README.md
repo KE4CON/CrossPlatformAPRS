@@ -33,6 +33,7 @@ src/Aprs.Services    Station database, beacon scheduler, messaging, object manag
 src/Aprs.Mapping     Map tile cache, APRS marker rendering, offline map support
 src/Aprs.Desktop     Avalonia desktop user interface
 src/AprsCommand.Contracts  Versioned public DTO placeholders for future APIs/plugins
+src/AprsCommand.Api  Local REST API foundation for future integrations
 tests/Aprs.Tests     Unit and integration tests
 codex-tasks/         Codex-ready implementation tasks
 ```

@@ -123,3 +123,5 @@ Later pre-packaging phases should use these DTOs as the shared payload model for
 - Phase 14.10 File Import/Export Hooks
 - Phase 14.11 Plugin/Driver Framework
 - Phase 14.12 Developer Documentation and Examples
+
+See `docs/LOCAL_REST_API.md` for the Phase 14.8 local API foundation and endpoint plan.
