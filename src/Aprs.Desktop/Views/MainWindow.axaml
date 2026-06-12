@@ -61,7 +61,8 @@
                              DataContext="{Binding StationList}" />
 
       <views:PacketMonitorView Grid.Row="1"
-                               Grid.Column="0" />
+                               Grid.Column="0"
+                               DataContext="{Binding RawPacketLog}" />
 
       <TabControl Grid.Column="1"
                   Grid.Row="1">

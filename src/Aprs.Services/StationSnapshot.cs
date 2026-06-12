@@ -10,7 +10,9 @@ public enum AprsPacketSource
     Direwolf,
     Agwpe,
     Replay,
-    Simulation
+    Simulation,
+    External,
+    LocalGenerated
 }
 
 public enum StationLifecycleState
