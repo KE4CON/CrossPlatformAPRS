@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Aprs.Desktop.ViewModels"
+             xmlns:views="using:Aprs.Desktop.Views"
              x:Class="Aprs.Desktop.Views.WeatherView"
              x:DataType="vm:WeatherViewModel">
   <Grid RowDefinitions="Auto,*"
@@ -13,9 +14,10 @@
       <TextBlock Text="{Binding Summary}"
                  Foreground="#526173" />
     </StackPanel>
-    <Grid Grid.Row="1"
-          ColumnDefinitions="2*,3*"
-          ColumnSpacing="10">
+    <TabControl Grid.Row="1">
+      <TabItem Header="Stations">
+        <Grid ColumnDefinitions="2*,3*"
+              ColumnSpacing="10">
       <Border BorderBrush="#CBD5E1"
               BorderThickness="1"
               CornerRadius="6"
@@ -194,6 +196,11 @@
           </Grid>
         </ScrollViewer>
       </Border>
-    </Grid>
+        </Grid>
+      </TabItem>
+      <TabItem Header="Beacon">
+        <views:WeatherBeaconSettingsView DataContext="{Binding BeaconSettings}" />
+      </TabItem>
+    </TabControl>
   </Grid>
 </UserControl>
