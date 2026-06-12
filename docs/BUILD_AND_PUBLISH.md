@@ -2,6 +2,8 @@
 
 Phase 15.2 adds repeatable build and publish scripts for APRS Command. These scripts create publish folders only. They do not create installers, package managers, signed bundles, notarized apps, or final release archives.
 
+See `docs/INSTALLER_AND_PACKAGE_PLAN.md` for the planned installer/package strategy that will consume these publish folders in a later release step.
+
 ## Prerequisites
 
 - Install the .NET 10 SDK.
@@ -79,6 +81,16 @@ artifacts/publish/<runtime-identifier>/
 ```
 
 The `artifacts/` folder is ignored by Git and should not be committed.
+
+Future release automation should use:
+
+```text
+artifacts/
+  publish/
+  packages/
+  checksums/
+  release-notes/
+```
 
 ## Publish Mode
 

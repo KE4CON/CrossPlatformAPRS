@@ -2,6 +2,8 @@
 
 This guide explains how normal users can install or run APRS Command. Packaged installers are planned for later work. Until then, use a published folder or run from source.
 
+The detailed installer/package strategy is tracked in `docs/INSTALLER_AND_PACKAGE_PLAN.md`.
+
 ## Windows
 
 1. Download the future Windows x64 package or use the `win-x64` publish output.

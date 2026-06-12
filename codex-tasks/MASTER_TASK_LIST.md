@@ -1371,6 +1371,27 @@ Acceptance criteria:
 - safety docs clearly state REST API, WebSocket, file hooks, and plugin loading are disabled by default
 - no APRS behavior or transmit behavior changes
 
+### Task 15.6 — Installer and package strategy plan
+Plan final installer and package strategy before creating release packages.
+
+Scope:
+- create `docs/INSTALLER_AND_PACKAGE_PLAN.md`
+- document Windows x64, macOS Apple Silicon, macOS Intel, Linux x64, Linux ARM64, and Raspberry Pi 5/Linux ARM64 packaging plans
+- document portable folders, ZIP/tar.gz options, MSI/MSIX placeholders, app bundle/DMG placeholders, AppImage/deb/rpm placeholders, desktop launcher notes, and serial permission notes
+- document packaging metadata placeholders without inventing a final license
+- document release folder, checksum, and release-notes plan
+- add placeholder packaging templates where practical
+- preserve all safe defaults and avoid credentials/signing secrets
+- do not create final installers or release packages
+
+Acceptance criteria:
+- `dotnet restore` succeeds
+- `dotnet build` succeeds
+- `dotnet test` succeeds
+- installer/package plan exists and links from README/install/build docs
+- package safety defaults are documented
+- no APRS behavior or transmit behavior changes
+
 ---
 
 ## Phase 16 — Moved before packaging

@@ -38,7 +38,7 @@ The desktop opens to the original map-first shell: the map is the primary worksp
 
 ## Publish guidance
 
-Final installers are planned for a future release. Current first-run and repeatable publish guidance is documented in `docs/FIRST_RUN_SETUP.md`, `docs/PACKAGING_PREPARATION.md`, `docs/BUILD_AND_PUBLISH.md`, and `docs/PUBLISHING.md`.
+Final installers are planned for a future release. Current first-run, repeatable publish, and installer/package planning guidance is documented in `docs/FIRST_RUN_SETUP.md`, `docs/PACKAGING_PREPARATION.md`, `docs/BUILD_AND_PUBLISH.md`, `docs/INSTALLER_AND_PACKAGE_PLAN.md`, and `docs/PUBLISHING.md`.
 
 ## User documentation
 
@@ -46,6 +46,7 @@ APRS Command also includes an in-app Help button. Click Help in the application 
 
 - [Quick Start](docs/QUICK_START.md)
 - [Installation Guide](docs/INSTALLATION_GUIDE.md)
+- [Installer and Package Plan](docs/INSTALLER_AND_PACKAGE_PLAN.md)
 - [User Manual](docs/USER_MANUAL.md)
 - [First-Run Setup](docs/FIRST_RUN_SETUP.md)
 - [Safety and Transmit Guide](docs/SAFETY_AND_TRANSMIT_GUIDE.md)
