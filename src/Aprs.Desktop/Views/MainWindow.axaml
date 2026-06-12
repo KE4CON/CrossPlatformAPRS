@@ -99,6 +99,9 @@
         <TabItem Header="Training">
           <views:TrainingModeView DataContext="{Binding Training}" />
         </TabItem>
+        <TabItem Header="Files">
+          <views:FileHooksView DataContext="{Binding FileHooks}" />
+        </TabItem>
         <TabItem Header="Settings">
           <views:SettingsView DataContext="{Binding}" />
         </TabItem>

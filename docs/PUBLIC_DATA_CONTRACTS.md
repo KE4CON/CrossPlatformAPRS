@@ -126,3 +126,4 @@ Later pre-packaging phases should use these DTOs as the shared payload model for
 
 See `docs/LOCAL_REST_API.md` for the Phase 14.8 local API foundation and endpoint plan.
 See `docs/WEBSOCKET_EVENT_STREAMS.md` for the Phase 14.9 WebSocket event envelope and stream plan.
+See `docs/FILE_IMPORT_EXPORT_HOOKS.md` for the Phase 14.10 file import/export schemas and safety rules.

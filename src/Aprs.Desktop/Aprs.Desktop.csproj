@@ -16,5 +16,6 @@
     <ProjectReference Include="..\Aprs.Transport\Aprs.Transport.csproj" />
     <ProjectReference Include="..\Aprs.Services\Aprs.Services.csproj" />
     <ProjectReference Include="..\Aprs.Mapping\Aprs.Mapping.csproj" />
+    <ProjectReference Include="..\AprsCommand.Api\AprsCommand.Api.csproj" />
   </ItemGroup>
 </Project>

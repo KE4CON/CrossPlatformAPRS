@@ -194,6 +194,8 @@ Those integrations must use public DTO contracts at external boundaries.
 
 Phase 14.9 adds `WebSocketEventStreamService` as a read-only subscriber that converts internal events into public WebSocket envelopes. It observes the bus only; it does not transmit, execute commands, or mutate configuration.
 
+Phase 14.10 adds `FileHookService` for safe manual file import/export. It publishes import/export lifecycle events and imported data notifications where practical, but imported transmit requests remain blocked by policy.
+
 ## Transmit Safety
 
 The event bus must never transmit by itself.
