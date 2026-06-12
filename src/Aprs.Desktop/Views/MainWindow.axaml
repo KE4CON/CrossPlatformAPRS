@@ -84,6 +84,9 @@
         <TabItem Header="RF Diag">
           <views:RfDiagnosticsView DataContext="{Binding RfDiagnostics}" />
         </TabItem>
+        <TabItem Header="Alerts">
+          <views:AlertRulesView DataContext="{Binding Alerts}" />
+        </TabItem>
         <TabItem Header="Settings">
           <views:SettingsView DataContext="{Binding}" />
         </TabItem>
