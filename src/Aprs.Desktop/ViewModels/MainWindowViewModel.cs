@@ -17,7 +17,8 @@ public sealed class MainWindowViewModel
             IGateStatusViewModel.CreateDesignTime(),
             DigipeaterStatusViewModel.CreateDesignTime(),
             WeatherViewModel.CreateDesignTime(),
-            ReplayViewModel.CreateDesignTime())
+            ReplayViewModel.CreateDesignTime(),
+            RfDiagnosticsViewModel.CreateDesignTime())
     {
     }
 
@@ -33,7 +34,8 @@ public sealed class MainWindowViewModel
         IGateStatusViewModel iGateStatus,
         DigipeaterStatusViewModel digipeaterStatus,
         WeatherViewModel weather,
-        ReplayViewModel replay)
+        ReplayViewModel replay,
+        RfDiagnosticsViewModel rfDiagnostics)
     {
         Map = map;
         StationList = new StationListViewModel(map);
@@ -48,6 +50,7 @@ public sealed class MainWindowViewModel
         DigipeaterStatus = digipeaterStatus;
         Weather = weather;
         Replay = replay;
+        RfDiagnostics = rfDiagnostics;
         Map.AttachObjectManager(ObjectManager);
     }
 
@@ -76,6 +79,8 @@ public sealed class MainWindowViewModel
     public WeatherViewModel Weather { get; }
 
     public ReplayViewModel Replay { get; }
+
+    public RfDiagnosticsViewModel RfDiagnostics { get; }
 
     public static MainWindowViewModel CreateDesignTime()
     {

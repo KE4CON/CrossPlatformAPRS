@@ -81,6 +81,9 @@
         <TabItem Header="Replay">
           <views:ReplayView DataContext="{Binding Replay}" />
         </TabItem>
+        <TabItem Header="RF Diag">
+          <views:RfDiagnosticsView DataContext="{Binding RfDiagnostics}" />
+        </TabItem>
         <TabItem Header="Settings">
           <views:SettingsView DataContext="{Binding}" />
         </TabItem>
