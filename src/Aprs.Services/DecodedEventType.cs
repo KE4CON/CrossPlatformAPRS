@@ -30,5 +30,6 @@ public enum DecodedEventType
     IGatePacketBlocked,
     DigipeaterPacketRepeated,
     DigipeaterPacketBlocked,
-    AlertTriggered
+    AlertTriggered,
+    TrainingScenarioUpdated
 }

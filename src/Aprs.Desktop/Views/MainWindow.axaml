@@ -93,6 +93,9 @@
         <TabItem Header="Sim">
           <views:SimulationView DataContext="{Binding Simulation}" />
         </TabItem>
+        <TabItem Header="Training">
+          <views:TrainingModeView DataContext="{Binding Training}" />
+        </TabItem>
         <TabItem Header="Settings">
           <views:SettingsView DataContext="{Binding}" />
         </TabItem>

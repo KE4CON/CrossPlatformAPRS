@@ -21,7 +21,8 @@ public sealed class MainWindowViewModel
             RfDiagnosticsViewModel.CreateDesignTime(),
             AlertRulesViewModel.CreateDesignTime(),
             GeofenceEditorViewModel.CreateDesignTime(),
-            SimulationViewModel.CreateDesignTime())
+            SimulationViewModel.CreateDesignTime(),
+            TrainingModeViewModel.CreateDesignTime())
     {
     }
 
@@ -41,7 +42,8 @@ public sealed class MainWindowViewModel
         RfDiagnosticsViewModel rfDiagnostics,
         AlertRulesViewModel alerts,
         GeofenceEditorViewModel geofences,
-        SimulationViewModel simulation)
+        SimulationViewModel simulation,
+        TrainingModeViewModel training)
     {
         Map = map;
         StationList = new StationListViewModel(map);
@@ -60,6 +62,7 @@ public sealed class MainWindowViewModel
         Alerts = alerts;
         Geofences = geofences;
         Simulation = simulation;
+        Training = training;
         Map.AttachObjectManager(ObjectManager);
     }
 
@@ -96,6 +99,8 @@ public sealed class MainWindowViewModel
     public GeofenceEditorViewModel Geofences { get; }
 
     public SimulationViewModel Simulation { get; }
+
+    public TrainingModeViewModel Training { get; }
 
     public static MainWindowViewModel CreateDesignTime()
     {
