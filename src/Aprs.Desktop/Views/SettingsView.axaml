@@ -58,6 +58,15 @@
           <views:PortStatusView DataContext="{Binding PortStatus}" />
         </Border>
       </TabItem>
+      <TabItem Header="iGate">
+        <Border BorderBrush="#CBD5E1"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="12"
+                Background="#F8FAFC">
+          <views:IGateStatusView DataContext="{Binding IGateStatus}" />
+        </Border>
+      </TabItem>
     </TabControl>
   </Grid>
 </UserControl>

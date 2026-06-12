@@ -12,6 +12,7 @@ public sealed class MainWindowViewModel
             ObjectManagerViewModel.CreateDesignTime(),
             DirewolfProfileViewModel.CreateDesignTime(),
             PortStatusViewModel.CreateDesignTime(),
+            IGateStatusViewModel.CreateDesignTime(),
             WeatherViewModel.CreateDesignTime())
     {
     }
@@ -23,6 +24,7 @@ public sealed class MainWindowViewModel
         ObjectManagerViewModel objectManager,
         DirewolfProfileViewModel direwolfProfile,
         PortStatusViewModel portStatus,
+        IGateStatusViewModel iGateStatus,
         WeatherViewModel weather)
     {
         Map = map;
@@ -32,6 +34,7 @@ public sealed class MainWindowViewModel
         ObjectManager = objectManager;
         DirewolfProfile = direwolfProfile;
         PortStatus = portStatus;
+        IGateStatus = iGateStatus;
         Weather = weather;
         Map.AttachObjectManager(ObjectManager);
     }
@@ -49,6 +52,8 @@ public sealed class MainWindowViewModel
     public DirewolfProfileViewModel DirewolfProfile { get; }
 
     public PortStatusViewModel PortStatus { get; }
+
+    public IGateStatusViewModel IGateStatus { get; }
 
     public WeatherViewModel Weather { get; }
 
