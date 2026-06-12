@@ -15,4 +15,7 @@
     <ProjectReference Include="..\..\src\Aprs.Services\Aprs.Services.csproj" />
     <ProjectReference Include="..\..\src\Aprs.Transport\Aprs.Transport.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\AprsCommand.Contracts\AprsCommand.Contracts.csproj" />
+  </ItemGroup>
 </Project>
