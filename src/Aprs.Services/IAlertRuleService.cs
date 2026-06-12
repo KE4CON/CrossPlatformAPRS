@@ -33,6 +33,8 @@ public interface IAlertRuleService
 
     IReadOnlyList<AlertTrigger> EvaluateBulletin(AprsBulletinRecord bulletin, DateTimeOffset? evaluatedAtUtc = null);
 
+    IReadOnlyList<AlertTrigger> EvaluateGeofenceEvent(GeofenceStationEvent geofenceEvent, DateTimeOffset? evaluatedAtUtc = null);
+
     bool AcknowledgeTrigger(Guid triggerId, DateTimeOffset? acknowledgedAtUtc = null);
 
     IReadOnlyList<AlertTrigger> GetRecentTriggers(int? maximumCount = null);

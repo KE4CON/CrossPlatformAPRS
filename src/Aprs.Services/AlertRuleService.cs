@@ -252,6 +252,32 @@ public sealed class AlertRuleService : IAlertRuleService
         });
     }
 
+    public IReadOnlyList<AlertTrigger> EvaluateGeofenceEvent(GeofenceStationEvent geofenceEvent, DateTimeOffset? evaluatedAtUtc = null)
+    {
+        var now = evaluatedAtUtc ?? geofenceEvent.TimestampUtc;
+        return Evaluate(now, rule =>
+        {
+            if (geofenceEvent.EventType == GeofenceEventType.Entered && rule.AlertType != AlertType.StationEnteredArea)
+            {
+                return null;
+            }
+
+            if (geofenceEvent.EventType == GeofenceEventType.Left && rule.AlertType != AlertType.StationLeftArea)
+            {
+                return null;
+            }
+
+            if (!TargetMatches(rule.Target, geofenceEvent.GeofenceName)
+                && !TargetMatches(rule.Target, geofenceEvent.StationCallsign)
+                && !TargetMatches(rule.Target, geofenceEvent.GeofenceId.ToString()))
+            {
+                return null;
+            }
+
+            return CreateTrigger(rule, now, geofenceEvent.StationCallsign, geofenceEvent.Summary, geofenceEvent.Details);
+        });
+    }
+
     public bool AcknowledgeTrigger(Guid triggerId, DateTimeOffset? acknowledgedAtUtc = null)
     {
         var index = triggers.FindIndex(trigger => trigger.TriggerId == triggerId);

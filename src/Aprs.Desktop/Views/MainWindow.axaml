@@ -87,6 +87,9 @@
         <TabItem Header="Alerts">
           <views:AlertRulesView DataContext="{Binding Alerts}" />
         </TabItem>
+        <TabItem Header="Geofence">
+          <views:GeofenceEditorView DataContext="{Binding Geofences}" />
+        </TabItem>
         <TabItem Header="Settings">
           <views:SettingsView DataContext="{Binding}" />
         </TabItem>
