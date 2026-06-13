@@ -16,10 +16,14 @@ Known issues approved by:
 ## Source And Build Validation
 
 - [ ] `dotnet --version` reports a .NET 10 SDK.
+- [ ] Repository root is confirmed by `test -f CrossPlatformAprs.sln && test -f README.md && test -d src && test -d docs && test -d tests`.
+- [ ] Actual solution path is recorded as `CrossPlatformAprs.sln`.
+- [ ] Actual desktop project path is recorded as `src/Aprs.Desktop/Aprs.Desktop.csproj`.
+- [ ] Actual test project path is recorded as `tests/Aprs.Tests/Aprs.Tests.csproj`.
 - [ ] `dotnet restore` succeeds from the repository root.
 - [ ] `dotnet build` succeeds from the repository root.
 - [ ] `dotnet test` succeeds from the repository root.
-- [ ] `dotnet run --project src/Aprs.Desktop` opens APRS Command.
+- [ ] `dotnet run --project src/Aprs.Desktop/Aprs.Desktop.csproj` opens APRS Command.
 - [ ] No test requires live APRS-IS, RF, TNC, Direwolf, AGWPE, serial hardware, GPS hardware, weather hardware, internet access, API credentials, APRS-IS passcodes, signing keys, or private tokens.
 - [ ] The repository builds without changing the target framework or transmit behavior.
 - [ ] `./scripts/validate-release.sh` succeeds on the release source tree.
@@ -36,7 +40,7 @@ Known issues approved by:
 
 ## Desktop Launch Validation
 
-- [ ] APRS Command launches from source with `dotnet run --project src/Aprs.Desktop`.
+- [ ] APRS Command launches from source with `dotnet run --project src/Aprs.Desktop/Aprs.Desktop.csproj`.
 - [ ] The main window title says `APRS Command`.
 - [ ] The application opens without prompting for real credentials.
 - [ ] Closing the desktop app exits cleanly.
@@ -57,7 +61,18 @@ Known issues approved by:
 - [ ] The station list is readable on the right side.
 - [ ] Station status and selected station details are readable.
 - [ ] The packet monitor is visible below the map.
-- [ ] Messages, Objects, Weather, Events, Event Bus, Replay, RF Diag, Alerts, Geofence, Simulation, Training, Files, and Settings are accessible in the restored original layout.
+- [ ] Messages, Objects, Weather, Events, Event Bus, Replay, RF Diag, and Alerts buttons are accessible in the restored original lower-right feature panel.
+- [ ] All eight lower-right feature buttons are visible together at normal desktop/laptop sizes; Messages is not the only visible feature button.
+- [ ] There is only one lower-right feature navigation/control set.
+- [ ] Clicking Messages visibly shows the Message Center / Messages panel.
+- [ ] Clicking Objects visibly shows the Object Manager / Objects panel.
+- [ ] Clicking Weather visibly shows the Weather panel.
+- [ ] Clicking Events visibly shows the Decoded Event Log / Events panel.
+- [ ] Clicking Event Bus visibly shows the Event Monitor / Event Bus panel.
+- [ ] Clicking Replay visibly shows the Replay panel.
+- [ ] Clicking RF Diag visibly shows the RF Diagnostics panel.
+- [ ] Clicking Alerts visibly shows the Alert Rules / Alerts panel.
+- [ ] Each feature button updates the visible feature title, description, and content area.
 - [ ] The Help button or menu opens the in-app Help viewer.
 - [ ] There is no crowded failed top-navigation layout.
 - [ ] No obvious text overlaps, clipped labels, or unusable controls appear at normal desktop sizes.
@@ -90,8 +105,10 @@ Known issues approved by:
 
 ## Package Script Validation
 
-- [ ] `scripts/publish-runtime.sh` exists and restores, builds, tests, and publishes.
+- [ ] `scripts/publish-runtime.sh` exists and restores, builds, tests, cleans the runtime-specific generated publish folder, and publishes.
 - [ ] `scripts/package-runtime.sh` exists and stages publish output, docs, templates, release notes, and checksums.
+- [ ] Shared publish/package scripts validate the repository root and print the solution and desktop project path before building.
+- [ ] Shared publish/package scripts use `src/Aprs.Desktop/Aprs.Desktop.csproj`, not a folder shorthand, for publish commands.
 - [ ] Runtime-specific publish scripts exist for `win-x64`, `osx-arm64`, `osx-x64`, `linux-x64`, and `linux-arm64`.
 - [ ] Runtime-specific portable package scripts exist for `win-x64`, `osx-arm64`, `osx-x64`, `linux-x64`, and `linux-arm64`.
 - [ ] Windows PowerShell helper scripts exist for Windows users where provided.
@@ -104,10 +121,15 @@ Known issues approved by:
 Validate every generated package:
 
 - [ ] Windows x64 ZIP: `artifacts/packages/APRS-Command-win-x64.zip`.
+- [ ] Windows x64 test ZIP: `artifacts/packages/APRS-Command-win-x64-test.zip`.
 - [ ] macOS Apple Silicon tar.gz support: `artifacts/packages/APRS-Command-osx-arm64.tar.gz`.
+- [ ] macOS Apple Silicon test tar.gz: `artifacts/packages/APRS-Command-osx-arm64-test.tar.gz`.
 - [ ] macOS Intel tar.gz support: `artifacts/packages/APRS-Command-osx-x64.tar.gz`.
+- [ ] macOS Intel test tar.gz: `artifacts/packages/APRS-Command-osx-x64-test.tar.gz`.
 - [ ] Linux x64 tar.gz: `artifacts/packages/APRS-Command-linux-x64.tar.gz`.
+- [ ] Linux x64 test tar.gz: `artifacts/packages/APRS-Command-linux-x64-test.tar.gz`.
 - [ ] Linux ARM64 tar.gz: `artifacts/packages/APRS-Command-linux-arm64.tar.gz`.
+- [ ] Linux ARM64 test tar.gz: `artifacts/packages/APRS-Command-linux-arm64-test.tar.gz`.
 - [ ] Raspberry Pi/Linux ARM64 notes are included in docs.
 
 For each package:
@@ -123,7 +145,57 @@ For each package:
 - [ ] No credentials, passcodes, tokens, signing keys, private keys, or private callsigns are included.
 - [ ] SHA256 checksum is generated under `artifacts/checksums/`.
 - [ ] Package filename uses `APRS-Command`.
+- [ ] Current-platform test packages, when produced before public release, use a `-test` package filename and matching checksum.
 - [ ] Extracted package opens APRS Command without enabling transmit.
+- [ ] macOS portable packages include executable `Aprs.Desktop` and Finder-friendly `APRS Command.command`.
+- [ ] macOS unsigned portable launch instructions mention executable permissions, quarantine removal, Terminal launch, and launch-error capture.
+
+### macOS Apple Silicon Portable Test Validation
+
+From the repository root:
+
+```bash
+ls -la artifacts/publish/osx-arm64/
+ls -la artifacts/packages/APRS-Command-osx-arm64-test.tar.gz
+ls -la artifacts/checksums/APRS-Command-osx-arm64-test.tar.gz.sha256
+cat artifacts/checksums/APRS-Command-osx-arm64-test.tar.gz.sha256
+```
+
+Extract the package to the documented test location:
+
+```bash
+rm -rf /tmp/aprs-command-osx-arm64-test
+mkdir -p /tmp/aprs-command-osx-arm64-test
+tar -xzf artifacts/packages/APRS-Command-osx-arm64-test.tar.gz -C /tmp/aprs-command-osx-arm64-test
+cd /tmp/aprs-command-osx-arm64-test/APRS-Command-osx-arm64
+ls -la
+```
+
+Validate the exact launch files:
+
+```bash
+test -x ./Aprs.Desktop
+test -x "./APRS Command.command"
+```
+
+Launch the actual app executable:
+
+```bash
+xattr -dr com.apple.quarantine . 2>/dev/null || true
+./Aprs.Desktop
+```
+
+Or launch the portable-test command file:
+
+```bash
+open "./APRS Command.command"
+```
+
+Capture launch errors if startup fails:
+
+```bash
+./Aprs.Desktop 2>&1 | tee launch-error.txt
+```
 
 ## Safety Defaults Validation
 

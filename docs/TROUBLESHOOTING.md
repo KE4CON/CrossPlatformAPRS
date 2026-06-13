@@ -73,6 +73,24 @@ Message transmit is disabled by default. Check:
 - connection state
 - safety block reason
 
+## Feature Buttons Do Not Change Views
+
+The lower-right feature area should show one clean set of feature buttons for Messages, Objects, Weather, Events, Event Bus, Replay, RF Diag, and Alerts. Clicking one of these buttons should update the selected feature title, description, and content without hiding the map. If nothing changes:
+
+1. Confirm you are running a build that includes the restored map-first layout.
+2. Confirm the lower-right feature panel is visible and not clipped by the window size.
+3. Click Messages, Objects, Weather, Events, Event Bus, Replay, RF Diag, and Alerts.
+4. Confirm each button changes the selected feature view.
+5. Restart APRS Command from a terminal and capture errors with `./Aprs.Desktop 2>&1 | tee launch-error.txt`.
+
+## Help Button Missing Or Does Not Open
+
+The Help button should be visible in the application header. It opens the offline Help viewer with User Manual, Quick Start, Safety and Transmit Guide, Troubleshooting, and Glossary topics. If Help does not open:
+
+1. Confirm the `docs/` folder exists beside the published app or in the development repository.
+2. Start APRS Command from a terminal and capture errors.
+3. Missing Help topics should show `This help topic is not available in this build` instead of crashing.
+
 ## Weather Station Not Updating
 
 1. Check source status.

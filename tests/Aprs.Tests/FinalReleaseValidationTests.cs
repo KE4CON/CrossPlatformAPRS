@@ -38,7 +38,10 @@ public sealed class FinalReleaseValidationTests
         Assert.Contains("dotnet restore", checklist, StringComparison.Ordinal);
         Assert.Contains("dotnet build", checklist, StringComparison.Ordinal);
         Assert.Contains("dotnet test", checklist, StringComparison.Ordinal);
-        Assert.Contains("dotnet run --project src/Aprs.Desktop", checklist, StringComparison.Ordinal);
+        Assert.Contains("dotnet run --project src/Aprs.Desktop/Aprs.Desktop.csproj", checklist, StringComparison.Ordinal);
+        Assert.Contains("test -f CrossPlatformAprs.sln", checklist, StringComparison.Ordinal);
+        Assert.Contains("Actual solution path", checklist, StringComparison.Ordinal);
+        Assert.Contains("Actual desktop project path", checklist, StringComparison.Ordinal);
         Assert.Contains("No test requires live APRS-IS", checklist, StringComparison.Ordinal);
     }
 
@@ -88,6 +91,13 @@ public sealed class FinalReleaseValidationTests
             "APRS-Command-osx-x64.tar.gz",
             "APRS-Command-linux-x64.tar.gz",
             "APRS-Command-linux-arm64.tar.gz",
+            "artifacts/publish/osx-arm64/",
+            "artifacts/packages/APRS-Command-osx-arm64-test.tar.gz",
+            "artifacts/checksums/APRS-Command-osx-arm64-test.tar.gz.sha256",
+            "/tmp/aprs-command-osx-arm64-test",
+            "test -x ./Aprs.Desktop",
+            "open \"./APRS Command.command\"",
+            "-test",
             "SHA256 checksum",
             "Windows:",
             "macOS:",
@@ -112,6 +122,9 @@ public sealed class FinalReleaseValidationTests
         Assert.Contains("dotnet restore", script, StringComparison.Ordinal);
         Assert.Contains("dotnet build", script, StringComparison.Ordinal);
         Assert.Contains("dotnet test", script, StringComparison.Ordinal);
+        Assert.Contains("CrossPlatformAprs.sln", script, StringComparison.Ordinal);
+        Assert.Contains("src/Aprs.Desktop/Aprs.Desktop.csproj", script, StringComparison.Ordinal);
+        Assert.Contains("Could not locate $description", script, StringComparison.Ordinal);
         Assert.Contains("docs/FINAL_RELEASE_VALIDATION_CHECKLIST.md", script, StringComparison.Ordinal);
         Assert.Contains("scripts/package-runtime.sh", script, StringComparison.Ordinal);
         Assert.Contains("CopyToPublishDirectory", script, StringComparison.Ordinal);
@@ -133,6 +146,29 @@ public sealed class FinalReleaseValidationTests
         {
             Assert.Contains("docs/FINAL_RELEASE_VALIDATION_CHECKLIST.md", Read(relativePath), StringComparison.Ordinal);
         }
+    }
+
+    [Fact]
+    public void ReleaseValidationReportRecordsCurrentPlatformTestPackage()
+    {
+        var report = Read("docs/RELEASE_VALIDATION_REPORT.md");
+
+        Assert.Contains("APRS Command Release Validation Report", report, StringComparison.Ordinal);
+        Assert.Contains(".NET SDK version", report, StringComparison.Ordinal);
+        Assert.Contains("Actual solution path", report, StringComparison.Ordinal);
+        Assert.Contains("Actual desktop project path", report, StringComparison.Ordinal);
+        Assert.Contains("macOS", report, StringComparison.Ordinal);
+        Assert.Contains("osx-arm64", report, StringComparison.Ordinal);
+        Assert.Contains("APRS-Command-osx-arm64-test.tar.gz", report, StringComparison.Ordinal);
+        Assert.Contains("artifacts/publish/osx-arm64/", report, StringComparison.Ordinal);
+        Assert.Contains("artifacts/checksums/APRS-Command-osx-arm64-test.tar.gz.sha256", report, StringComparison.Ordinal);
+        Assert.Contains("/tmp/aprs-command-osx-arm64-test", report, StringComparison.Ordinal);
+        Assert.Contains("tar -xzf artifacts/packages/APRS-Command-osx-arm64-test.tar.gz", report, StringComparison.Ordinal);
+        Assert.Contains("./Aprs.Desktop 2>&1 | tee launch-error.txt", report, StringComparison.Ordinal);
+        Assert.Contains("SHA256", report, StringComparison.Ordinal);
+        Assert.Contains("No live transmit occurred", report, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("APRS Command.command", report, StringComparison.Ordinal);
+        Assert.Contains("manual visual", report, StringComparison.OrdinalIgnoreCase);
     }
 
     private static string RepositoryRoot

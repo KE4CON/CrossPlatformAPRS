@@ -66,7 +66,9 @@ Recommended first package:
 3. Verify the publish folder and offline `docs/`.
 4. Run `./scripts/package-osx-arm64.sh` or `./scripts/package-osx-x64.sh`.
 5. Verify `APRS-Command-osx-arm64.tar.gz` or `APRS-Command-osx-x64.tar.gz`.
-6. Verify the matching SHA256 checksum file.
+6. For Apple Silicon test validation, also verify `APRS-Command-osx-arm64-test.tar.gz`.
+7. Verify the matching SHA256 checksum file.
+8. Extract the package, run `xattr -dr com.apple.quarantine .` if needed, and launch `./Aprs.Desktop` from Terminal or `open "./APRS Command.command"` for Finder-style testing.
 
 Future package placeholders:
 
@@ -75,6 +77,7 @@ Future package placeholders:
 - Apple Silicon build: `osx-arm64`.
 - Intel build: `osx-x64`.
 - Signing and notarization workflow.
+- The portable archive includes `APRS Command.command` only as a temporary unsigned-test launcher. A real `.app` bundle should replace it in final macOS packaging.
 
 Do not add real signing certificates, Apple IDs, passwords, app-specific passwords, notarization keys, or keychain exports to the repository.
 

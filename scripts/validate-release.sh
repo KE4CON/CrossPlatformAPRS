@@ -4,9 +4,30 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 SOLUTION="$REPO_ROOT/CrossPlatformAprs.sln"
+DESKTOP_PROJECT="$REPO_ROOT/src/Aprs.Desktop/Aprs.Desktop.csproj"
+
+require_path() {
+  local path="$1"
+  local description="$2"
+
+  if [[ ! -e "$path" ]]; then
+    echo "Could not locate $description at: $path" >&2
+    echo "Run this script from the APRS Command repository, or keep scripts/ beside the repository root." >&2
+    exit 1
+  fi
+}
+
+require_path "$SOLUTION" "solution file"
+require_path "$DESKTOP_PROJECT" "desktop project file"
+require_path "$REPO_ROOT/README.md" "README.md"
+require_path "$REPO_ROOT/src" "src directory"
+require_path "$REPO_ROOT/docs" "docs directory"
+require_path "$REPO_ROOT/tests" "tests directory"
 
 echo "APRS Command final release validation"
 echo "Repository: $REPO_ROOT"
+echo "Solution: $SOLUTION"
+echo "Desktop project: $DESKTOP_PROJECT"
 echo
 
 DOTNET_VERSION="$(dotnet --version)"
@@ -76,8 +97,7 @@ for relative_path in "${required_scripts[@]}"; do
 done
 
 echo "Checking Help docs copy configuration..."
-desktop_project="$REPO_ROOT/src/Aprs.Desktop/Aprs.Desktop.csproj"
-if ! grep -Fq 'docs\*.md' "$desktop_project" || ! grep -q "CopyToPublishDirectory" "$desktop_project"; then
+if ! grep -Fq 'docs\*.md' "$DESKTOP_PROJECT" || ! grep -q "CopyToPublishDirectory" "$DESKTOP_PROJECT"; then
   echo "Aprs.Desktop project does not appear to copy docs into publish output." >&2
   exit 1
 fi

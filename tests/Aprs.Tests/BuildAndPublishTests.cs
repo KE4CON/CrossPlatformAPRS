@@ -56,9 +56,14 @@ public sealed class BuildAndPublishTests
         Assert.Contains("dotnet restore", script, StringComparison.Ordinal);
         Assert.Contains("dotnet build", script, StringComparison.Ordinal);
         Assert.Contains("dotnet test", script, StringComparison.Ordinal);
+        Assert.Contains("CrossPlatformAprs.sln", script, StringComparison.Ordinal);
+        Assert.Contains("src/Aprs.Desktop/Aprs.Desktop.csproj", script, StringComparison.Ordinal);
+        Assert.Contains("Could not locate $description", script, StringComparison.Ordinal);
+        Assert.Contains("Repository root: $REPO_ROOT", script, StringComparison.Ordinal);
+        Assert.Contains("Desktop project: $PROJECT", script, StringComparison.Ordinal);
+        Assert.Contains("rm -rf \"$OUTPUT\"", script, StringComparison.Ordinal);
         Assert.Contains("dotnet publish", script, StringComparison.Ordinal);
         Assert.Contains("artifacts/publish/$RID", script, StringComparison.Ordinal);
-        Assert.DoesNotContain("rm -rf", script, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("TransmitEnabled=true", script, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("passcode", script, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("api_key", script, StringComparison.OrdinalIgnoreCase);
@@ -75,8 +80,19 @@ public sealed class BuildAndPublishTests
         Assert.Contains("dotnet restore", document, StringComparison.Ordinal);
         Assert.Contains("dotnet build", document, StringComparison.Ordinal);
         Assert.Contains("dotnet test", document, StringComparison.Ordinal);
-        Assert.Contains("dotnet run --project src/Aprs.Desktop", document, StringComparison.Ordinal);
+        Assert.Contains("dotnet run --project src/Aprs.Desktop/Aprs.Desktop.csproj", document, StringComparison.Ordinal);
+        Assert.Contains("test -f CrossPlatformAprs.sln", document, StringComparison.Ordinal);
+        Assert.Contains("Solution: CrossPlatformAprs.sln", document, StringComparison.Ordinal);
+        Assert.Contains("Desktop project: src/Aprs.Desktop/Aprs.Desktop.csproj", document, StringComparison.Ordinal);
+        Assert.Contains("Test project: tests/Aprs.Tests/Aprs.Tests.csproj", document, StringComparison.Ordinal);
         Assert.Contains("artifacts/publish/<runtime-identifier>/", document, StringComparison.Ordinal);
+        Assert.Contains("artifacts/publish/osx-arm64/", document, StringComparison.Ordinal);
+        Assert.Contains("artifacts/packages/APRS-Command-osx-arm64-test.tar.gz", document, StringComparison.Ordinal);
+        Assert.Contains("artifacts/checksums/APRS-Command-osx-arm64-test.tar.gz.sha256", document, StringComparison.Ordinal);
+        Assert.Contains("rm -rf /tmp/aprs-command-osx-arm64-test", document, StringComparison.Ordinal);
+        Assert.Contains("tar -xzf artifacts/packages/APRS-Command-osx-arm64-test.tar.gz", document, StringComparison.Ordinal);
+        Assert.Contains("./Aprs.Desktop", document, StringComparison.Ordinal);
+        Assert.Contains("open \"./APRS Command.command\"", document, StringComparison.Ordinal);
         Assert.Contains("These scripts create publish folders only", document, StringComparison.Ordinal);
 
         foreach (var runtimeIdentifier in RuntimeIdentifiers)

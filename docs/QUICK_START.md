@@ -11,7 +11,7 @@ If you are running from source, install the .NET 10 SDK, then run:
 ```bash
 dotnet restore
 dotnet build
-dotnet run --project src/Aprs.Desktop
+dotnet run --project src/Aprs.Desktop/Aprs.Desktop.csproj
 ```
 
 ## 2. Launch APRS Command
@@ -21,9 +21,9 @@ Start the application from your package, shortcut, terminal, or development comm
 - large map in the main workspace
 - station list on the right
 - packet monitor below the map
-- feature tabs in the lower-right area
+- feature buttons in the lower-right area
 
-Click Help in the application header whenever you need the offline User Manual, setup guides, Safety and Transmit Guide, Troubleshooting, or Glossary. Use the Help search box to filter topics.
+Click Messages, Objects, Weather, Events, Event Bus, Replay, RF Diag, or Alerts in the lower-right feature button area to show that feature view. Click Help in the application header whenever you need the offline User Manual, Quick Start, Safety and Transmit Guide, Troubleshooting, or Glossary. Use the Help search box to filter topics.
 
 ## 3. Complete First-Run Setup
 

@@ -26,7 +26,7 @@ The repository includes `global.json` pinned to the current .NET 10 SDK feature 
 ## Desktop Run
 
 ```bash
-dotnet run --project src/Aprs.Desktop
+dotnet run --project src/Aprs.Desktop/Aprs.Desktop.csproj
 ```
 
 ## Runtime Identifiers

@@ -46,14 +46,14 @@ Recommended:
 Packaged installers are planned for a future release. For now, use a published folder from `artifacts/publish/<runtime-identifier>/` or run from source:
 
 ```bash
-dotnet run --project src/Aprs.Desktop
+dotnet run --project src/Aprs.Desktop/Aprs.Desktop.csproj
 ```
 
 See `docs/INSTALLATION_GUIDE.md` for platform steps.
 
 ## First Launch
 
-On first launch, APRS Command opens to a map-first desktop shell. The main map is the primary workspace, the station list is on the right, the packet monitor is below the map, and feature tabs are in the lower-right area.
+On first launch, APRS Command opens to a map-first desktop shell. The main map is the primary workspace, the station list is on the right, the packet monitor is below the map, and feature buttons are in the lower-right area.
 
 ## First-Run Setup
 
@@ -77,12 +77,12 @@ The main screen is arranged for monitoring:
 - map in the center
 - station list on the right
 - raw packet monitor below the map
-- lower-right tabs for Messages, Objects, Weather, Events, Event Bus, Replay, RF Diagnostics, Alerts, Geofence, Simulation, Training, Files, and Settings
+- lower-right feature buttons for Messages, Objects, Weather, Events, Event Bus, Replay, RF Diagnostics, and Alerts
 - status bar for application status
 
 ## In-App Help
 
-Click Help in the application header to open the APRS Command Help window. The Help window lists topics such as User Manual, Quick Start, setup guides, Safety and Transmit Guide, Troubleshooting, and Glossary. Choose a topic from the list, or use the search box to filter by topic title or document content.
+Click the visible Help button in the application header to open the APRS Command Help window. The Help window lists topics such as User Manual, Quick Start, setup guides, Safety and Transmit Guide, Troubleshooting, and Glossary. Choose a topic from the list, or use the search box to filter by topic title or document content.
 
 Help documents are copied into the published application under `docs/`, so they are available offline where practical. Development runs fall back to the repository `docs/` folder.
 

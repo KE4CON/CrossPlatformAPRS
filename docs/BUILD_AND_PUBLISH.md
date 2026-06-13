@@ -12,12 +12,26 @@ See `docs/INSTALLER_AND_PACKAGE_PLAN.md` for the planned installer/package strat
 
 ## Verify the Repository
 
+Confirm you are in the repository root before running manual build commands:
+
+```bash
+test -f CrossPlatformAprs.sln && test -f README.md && test -d src && test -d docs && test -d tests
+```
+
+The discovered Phase 15.10 source paths are:
+
+```text
+Solution: CrossPlatformAprs.sln
+Desktop project: src/Aprs.Desktop/Aprs.Desktop.csproj
+Test project: tests/Aprs.Tests/Aprs.Tests.csproj
+```
+
 ```bash
 dotnet --version
 dotnet restore
 dotnet build
 dotnet test
-dotnet run --project src/Aprs.Desktop
+dotnet run --project src/Aprs.Desktop/Aprs.Desktop.csproj
 ```
 
 For the automated release-readiness subset that does not launch hardware, require internet access, or enable transmit, run:
@@ -42,7 +56,7 @@ Raspberry Pi 5 ARM64 uses `linux-arm64`.
 
 ## Publish Scripts
 
-Each script restores, builds in Release, runs tests, and publishes `src/Aprs.Desktop`.
+Each script validates the repository root, restores `CrossPlatformAprs.sln`, builds in Release, runs tests, cleans the runtime-specific generated publish folder under `artifacts/publish/`, and publishes `src/Aprs.Desktop/Aprs.Desktop.csproj`.
 
 ```bash
 ./scripts/publish-win-x64.sh
@@ -90,6 +104,81 @@ Generic helper:
 ./scripts/package-runtime.sh linux-arm64
 ```
 
+Every package script creates the standard portable archive and a matching `-test` archive for validation. Phase 15.10 records the all-target portable package rerun in `docs/RELEASE_VALIDATION_REPORT.md`.
+
+Example for macOS Apple Silicon:
+
+```bash
+./scripts/package-osx-arm64.sh
+```
+
+The macOS Apple Silicon package script creates both `APRS-Command-osx-arm64.tar.gz` and `APRS-Command-osx-arm64-test.tar.gz` with matching SHA256 checksum files. All other package scripts also create matching `-test` archives and checksums. The macOS package includes the raw `Aprs.Desktop` executable for Terminal launches and `APRS Command.command` for Finder/`open` based unsigned portable-build testing.
+
+### macOS Apple Silicon Portable Test Package
+
+The Phase 15.10 macOS Apple Silicon portable test package is created exactly here:
+
+```text
+artifacts/packages/APRS-Command-osx-arm64-test.tar.gz
+```
+
+The matching publish folder and checksum are:
+
+```text
+artifacts/publish/osx-arm64/
+artifacts/checksums/APRS-Command-osx-arm64-test.tar.gz.sha256
+```
+
+From the repository root, verify those paths after packaging:
+
+```bash
+ls -la artifacts/publish/osx-arm64/
+ls -la artifacts/packages/APRS-Command-osx-arm64-test.tar.gz
+ls -la artifacts/checksums/APRS-Command-osx-arm64-test.tar.gz.sha256
+cat artifacts/checksums/APRS-Command-osx-arm64-test.tar.gz.sha256
+```
+
+Extract the Apple Silicon test package to a clean temporary folder:
+
+```bash
+rm -rf /tmp/aprs-command-osx-arm64-test
+mkdir -p /tmp/aprs-command-osx-arm64-test
+tar -xzf artifacts/packages/APRS-Command-osx-arm64-test.tar.gz -C /tmp/aprs-command-osx-arm64-test
+cd /tmp/aprs-command-osx-arm64-test/APRS-Command-osx-arm64
+ls -la
+```
+
+The launchable executable inside the extracted folder is `Aprs.Desktop`. The Finder-friendly unsigned portable-test launcher is `APRS Command.command`. This package is not a signed `.app` bundle.
+
+Launch from Terminal:
+
+```bash
+chmod +x ./Aprs.Desktop
+chmod +x "./APRS Command.command"
+xattr -dr com.apple.quarantine . 2>/dev/null || true
+./Aprs.Desktop
+```
+
+Or launch the portable-test command file:
+
+```bash
+open "./APRS Command.command"
+```
+
+To capture startup errors:
+
+```bash
+./Aprs.Desktop 2>&1 | tee launch-error.txt
+```
+
+After launch, manually confirm the latest fixed UI build is present:
+
+- Help is visible and opens the in-app Help viewer.
+- Messages, Objects, Weather, Events, Event Bus, Replay, RF Diag, and Alerts are all visible in the lower-right feature area.
+- Each feature button opens or shows a visible feature panel or placeholder.
+- There is no duplicate gray feature button set.
+- The failed crowded top navigation is not present.
+
 ## Publish Profiles
 
 MSBuild publish profiles are stored under:
@@ -130,10 +219,15 @@ Portable package outputs use:
 
 ```text
 artifacts/packages/APRS-Command-win-x64.zip
+artifacts/packages/APRS-Command-win-x64-test.zip
 artifacts/packages/APRS-Command-osx-arm64.tar.gz
+artifacts/packages/APRS-Command-osx-arm64-test.tar.gz
 artifacts/packages/APRS-Command-osx-x64.tar.gz
+artifacts/packages/APRS-Command-osx-x64-test.tar.gz
 artifacts/packages/APRS-Command-linux-x64.tar.gz
+artifacts/packages/APRS-Command-linux-x64-test.tar.gz
 artifacts/packages/APRS-Command-linux-arm64.tar.gz
+artifacts/packages/APRS-Command-linux-arm64-test.tar.gz
 artifacts/checksums/<package-file>.sha256
 artifacts/release-notes/RELEASE_NOTES_TEMPLATE.md
 ```
@@ -168,6 +262,7 @@ Windows:
 macOS:
 - Verify `osx-arm64` and `osx-x64` output.
 - Portable package outputs are `APRS-Command-osx-arm64.tar.gz` and `APRS-Command-osx-x64.tar.gz`.
+- Apple Silicon test package output also includes `APRS-Command-osx-arm64-test.tar.gz` and a Finder-friendly `APRS Command.command` launcher.
 - Later packaging work should handle `.app` layout, signing, notarization, and quarantine behavior.
 
 Linux:

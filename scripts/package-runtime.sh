@@ -9,6 +9,8 @@ fi
 RID="$1"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+SOLUTION="$REPO_ROOT/CrossPlatformAprs.sln"
+PROJECT="$REPO_ROOT/src/Aprs.Desktop/Aprs.Desktop.csproj"
 PUBLISH_DIR="$REPO_ROOT/artifacts/publish/$RID"
 PACKAGES_DIR="$REPO_ROOT/artifacts/packages"
 CHECKSUMS_DIR="$REPO_ROOT/artifacts/checksums"
@@ -17,12 +19,32 @@ STAGING_ROOT="$REPO_ROOT/artifacts/package-staging"
 STAGING_DIR="$STAGING_ROOT/APRS-Command-$RID"
 PACKAGE_BASENAME="APRS-Command-$RID"
 
+require_path() {
+  local path="$1"
+  local description="$2"
+
+  if [[ ! -e "$path" ]]; then
+    echo "Could not locate $description at: $path" >&2
+    echo "Run this script from the APRS Command repository, or keep scripts/ beside the repository root." >&2
+    exit 1
+  fi
+}
+
+require_path "$SOLUTION" "solution file"
+require_path "$PROJECT" "desktop project file"
+require_path "$REPO_ROOT/README.md" "README.md"
+require_path "$REPO_ROOT/src" "src directory"
+require_path "$REPO_ROOT/docs" "docs directory"
+require_path "$REPO_ROOT/tests" "tests directory"
+
 case "$RID" in
   win-x64)
     PACKAGE_PATH="$PACKAGES_DIR/$PACKAGE_BASENAME.zip"
+    TEST_PACKAGE_PATH="$PACKAGES_DIR/$PACKAGE_BASENAME-test.zip"
     ;;
   osx-arm64|osx-x64|linux-x64|linux-arm64)
     PACKAGE_PATH="$PACKAGES_DIR/$PACKAGE_BASENAME.tar.gz"
+    TEST_PACKAGE_PATH="$PACKAGES_DIR/$PACKAGE_BASENAME-test.tar.gz"
     ;;
   *)
     echo "Unsupported runtime identifier: $RID" >&2
@@ -30,11 +52,32 @@ case "$RID" in
     ;;
 esac
 
+write_checksum() {
+  local package_path="$1"
+  local checksum_path="$CHECKSUMS_DIR/$(basename "$package_path").sha256"
+
+  if command -v shasum >/dev/null 2>&1; then
+    (cd "$PACKAGES_DIR" && shasum -a 256 "$(basename "$package_path")" > "$checksum_path")
+  elif command -v sha256sum >/dev/null 2>&1; then
+    (cd "$PACKAGES_DIR" && sha256sum "$(basename "$package_path")" > "$checksum_path")
+  else
+    echo "No SHA256 tool found. Install shasum or sha256sum." >&2
+    exit 1
+  fi
+}
+
 echo "Packaging APRS Command portable build for $RID"
+echo "Repository root: $REPO_ROOT"
+echo "Solution: $SOLUTION"
+echo "Desktop project: $PROJECT"
 "$SCRIPT_DIR/publish-runtime.sh" "$RID"
 
 mkdir -p "$PACKAGES_DIR" "$CHECKSUMS_DIR" "$RELEASE_NOTES_DIR" "$STAGING_ROOT"
-rm -rf "$STAGING_DIR" "$PACKAGE_PATH" "$CHECKSUMS_DIR/$(basename "$PACKAGE_PATH").sha256"
+rm -rf "$STAGING_DIR" \
+  "$PACKAGE_PATH" \
+  "$TEST_PACKAGE_PATH" \
+  "$CHECKSUMS_DIR/$(basename "$PACKAGE_PATH").sha256" \
+  "$CHECKSUMS_DIR/$(basename "$TEST_PACKAGE_PATH").sha256"
 mkdir -p "$STAGING_DIR"
 
 cp -R "$PUBLISH_DIR"/. "$STAGING_DIR"/
@@ -72,6 +115,25 @@ if [[ "$RID" == linux-* ]]; then
   cp "$REPO_ROOT/packaging/templates/aprs-command.desktop.template" "$STAGING_DIR/aprs-command.desktop.template"
 fi
 
+if [[ "$RID" == osx-* ]]; then
+  cat > "$STAGING_DIR/APRS Command.command" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$APP_DIR"
+
+if [[ ! -x ./Aprs.Desktop ]]; then
+  chmod +x ./Aprs.Desktop
+fi
+
+exec ./Aprs.Desktop "$@"
+EOF
+  chmod +x "$STAGING_DIR/APRS Command.command"
+fi
+
+chmod +x "$STAGING_DIR/Aprs.Desktop" 2>/dev/null || true
+
 case "$RID" in
   win-x64)
     (cd "$STAGING_ROOT" && zip -qr "$PACKAGE_PATH" "APRS-Command-$RID")
@@ -81,14 +143,11 @@ case "$RID" in
     ;;
 esac
 
-if command -v shasum >/dev/null 2>&1; then
-  (cd "$PACKAGES_DIR" && shasum -a 256 "$(basename "$PACKAGE_PATH")" > "$CHECKSUMS_DIR/$(basename "$PACKAGE_PATH").sha256")
-elif command -v sha256sum >/dev/null 2>&1; then
-  (cd "$PACKAGES_DIR" && sha256sum "$(basename "$PACKAGE_PATH")" > "$CHECKSUMS_DIR/$(basename "$PACKAGE_PATH").sha256")
-else
-  echo "No SHA256 tool found. Install shasum or sha256sum." >&2
-  exit 1
-fi
+cp "$PACKAGE_PATH" "$TEST_PACKAGE_PATH"
+write_checksum "$PACKAGE_PATH"
+write_checksum "$TEST_PACKAGE_PATH"
 
 echo "APRS Command package output: $PACKAGE_PATH"
 echo "APRS Command checksum output: $CHECKSUMS_DIR/$(basename "$PACKAGE_PATH").sha256"
+echo "APRS Command test package output: $TEST_PACKAGE_PATH"
+echo "APRS Command test checksum output: $CHECKSUMS_DIR/$(basename "$TEST_PACKAGE_PATH").sha256"

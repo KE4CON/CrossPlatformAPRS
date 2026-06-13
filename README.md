@@ -31,10 +31,10 @@ The repository pins SDK selection with `global.json`. Install the .NET 10 SDK be
 ## Desktop smoke run
 
 ```bash
-dotnet run --project src/Aprs.Desktop
+dotnet run --project src/Aprs.Desktop/Aprs.Desktop.csproj
 ```
 
-The desktop opens to the original map-first shell: the map is the primary workspace, the station list stays on the right, the raw packet monitor stays below the map, and feature panels such as Messages, Objects, Weather, Events, Event Bus, Replay, RF Diagnostics, Alerts, Geofence, Simulation, Training, Files, and Settings remain available in the lower-right tab area.
+The desktop opens to the original map-first shell: the map is the primary workspace, the station list stays on the right, the raw packet monitor stays below the map, and feature buttons such as Messages, Objects, Weather, Events, Event Bus, Replay, RF Diagnostics, and Alerts remain available in the lower-right area.
 
 ## Publish guidance
 

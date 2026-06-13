@@ -22,17 +22,82 @@ Required permissions:
 
 ## macOS Apple Silicon
 
-1. Use `APRS-Command-osx-arm64.tar.gz` or the `osx-arm64` publish output.
+The Phase 15.10 portable Apple Silicon test package is:
+
+```text
+artifacts/packages/APRS-Command-osx-arm64-test.tar.gz
+```
+
+The matching publish folder and checksum are:
+
+```text
+artifacts/publish/osx-arm64/
+artifacts/checksums/APRS-Command-osx-arm64-test.tar.gz.sha256
+```
+
+From the repository root, verify the package and checksum:
+
+```bash
+ls -la artifacts/packages/APRS-Command-osx-arm64-test.tar.gz
+ls -la artifacts/checksums/APRS-Command-osx-arm64-test.tar.gz.sha256
+cat artifacts/checksums/APRS-Command-osx-arm64-test.tar.gz.sha256
+```
+
+Extract the package to a clean temporary test folder:
+
+```bash
+rm -rf /tmp/aprs-command-osx-arm64-test
+mkdir -p /tmp/aprs-command-osx-arm64-test
+tar -xzf artifacts/packages/APRS-Command-osx-arm64-test.tar.gz -C /tmp/aprs-command-osx-arm64-test
+cd /tmp/aprs-command-osx-arm64-test/APRS-Command-osx-arm64
+ls -la
+```
+
+The launchable executable is `Aprs.Desktop`. The portable Finder-style launcher is `APRS Command.command`. This is not a signed `.app` bundle.
+
+1. Use `APRS-Command-osx-arm64-test.tar.gz`, `APRS-Command-osx-arm64.tar.gz`, or the `osx-arm64` publish output.
 2. Extract APRS Command to a user-writable folder or future application bundle.
-3. Start the app.
-4. If macOS warns about an unsigned development build, only open it if you trust the build source.
+3. Open Terminal in the extracted `APRS-Command-osx-arm64` folder.
+4. If this is an unsigned portable test build, clear quarantine on the extracted folder if macOS blocks it:
+
+   ```bash
+   xattr -dr com.apple.quarantine . 2>/dev/null || true
+   ```
+
+5. Confirm the executable bit if needed:
+
+   ```bash
+   chmod +x ./Aprs.Desktop
+   chmod +x "./APRS Command.command"
+   ```
+
+6. Start the app from Terminal:
+
+   ```bash
+   ./Aprs.Desktop
+   ```
+
+   Or use the Finder-friendly launcher:
+
+   ```bash
+   open "./APRS Command.command"
+   ```
+
+7. To capture launch errors:
+
+   ```bash
+   ./Aprs.Desktop 2>&1 | tee launch-error.txt
+   ```
+
+8. If APRS Command reports a fatal startup error, also check the startup log under your macOS application data folder, normally `~/Library/Application Support/APRS Command/logs/startup-error.log`.
+9. If macOS warns about an unsigned development build, only open it if you trust the build source.
 
 Future packages should handle signing and notarization.
 
 ## macOS Intel
 
 1. Use `APRS-Command-osx-x64.tar.gz` or the `osx-x64` publish output.
-2. Follow the same steps as macOS Apple Silicon.
+2. Follow the same Terminal, quarantine, executable permission, and launch-error capture steps as macOS Apple Silicon.
 3. Verify Intel support remains part of the build you downloaded.
 
 ## Linux x64
@@ -78,7 +143,7 @@ Install the .NET 10 SDK, then run:
 ```bash
 dotnet restore
 dotnet build
-dotnet run --project src/Aprs.Desktop
+dotnet run --project src/Aprs.Desktop/Aprs.Desktop.csproj
 ```
 
 ## Map Cache and Storage Notes
@@ -101,3 +166,5 @@ If APRS Command will not start:
 5. Check logs under the configured `logs/` folder.
 6. On Linux, install missing desktop libraries reported by the terminal.
 7. On macOS, review security prompts for unsigned development builds.
+8. On macOS portable builds, run `xattr -dr com.apple.quarantine .` from inside the extracted package folder if Gatekeeper quarantined the archive.
+9. On macOS portable builds, launch with `./Aprs.Desktop 2>&1 | tee launch-error.txt` to capture startup errors.

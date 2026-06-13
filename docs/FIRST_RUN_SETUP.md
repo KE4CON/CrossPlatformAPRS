@@ -173,7 +173,7 @@ When setup is complete, APRS Command should open to the map-first layout:
 - map in the main workspace
 - station list on the right
 - packet monitor below the map
-- feature tabs such as Messages, Objects, Weather, Events, Replay, RF Diagnostics, Alerts, Geofence, Simulation, Training, Files, and Settings in the lower-right area
+- feature buttons such as Messages, Objects, Weather, Events, Event Bus, Replay, RF Diagnostics, and Alerts in the lower-right area
 
 Use the packet monitor and station list to verify receive behavior before changing any transmit settings.
 
