@@ -302,6 +302,25 @@ public sealed class MapViewModel : INotifyPropertyChanged
         ClearObjectSelection();
     }
 
+    /// <summary>
+    /// Replaces the current station markers with the supplied snapshots. Called by the live
+    /// data coordinator on the UI thread after new packets are ingested. Snapshots that cannot
+    /// be turned into a marker (e.g. no position yet) are skipped.
+    /// </summary>
+    public void UpdateStations(IEnumerable<StationSnapshot> stations)
+    {
+        var markers = stations
+            .Select(station => StationMarker.TryCreate(station, out var marker) ? marker : null)
+            .OfType<StationMarker>()
+            .ToList();
+
+        Markers.Clear();
+        foreach (var marker in markers)
+        {
+            Markers.Add(new StationMarkerViewModel(marker));
+        }
+    }
+
     public static MapViewModel FromStations(IEnumerable<StationSnapshot> stations)
     {
         var markers = stations

@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Aprs.Desktop.ViewModels;
 using Aprs.Services;
+using System.Collections.Specialized;
 using System.ComponentModel;
 
 namespace Aprs.Desktop.Views;
@@ -23,14 +24,21 @@ public sealed partial class MapView : UserControl
         if (currentViewModel is not null)
         {
             currentViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            currentViewModel.Markers.CollectionChanged -= Markers_CollectionChanged;
         }
 
         currentViewModel = DataContext as MapViewModel;
         if (currentViewModel is not null)
         {
             currentViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            currentViewModel.Markers.CollectionChanged += Markers_CollectionChanged;
         }
 
+        RenderMarkers();
+    }
+
+    private void Markers_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
         RenderMarkers();
     }
 
