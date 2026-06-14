@@ -1,22 +1,103 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Media;
 using Aprs.Desktop.ViewModels;
 using Aprs.Services;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using Mapsui;
+using Mapsui.Layers;
+using Mapsui.Projections;
+using Mapsui.Styles;
+using Mapsui.Tiling;
+using Mapsui.Tiling.Layers;
+using BruTile.MbTiles;
+using SQLite;
 
 namespace Aprs.Desktop.Views;
 
 public sealed partial class MapView : UserControl
 {
     private MapViewModel? currentViewModel;
+    private GenericCollectionLayer<List<IFeature>>? markerLayer;
+    private bool mapInitialized;
+    private bool hasFitToData;
 
     public MapView()
     {
         InitializeComponent();
+        Loaded += (_, _) => InitializeMap();
         DataContextChanged += (_, _) => AttachViewModel();
-        SizeChanged += (_, _) => RenderMarkers();
+    }
+
+    private void InitializeMap()
+    {
+        if (mapInitialized)
+        {
+            return;
+        }
+
+        mapInitialized = true;
+
+        var map = MapControl.Map;
+        map.Layers.Add(CreateBaseLayer());
+
+        markerLayer = new GenericCollectionLayer<List<IFeature>>
+        {
+            Name = "APRS markers"
+        };
+        map.Layers.Add(markerLayer);
+
+        map.Info += OnMapInfo;
+
+        RefreshFeatures();
+
+        // With no live stations to fit to (e.g. running offline), open the view over
+        // the area the offline tiles actually cover, so the map isn't blank on launch.
+        if (!hasFitToData && offlineExtent is { } coverage)
+        {
+            hasFitToData = true;
+            map.Navigator.ZoomToBox(coverage);
+        }
+    }
+
+    // Offline-first base map: if an "offline.mbtiles" raster tile file is present next
+    // to the application, use it so the map works with no internet (for field use).
+    // Otherwise fall back to online OpenStreetMap tiles.
+    private MRect? offlineExtent;
+
+    private ILayer CreateBaseLayer()
+    {
+        try
+        {
+            var mbtilesPath = Path.Combine(AppContext.BaseDirectory, "offline.mbtiles");
+            if (File.Exists(mbtilesPath))
+            {
+                // Register the native SQLite provider used to read the .mbtiles file.
+                SQLitePCL.Batteries_V2.Init();
+                var source = new MbTilesTileSource(
+                    new SQLiteConnectionString(mbtilesPath, false),
+                    type: MbTilesType.BaseLayer);
+                var extent = source.Schema.Extent;
+                offlineExtent = new MRect(extent.MinX, extent.MinY, extent.MaxX, extent.MaxY);
+                Console.Error.WriteLine(
+                    $"[Map] Using offline tiles: {mbtilesPath} "
+                    + $"(extent {extent.MinX:0},{extent.MinY:0} .. {extent.MaxX:0},{extent.MaxY:0})");
+                return new TileLayer(source) { Name = "Offline (MBTiles)" };
+            }
+
+            Console.Error.WriteLine(
+                $"[Map] No offline.mbtiles found at {mbtilesPath}; using online OpenStreetMap.");
+        }
+        catch (Exception exception)
+        {
+            Console.Error.WriteLine(
+                $"[Map] Offline tiles failed to load ({exception.GetType().Name}: {exception.Message}); "
+                + "using online OpenStreetMap.");
+        }
+
+        return OpenStreetMap.CreateTileLayer();
     }
 
     private void AttachViewModel()
@@ -34,12 +115,13 @@ public sealed partial class MapView : UserControl
             currentViewModel.Markers.CollectionChanged += Markers_CollectionChanged;
         }
 
-        RenderMarkers();
+        UpdatePanels();
+        RefreshFeatures();
     }
 
     private void Markers_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        RenderMarkers();
+        RefreshFeatures();
     }
 
     private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -54,14 +136,13 @@ public sealed partial class MapView : UserControl
             or nameof(MapViewModel.WeatherMarkers)
             or nameof(MapViewModel.WeatherMarkerCount))
         {
-            RenderMarkers();
+            UpdatePanels();
+            RefreshFeatures();
         }
     }
 
-    private void RenderMarkers()
+    private void UpdatePanels()
     {
-        MarkerCanvas.Children.Clear();
-
         if (DataContext is not MapViewModel viewModel)
         {
             EmptySelectionPanel.IsVisible = true;
@@ -69,60 +150,239 @@ public sealed partial class MapView : UserControl
             return;
         }
 
-        EmptySelectionPanel.IsVisible = !viewModel.HasSelectedStation && !viewModel.HasSelectedObject && !viewModel.HasSelectedWeather;
+        EmptySelectionPanel.IsVisible =
+            !viewModel.HasSelectedStation && !viewModel.HasSelectedObject && !viewModel.HasSelectedWeather;
         StationDetailsPanel.IsVisible = viewModel.HasSelectedStation;
+    }
+
+    private void RefreshFeatures()
+    {
+        if (markerLayer is null || DataContext is not MapViewModel viewModel)
+        {
+            return;
+        }
+
+        var features = new List<IFeature>();
 
         foreach (var marker in viewModel.Markers)
         {
-            var markerButton = CreateMarkerButton(marker, ReferenceEquals(marker, viewModel.SelectedStation));
-            markerButton.Click += (_, _) =>
-            {
-                viewModel.SelectStation(marker);
-                RenderMarkers();
-            };
-
-            var left = MarkerCanvas.Bounds.Width * marker.MapLeftPercent / 100;
-            var top = MarkerCanvas.Bounds.Height * marker.MapTopPercent / 100;
-            Canvas.SetLeft(markerButton, Math.Max(8, left - 14));
-            Canvas.SetTop(markerButton, Math.Max(8, top - 14));
-
-            MarkerCanvas.Children.Add(markerButton);
+            var selected = ReferenceEquals(marker, viewModel.SelectedStation);
+            var feature = MakeFeature(marker.MapLeftPercent, marker.MapTopPercent);
+            AddStationStyles(feature, marker, selected);
+            feature.Styles.Add(LabelFor(marker.DisplayName));
+            feature["station"] = marker;
+            features.Add(feature);
         }
 
         foreach (var marker in viewModel.WeatherMarkers)
         {
-            var markerButton = CreateWeatherMarkerButton(marker, ReferenceEquals(marker, viewModel.SelectedWeather));
-            markerButton.Click += (_, args) =>
-            {
-                args.Handled = true;
-                viewModel.SelectWeather(marker);
-                RenderMarkers();
-            };
-
-            var left = MarkerCanvas.Bounds.Width * marker.MapLeftPercent / 100;
-            var top = MarkerCanvas.Bounds.Height * marker.MapTopPercent / 100;
-            Canvas.SetLeft(markerButton, Math.Max(8, left - 15));
-            Canvas.SetTop(markerButton, Math.Max(8, top - 15));
-
-            MarkerCanvas.Children.Add(markerButton);
+            var selected = ReferenceEquals(marker, viewModel.SelectedWeather);
+            var color = marker.IsStale ? new Color(100, 116, 139) : new Color(2, 132, 199);
+            var feature = MakeFeature(marker.MapLeftPercent, marker.MapTopPercent);
+            feature.Styles.Add(DotStyle(color, SymbolType.Ellipse, selected));
+            feature.Styles.Add(LabelFor(marker.DisplayName));
+            feature["weather"] = marker;
+            features.Add(feature);
         }
 
         foreach (var marker in viewModel.ObjectMarkers)
         {
-            var markerButton = CreateObjectMarkerButton(marker, ReferenceEquals(marker, viewModel.SelectedObject));
-            markerButton.Click += (_, args) =>
+            var selected = ReferenceEquals(marker, viewModel.SelectedObject);
+            var feature = MakeFeature(marker.MapLeftPercent, marker.MapTopPercent);
+            feature.Styles.Add(DotStyle(ObjectColor(marker), SymbolType.Rectangle, selected));
+            feature.Styles.Add(LabelFor(marker.ObjectName));
+            feature["object"] = marker;
+            features.Add(feature);
+        }
+
+        markerLayer.Features.Clear();
+        markerLayer.Features.AddRange(features);
+        markerLayer.DataHasChanged();
+
+        FitToDataOnce(features);
+    }
+
+    // APRS symbol sheets (aprs.fi set by OH7LZB), bundled as embedded resources.
+    // Each sheet is a 16-column grid of 64px cells indexed by symbol code (0x21..0x7E).
+    private const string PrimarySheet = "embedded://Aprs.Desktop.aprs-symbols-64-0.png";
+    private const string SecondarySheet = "embedded://Aprs.Desktop.aprs-symbols-64-1.png";
+    private const string OverlaySheet = "embedded://Aprs.Desktop.aprs-symbols-64-2.png";
+    private const int CellSize = 64;
+    private const double IconScale = 0.45;          // 64px * 0.45 ~= 29px on screen
+    private const double SelectedIconScale = 0.55;
+
+    private static PointFeature MakeFeature(double leftPercent, double topPercent)
+    {
+        // The view model encodes position as a whole-planet percentage (see
+        // PlaceholderMapCoordinateConverter): longitude = x*360-180, latitude = 90-y*180.
+        // Recover the real coordinate and project to Web Mercator for Mapsui.
+        var longitude = (leftPercent / 100.0 * 360.0) - 180.0;
+        var latitude = 90.0 - (topPercent / 100.0 * 180.0);
+        var (mercatorX, mercatorY) = SphericalMercator.FromLonLat(longitude, latitude);
+        return new PointFeature(new MPoint(mercatorX, mercatorY));
+    }
+
+    private static bool TryRegion(char code, out BitmapRegion region)
+    {
+        region = null!;
+        if (code < '!' || code > '~')
+        {
+            return false;
+        }
+
+        var index = code - '!';
+        region = new BitmapRegion((index % 16) * CellSize, (index / 16) * CellSize, CellSize, CellSize);
+        return true;
+    }
+
+    private static void AddStationStyles(PointFeature feature, StationMarkerViewModel marker, bool selected)
+    {
+        var table = marker.SymbolTableIdentifier;
+        var code = marker.SymbolCode;
+
+        // No usable APRS symbol: fall back to the colored category dot.
+        if (table is null || code is null || !TryRegion(code.Value, out var region))
+        {
+            feature.Styles.Add(DotStyle(StationColor(marker), SymbolType.Ellipse, selected));
+            return;
+        }
+
+        if (selected)
+        {
+            feature.Styles.Add(new SymbolStyle
             {
-                args.Handled = true;
-                viewModel.SelectObject(marker);
-                RenderMarkers();
-            };
+                SymbolType = SymbolType.Ellipse,
+                Fill = new Brush(new Color(250, 204, 21, 170)),
+                Outline = new Pen(new Color(202, 138, 4), 2),
+                SymbolScale = 0.7
+            });
+        }
 
-            var left = MarkerCanvas.Bounds.Width * marker.MapLeftPercent / 100;
-            var top = MarkerCanvas.Bounds.Height * marker.MapTopPercent / 100;
-            Canvas.SetLeft(markerButton, Math.Max(8, left - 16));
-            Canvas.SetTop(markerButton, Math.Max(8, top - 16));
+        var scale = selected ? SelectedIconScale : IconScale;
+        var sheet = table.Value == '/' ? PrimarySheet : SecondarySheet;
+        feature.Styles.Add(new ImageStyle
+        {
+            Image = new Mapsui.Styles.Image { Source = sheet, BitmapRegion = region },
+            SymbolScale = scale
+        });
 
-            MarkerCanvas.Children.Add(markerButton);
+        // For overlay symbols (table id other than '/' or '\'), draw the overlay
+        // character glyph on top of the base symbol.
+        if (marker.Overlay is char overlay && TryRegion(overlay, out var overlayRegion))
+        {
+            feature.Styles.Add(new ImageStyle
+            {
+                Image = new Mapsui.Styles.Image { Source = OverlaySheet, BitmapRegion = overlayRegion },
+                SymbolScale = scale
+            });
+        }
+    }
+
+    private static SymbolStyle DotStyle(Color color, SymbolType symbolType, bool selected)
+    {
+        return new SymbolStyle
+        {
+            SymbolType = symbolType,
+            Fill = new Brush(color),
+            Outline = new Pen(selected ? new Color(250, 204, 21) : Color.White, selected ? 3 : 2),
+            SymbolScale = selected ? 0.9 : 0.7
+        };
+    }
+
+    private static LabelStyle LabelFor(string label)
+    {
+        return new LabelStyle
+        {
+            Text = label,
+            ForeColor = new Color(15, 23, 42),
+            BackColor = new Brush(new Color(248, 250, 252, 230)),
+            Halo = new Pen(Color.White, 1),
+            Offset = new Offset(0, 22),
+            Font = new Font { Size = 11 }
+        };
+    }
+
+    private void FitToDataOnce(IReadOnlyCollection<IFeature> features)
+    {
+        if (hasFitToData || features.Count == 0)
+        {
+            return;
+        }
+
+        var points = features.OfType<PointFeature>().Select(f => f.Point).ToList();
+        if (points.Count == 0)
+        {
+            return;
+        }
+
+        var minX = points.Min(p => p.X);
+        var minY = points.Min(p => p.Y);
+        var maxX = points.Max(p => p.X);
+        var maxY = points.Max(p => p.Y);
+
+        hasFitToData = true;
+
+        if (maxX - minX < 1 && maxY - minY < 1)
+        {
+            // Single point (or all coincident): center and zoom to a regional resolution.
+            MapControl.Map.Navigator.CenterOnAndZoomTo(new MPoint(minX, minY), 611);
+            return;
+        }
+
+        var box = new MRect(minX, minY, maxX, maxY).Grow((maxX - minX + maxY - minY) * 0.08);
+        MapControl.Map.Navigator.ZoomToBox(box);
+    }
+
+    private void OnMapInfo(object? sender, MapInfoEventArgs e)
+    {
+        if (DataContext is not MapViewModel viewModel || markerLayer is null)
+        {
+            return;
+        }
+
+        var feature = e.GetMapInfo(new ILayer[] { markerLayer })?.Feature;
+        if (feature is not null)
+        {
+            if (feature["station"] is StationMarkerViewModel station)
+            {
+                viewModel.SelectStation(station);
+                UpdatePanels();
+                RefreshFeatures();
+                return;
+            }
+
+            if (feature["object"] is ObjectMarkerViewModel objectMarker)
+            {
+                viewModel.SelectObject(objectMarker);
+                UpdatePanels();
+                RefreshFeatures();
+                return;
+            }
+
+            if (feature["weather"] is WeatherStationMarkerViewModel weather)
+            {
+                viewModel.SelectWeather(weather);
+                UpdatePanels();
+                RefreshFeatures();
+                return;
+            }
+        }
+
+        // Empty-map click: convert the world position back to the view model's
+        // normalized percentage space and forward it (used for placing/moving objects).
+        var world = e.WorldPosition;
+        if (world is null)
+        {
+            return;
+        }
+
+        var (longitude, latitude) = SphericalMercator.ToLonLat(world.X, world.Y);
+        var xPercent = (longitude + 180.0) / 360.0 * 100.0;
+        var yPercent = (90.0 - latitude) / 180.0 * 100.0;
+        if (viewModel.HandleMapClick(xPercent, yPercent))
+        {
+            UpdatePanels();
+            RefreshFeatures();
         }
     }
 
@@ -131,229 +391,45 @@ public sealed partial class MapView : UserControl
         if (DataContext is MapViewModel viewModel)
         {
             viewModel.ClearSelection();
-            RenderMarkers();
+            UpdatePanels();
+            RefreshFeatures();
         }
     }
 
-    private static Button CreateMarkerButton(StationMarkerViewModel marker, bool isSelected)
-    {
-        var symbol = new Border
-        {
-            Width = 28,
-            Height = 28,
-            CornerRadius = new CornerRadius(14),
-            Background = GetMarkerBrush(marker),
-            BorderBrush = isSelected ? new SolidColorBrush(Color.FromRgb(250, 204, 21)) : Brushes.White,
-            BorderThickness = new Thickness(isSelected ? 3 : 2),
-            Child = new TextBlock
-            {
-                Text = marker.SymbolLabel,
-                FontWeight = FontWeight.Bold,
-                Foreground = Brushes.White,
-                FontSize = marker.SymbolLabel.Length > 1 ? 10 : 13,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-            }
-        };
-
-        var label = new Border
-        {
-            Background = new SolidColorBrush(Color.FromArgb(230, 248, 250, 252)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
-            BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(3),
-            Padding = new Thickness(5, 2),
-            Child = new TextBlock
-            {
-                Text = marker.DisplayName,
-                FontSize = 11,
-                Foreground = new SolidColorBrush(Color.FromRgb(15, 23, 42))
-            }
-        };
-
-        return new Button
-        {
-            Background = Brushes.Transparent,
-            BorderBrush = Brushes.Transparent,
-            Padding = new Thickness(0),
-            Content = new StackPanel
-            {
-                Spacing = 3,
-                Children =
-                {
-                    symbol,
-                    label
-                }
-            }
-        };
-    }
-
-    private static Button CreateObjectMarkerButton(ObjectMarkerViewModel marker, bool isSelected)
-    {
-        var symbol = new Border
-        {
-            Width = 30,
-            Height = 30,
-            CornerRadius = new CornerRadius(4),
-            Background = GetObjectMarkerBrush(marker),
-            BorderBrush = isSelected ? new SolidColorBrush(Color.FromRgb(250, 204, 21)) : Brushes.White,
-            BorderThickness = new Thickness(isSelected ? 3 : 2),
-            Opacity = marker.IsInactive ? 0.58 : 1,
-            Child = new TextBlock
-            {
-                Text = marker.SymbolLabel,
-                FontWeight = FontWeight.Bold,
-                Foreground = Brushes.White,
-                FontSize = marker.SymbolLabel.Length > 1 ? 10 : 13,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-            }
-        };
-
-        var label = new Border
-        {
-            Background = new SolidColorBrush(Color.FromArgb(230, 255, 251, 235)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(202, 138, 4)),
-            BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(3),
-            Padding = new Thickness(5, 2),
-            Child = new TextBlock
-            {
-                Text = marker.ObjectName,
-                FontSize = 11,
-                Foreground = new SolidColorBrush(Color.FromRgb(63, 44, 9))
-            }
-        };
-
-        return new Button
-        {
-            Background = Brushes.Transparent,
-            BorderBrush = Brushes.Transparent,
-            Padding = new Thickness(0),
-            Content = new StackPanel
-            {
-                Spacing = 3,
-                Children =
-                {
-                    symbol,
-                    label
-                }
-            }
-        };
-    }
-
-    private static Button CreateWeatherMarkerButton(WeatherStationMarkerViewModel marker, bool isSelected)
-    {
-        var symbol = new Border
-        {
-            Width = 30,
-            Height = 30,
-            CornerRadius = new CornerRadius(15),
-            Background = marker.IsStale
-                ? new SolidColorBrush(Color.FromRgb(100, 116, 139))
-                : new SolidColorBrush(Color.FromRgb(2, 132, 199)),
-            BorderBrush = isSelected ? new SolidColorBrush(Color.FromRgb(250, 204, 21)) : Brushes.White,
-            BorderThickness = new Thickness(isSelected ? 3 : 2),
-            Opacity = marker.IsStale ? 0.68 : 1,
-            Child = new TextBlock
-            {
-                Text = marker.SymbolLabel,
-                FontWeight = FontWeight.Bold,
-                Foreground = Brushes.White,
-                FontSize = 10,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-            }
-        };
-
-        var label = new Border
-        {
-            Background = new SolidColorBrush(Color.FromArgb(230, 240, 249, 255)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(14, 116, 144)),
-            BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(3),
-            Padding = new Thickness(5, 2),
-            Child = new TextBlock
-            {
-                Text = marker.DisplayName,
-                FontSize = 11,
-                Foreground = new SolidColorBrush(Color.FromRgb(12, 74, 110))
-            }
-        };
-
-        return new Button
-        {
-            Background = Brushes.Transparent,
-            BorderBrush = Brushes.Transparent,
-            Padding = new Thickness(0),
-            Content = new StackPanel
-            {
-                Spacing = 3,
-                Children =
-                {
-                    symbol,
-                    label
-                }
-            }
-        };
-    }
-
-    private static IBrush GetMarkerBrush(StationMarkerViewModel marker)
+    private static Color StationColor(StationMarkerViewModel marker)
     {
         return marker.AgeState switch
         {
-            StationLifecycleState.Hidden => new SolidColorBrush(Color.FromRgb(71, 85, 105)),
-            StationLifecycleState.Expired => new SolidColorBrush(Color.FromRgb(100, 116, 139)),
-            _ => GetSymbolBrush(marker)
+            StationLifecycleState.Hidden => new Color(71, 85, 105),
+            StationLifecycleState.Expired => new Color(100, 116, 139),
+            _ => marker.MarkerIconKey switch
+            {
+                "home" => new Color(37, 99, 235),
+                "car" => new Color(22, 101, 52),
+                "truck" => new Color(21, 128, 61),
+                "weather" => new Color(2, 132, 199),
+                "digipeater" => new Color(147, 51, 234),
+                "repeater" => new Color(190, 18, 60),
+                "object" => new Color(202, 138, 4),
+                _ => new Color(37, 99, 235)
+            }
         };
     }
 
-    private static IBrush GetSymbolBrush(StationMarkerViewModel marker)
-    {
-        return marker.MarkerIconKey switch
-        {
-            "home" => new SolidColorBrush(Color.FromRgb(37, 99, 235)),
-            "car" => new SolidColorBrush(Color.FromRgb(22, 101, 52)),
-            "truck" => new SolidColorBrush(Color.FromRgb(21, 128, 61)),
-            "weather" => new SolidColorBrush(Color.FromRgb(2, 132, 199)),
-            "digipeater" => new SolidColorBrush(Color.FromRgb(147, 51, 234)),
-            "repeater" => new SolidColorBrush(Color.FromRgb(190, 18, 60)),
-            "object" => new SolidColorBrush(Color.FromRgb(202, 138, 4)),
-            _ => new SolidColorBrush(Color.FromRgb(37, 99, 235))
-        };
-    }
-
-    private static IBrush GetObjectMarkerBrush(ObjectMarkerViewModel marker)
+    private static Color ObjectColor(ObjectMarkerViewModel marker)
     {
         if (marker.IsKilled || marker.LifecycleState == AprsObjectLifecycleState.Killed)
         {
-            return new SolidColorBrush(Color.FromRgb(100, 116, 139));
+            return new Color(100, 116, 139);
         }
 
         if (marker.LifecycleState == AprsObjectLifecycleState.Expired)
         {
-            return new SolidColorBrush(Color.FromRgb(120, 113, 108));
+            return new Color(120, 113, 108);
         }
 
         return marker.ObjectType == AprsManagedObjectType.Item
-            ? new SolidColorBrush(Color.FromRgb(217, 119, 6))
-            : new SolidColorBrush(Color.FromRgb(202, 138, 4));
-    }
-
-    private void MapSurface_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
-    {
-        if (DataContext is not MapViewModel viewModel || MarkerCanvas.Bounds.Width <= 0 || MarkerCanvas.Bounds.Height <= 0)
-        {
-            return;
-        }
-
-        var point = e.GetPosition(MarkerCanvas);
-        var xPercent = point.X / MarkerCanvas.Bounds.Width * 100;
-        var yPercent = point.Y / MarkerCanvas.Bounds.Height * 100;
-        if (viewModel.HandleMapClick(xPercent, yPercent))
-        {
-            RenderMarkers();
-            e.Handled = true;
-        }
+            ? new Color(217, 119, 6)
+            : new Color(202, 138, 4);
     }
 }

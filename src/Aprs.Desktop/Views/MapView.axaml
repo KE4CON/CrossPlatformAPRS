@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Aprs.Desktop.ViewModels"
+             xmlns:mapsui="clr-namespace:Mapsui.UI.Avalonia;assembly=Mapsui.UI.Avalonia"
              x:Class="Aprs.Desktop.Views.MapView"
              x:DataType="vm:MapViewModel">
   <Grid RowDefinitions="Auto,*"
@@ -36,63 +37,12 @@
     </Grid>
 
     <Border Grid.Row="1"
-            x:Name="MapSurface"
-            Background="#E7F0EF"
             BorderBrush="#9AB4B1"
             BorderThickness="1"
             CornerRadius="6"
-            ClipToBounds="True"
-            PointerPressed="MapSurface_PointerPressed">
+            ClipToBounds="True">
       <Grid>
-        <Grid RowDefinitions="*,*,*,*,*,*"
-              ColumnDefinitions="*,*,*,*,*,*,*">
-          <Border Grid.Row="0"
-                  Grid.ColumnSpan="7"
-                  BorderBrush="#C9DAD7"
-                  BorderThickness="0,0,0,1" />
-          <Border Grid.Row="1"
-                  Grid.ColumnSpan="7"
-                  BorderBrush="#C9DAD7"
-                  BorderThickness="0,0,0,1" />
-          <Border Grid.Row="2"
-                  Grid.ColumnSpan="7"
-                  BorderBrush="#C9DAD7"
-                  BorderThickness="0,0,0,1" />
-          <Border Grid.Row="3"
-                  Grid.ColumnSpan="7"
-                  BorderBrush="#C9DAD7"
-                  BorderThickness="0,0,0,1" />
-          <Border Grid.Row="4"
-                  Grid.ColumnSpan="7"
-                  BorderBrush="#C9DAD7"
-                  BorderThickness="0,0,0,1" />
-          <Border Grid.Column="0"
-                  Grid.RowSpan="6"
-                  BorderBrush="#C9DAD7"
-                  BorderThickness="0,0,1,0" />
-          <Border Grid.Column="1"
-                  Grid.RowSpan="6"
-                  BorderBrush="#C9DAD7"
-                  BorderThickness="0,0,1,0" />
-          <Border Grid.Column="2"
-                  Grid.RowSpan="6"
-                  BorderBrush="#C9DAD7"
-                  BorderThickness="0,0,1,0" />
-          <Border Grid.Column="3"
-                  Grid.RowSpan="6"
-                  BorderBrush="#C9DAD7"
-                  BorderThickness="0,0,1,0" />
-          <Border Grid.Column="4"
-                  Grid.RowSpan="6"
-                  BorderBrush="#C9DAD7"
-                  BorderThickness="0,0,1,0" />
-          <Border Grid.Column="5"
-                  Grid.RowSpan="6"
-                  BorderBrush="#C9DAD7"
-                  BorderThickness="0,0,1,0" />
-        </Grid>
-
-        <Canvas x:Name="MarkerCanvas" />
+        <mapsui:MapControl x:Name="MapControl" />
 
         <Border HorizontalAlignment="Right"
                 VerticalAlignment="Top"
