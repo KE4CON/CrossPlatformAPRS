@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Aprs.Desktop.ViewModels;
 using Aprs.Services;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -10,10 +11,11 @@ using Mapsui;
 using Mapsui.Layers;
 using Mapsui.Projections;
 using Mapsui.Styles;
-using Mapsui.Tiling;
 using Mapsui.Tiling.Layers;
-using BruTile.MbTiles;
-using SQLite;
+using BruTile;
+using BruTile.Cache;
+using BruTile.Predefined;
+using BruTile.Web;
 
 namespace Aprs.Desktop.Views;
 
@@ -21,6 +23,7 @@ public sealed partial class MapView : UserControl
 {
     private MapViewModel? currentViewModel;
     private GenericCollectionLayer<List<IFeature>>? markerLayer;
+    private ILayer? currentBaseLayer;
     private bool mapInitialized;
     private bool hasFitToData;
 
@@ -41,7 +44,8 @@ public sealed partial class MapView : UserControl
         mapInitialized = true;
 
         var map = MapControl.Map;
-        map.Layers.Add(CreateBaseLayer());
+        currentBaseLayer = CreateBaseLayer(BaseMapKind.OpenStreetMap);
+        map.Layers.Add(currentBaseLayer);
 
         markerLayer = new GenericCollectionLayer<List<IFeature>>
         {
@@ -52,52 +56,101 @@ public sealed partial class MapView : UserControl
         map.Info += OnMapInfo;
 
         RefreshFeatures();
-
-        // With no live stations to fit to (e.g. running offline), open the view over
-        // the area the offline tiles actually cover, so the map isn't blank on launch.
-        if (!hasFitToData && offlineExtent is { } coverage)
-        {
-            hasFitToData = true;
-            map.Navigator.ZoomToBox(coverage);
-        }
     }
 
-    // Offline-first base map: if an "offline.mbtiles" raster tile file is present next
-    // to the application, use it so the map works with no internet (for field use).
-    // Otherwise fall back to online OpenStreetMap tiles.
-    private MRect? offlineExtent;
-
-    private ILayer CreateBaseLayer()
+    private enum BaseMapKind
     {
-        try
-        {
-            var mbtilesPath = Path.Combine(AppContext.BaseDirectory, "offline.mbtiles");
-            if (File.Exists(mbtilesPath))
-            {
-                // Register the native SQLite provider used to read the .mbtiles file.
-                SQLitePCL.Batteries_V2.Init();
-                var source = new MbTilesTileSource(
-                    new SQLiteConnectionString(mbtilesPath, false),
-                    type: MbTilesType.BaseLayer);
-                var extent = source.Schema.Extent;
-                offlineExtent = new MRect(extent.MinX, extent.MinY, extent.MaxX, extent.MaxY);
-                Console.Error.WriteLine(
-                    $"[Map] Using offline tiles: {mbtilesPath} "
-                    + $"(extent {extent.MinX:0},{extent.MinY:0} .. {extent.MaxX:0},{extent.MaxY:0})");
-                return new TileLayer(source) { Name = "Offline (MBTiles)" };
-            }
+        OpenStreetMap,
+        UsgsTopo,
+        UsgsImagery,
+        UsgsImageryTopo
+    }
 
-            Console.Error.WriteLine(
-                $"[Map] No offline.mbtiles found at {mbtilesPath}; using online OpenStreetMap.");
-        }
-        catch (Exception exception)
+    // Swaps the base map while keeping the APRS markers layer on top. Each base map caches
+    // tiles to its own folder, so switching back to one you've used is instant and works
+    // offline for areas you've already viewed.
+    private void SetBaseMap(BaseMapKind kind)
+    {
+        if (!mapInitialized)
         {
-            Console.Error.WriteLine(
-                $"[Map] Offline tiles failed to load ({exception.GetType().Name}: {exception.Message}); "
-                + "using online OpenStreetMap.");
+            return;
         }
 
-        return OpenStreetMap.CreateTileLayer();
+        var map = MapControl.Map;
+        if (currentBaseLayer is not null)
+        {
+            map.Layers.Remove(currentBaseLayer);
+        }
+
+        currentBaseLayer = CreateBaseLayer(kind);
+        map.Layers.Add(currentBaseLayer);
+        map.Layers.MoveToBottom(currentBaseLayer);
+    }
+
+    private void BaseMapSelector_SelectionChanged(object? sender, Avalonia.Controls.SelectionChangedEventArgs e)
+    {
+        // This event fires once while the XAML is still loading (when the initial selection
+        // is applied), before the map is initialized and before the named field is assigned.
+        // Ignore it until the map is ready, and read the index from the sender so we never
+        // touch a not-yet-assigned field.
+        if (!mapInitialized || sender is not Avalonia.Controls.ComboBox comboBox)
+        {
+            return;
+        }
+
+        var kind = comboBox.SelectedIndex switch
+        {
+            1 => BaseMapKind.UsgsTopo,
+            2 => BaseMapKind.UsgsImagery,
+            3 => BaseMapKind.UsgsImageryTopo,
+            _ => BaseMapKind.OpenStreetMap
+        };
+        SetBaseMap(kind);
+    }
+
+    // Auto-caching tile base layers. Tiles fetched while online are written to a per-map
+    // on-disk cache and reused later (including offline). This only caches tiles actually
+    // viewed and never pre-fetches, staying within each provider's usage policy. A
+    // descriptive User-Agent is sent. OpenStreetMap is global; the USGS layers are US-only.
+    private ILayer CreateBaseLayer(BaseMapKind kind)
+    {
+        // name, url template, max cached zoom, cache subfolder, attribution
+        var (name, urlTemplate, maxZoom, cacheFolder, attributionText, attributionUrl) = kind switch
+        {
+            BaseMapKind.UsgsTopo => (
+                "USGS Topo",
+                "https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}",
+                16, "usgs-topo", "USGS The National Map", "https://www.usgs.gov/"),
+            BaseMapKind.UsgsImagery => (
+                "USGS Imagery",
+                "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}",
+                16, "usgs-imagery", "USGS The National Map", "https://www.usgs.gov/"),
+            BaseMapKind.UsgsImageryTopo => (
+                "USGS Imagery + Topo",
+                "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}",
+                16, "usgs-imagerytopo", "USGS The National Map", "https://www.usgs.gov/"),
+            _ => (
+                "OpenStreetMap",
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                19, "osm", "© OpenStreetMap contributors", "https://www.openstreetmap.org/copyright")
+        };
+
+        var cacheDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "AprsCommand", "tile-cache", cacheFolder);
+        Directory.CreateDirectory(cacheDirectory);
+
+        var tileSource = new HttpTileSource(
+            new GlobalSphericalMercator(0, maxZoom),
+            urlTemplate,
+            name: name,
+            persistentCache: new FileCache(cacheDirectory, "png"),
+            attribution: new Attribution(attributionText, attributionUrl),
+            configureHttpRequestMessage: request => request.Headers.UserAgent.ParseAdd(
+                "AprsCommand/1.0 (+https://github.com/KE4CON/CrossPlatformAPRS)"));
+
+        Console.Error.WriteLine($"[Map] Base map '{name}' with on-disk cache at {cacheDirectory}");
+        return new TileLayer(tileSource) { Name = name };
     }
 
     private void AttachViewModel()
