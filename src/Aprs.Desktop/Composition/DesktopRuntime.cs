@@ -92,7 +92,10 @@ public sealed class DesktopRuntime : IAsyncDisposable
     public void Start()
     {
         Coordinator.Start();
-        Coordinator.ConnectAprsIsReceiveOnly("KE4CON")
+        Coordinator.ConnectAprsIsReceiveOnly("KE4CON");
+    }
+
+    public async ValueTask DisposeAsync()
     {
         await Coordinator.DisposeAsync().ConfigureAwait(false);
         await provider.DisposeAsync().ConfigureAwait(false);
