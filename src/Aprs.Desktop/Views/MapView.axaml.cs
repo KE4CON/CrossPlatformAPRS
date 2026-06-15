@@ -12,6 +12,7 @@ using Mapsui.Layers;
 using Mapsui.Projections;
 using Mapsui.Styles;
 using Mapsui.Tiling.Layers;
+using Aprs.Desktop.Configuration;
 using BruTile;
 using BruTile.Cache;
 using BruTile.Predefined;
@@ -27,10 +28,8 @@ public sealed partial class MapView : UserControl
     private bool mapInitialized;
     private bool hasFitToData;
 
-    // Operator home position (KE4CON QTH). Could become a user setting later.
-    private const double HomeLatitude = 42.328068;
-    private const double HomeLongitude = -88.454975;
-    private const double HomeResolution = 611; // ~regional zoom level
+    // Regional zoom level used for the initial home view.
+    private const double HomeResolution = 611;
 
     public MapView()
     {
@@ -379,7 +378,8 @@ public sealed partial class MapView : UserControl
 
     private void CenterOnHome()
     {
-        var (x, y) = SphericalMercator.FromLonLat(HomeLongitude, HomeLatitude);
+        var profile = StationProfile.Load();
+        var (x, y) = SphericalMercator.FromLonLat(profile.Longitude, profile.Latitude);
         MapControl.Map.Navigator.CenterOnAndZoomTo(new MPoint(x, y), HomeResolution);
     }
 

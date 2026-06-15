@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Aprs.Core;
 using Aprs.Mapping;
 using Aprs.Services;
+using Aprs.Desktop.Configuration;
 using Aprs.Desktop.Runtime;
 using Aprs.Desktop.ViewModels;
 
@@ -92,7 +93,10 @@ public sealed class DesktopRuntime : IAsyncDisposable
     public void Start()
     {
         Coordinator.Start();
-        Coordinator.ConnectAprsIsReceiveOnly("KE4CON");
+
+        // Callsign and area filter come from the per-user station profile, not hardcoded.
+        var profile = StationProfile.Load();
+        Coordinator.ConnectAprsIsReceiveOnly(profile.Callsign, filter: profile.BuildAprsIsFilter());
     }
 
     public async ValueTask DisposeAsync()

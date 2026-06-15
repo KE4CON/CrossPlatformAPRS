@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Aprs.Desktop.Composition;
+using Aprs.Desktop.Configuration;
 using Aprs.Desktop.ViewModels;
 using Aprs.Desktop.Views;
 
@@ -31,15 +32,41 @@ public sealed partial class App : Application
             }
             else
             {
-                // Real runtime: construct services and the live view models.
-                runtime = DesktopRuntime.Create();
-                desktop.MainWindow = new MainWindow
-                {
-                    DataContext = runtime.MainViewModel
-                };
-                runtime.Start();
-
                 desktop.ShutdownRequested += OnShutdownRequested;
+
+                // First run (no station profile yet): collect the operator's callsign and QTH
+                // before starting, so the app works for anyone, not just a preset station.
+                if (StationProfile.Load().IsConfigured)
+                {
+                    // Already configured: framework shows the main window after this returns.
+                    runtime = DesktopRuntime.Create();
+                    desktop.MainWindow = new MainWindow
+                    {
+                        DataContext = runtime.MainViewModel
+                    };
+                    runtime.Start();
+                }
+                else
+                {
+                    var setup = new SetupWindow();
+                    setup.SetupCompleted += () =>
+                    {
+                        runtime = DesktopRuntime.Create();
+                        var mainWindow = new MainWindow
+                        {
+                            DataContext = runtime.MainViewModel
+                        };
+
+                        // The framework already auto-showed the setup window, so the main
+                        // window must be shown explicitly before the setup window closes.
+                        desktop.MainWindow = mainWindow;
+                        mainWindow.Show();
+                        runtime.Start();
+                        setup.Close();
+                    };
+
+                    desktop.MainWindow = setup;
+                }
             }
         }
 

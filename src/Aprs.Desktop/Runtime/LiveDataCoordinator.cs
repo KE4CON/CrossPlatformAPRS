@@ -66,13 +66,16 @@ public sealed class LiveDataCoordinator : IAsyncDisposable
     /// transmits. Incoming lines are marshalled to the UI thread and ingested there so all
     /// station-database and log access stays single-threaded.
     /// </summary>
-    public void ConnectAprsIsReceiveOnly(string callsign, string? serverHost = null)
+    public void ConnectAprsIsReceiveOnly(string callsign, string? serverHost = null, string? filter = null)
     {
         var defaults = AprsIsClientConfiguration.Default;
         var config = defaults with
         {
             Callsign = string.IsNullOrWhiteSpace(callsign) ? "N0CALL" : callsign.Trim(),
             ServerHost = string.IsNullOrWhiteSpace(serverHost) ? defaults.ServerHost : serverHost!.Trim(),
+            // A null/empty filter logs in to the full feed; pass "r/<lat>/<lon>/<km>" to limit
+            // reception to an area of interest.
+            Filter = string.IsNullOrWhiteSpace(filter) ? defaults.Filter : filter!.Trim(),
             ReceiveOnly = true,
             TransmitEnabled = false,
         };
