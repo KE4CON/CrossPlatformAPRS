@@ -61,9 +61,41 @@ public sealed partial class MapView : UserControl
 
         RefreshFeatures();
 
+        // The APRS symbol sheets are referenced by markers but Mapsui only fetches
+        // image sources during a Navigator fetch cycle (a viewport change). Marker
+        // updates alone won't pull them in, so the sheets must be loaded into the
+        // render service's image cache explicitly; otherwise every station renders as
+        // Mapsui's placeholder circle instead of its symbol.
+        _ = PreloadSymbolSheetsAsync();
+
         // Open the map centered on the operator's home (QTH) instead of drifting to
         // wherever the first received stations happen to be.
         CenterOnHome();
+    }
+
+    // Pull the embedded APRS symbol sheets into the map's image-source cache so the
+    // ImageStyle renderer can crop and draw symbol regions on the first paint.
+    private async System.Threading.Tasks.Task PreloadSymbolSheetsAsync()
+    {
+        try
+        {
+            // Constructing an Image with each sheet source registers it in the global
+            // Image.SourceToSourceId map, which FetchAllImageDataAsync then loads.
+            _ = new Mapsui.Styles.Image { Source = PrimarySheet };
+            _ = new Mapsui.Styles.Image { Source = SecondarySheet };
+            _ = new Mapsui.Styles.Image { Source = OverlaySheet };
+
+            await MapControl.Map.RenderService.ImageSourceCache
+                .FetchAllImageDataAsync(Mapsui.Styles.Image.SourceToSourceId)
+                .ConfigureAwait(true);
+
+            // Redraw now that the symbols are available.
+            MapControl.RefreshGraphics();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Map] Failed to preload APRS symbol sheets: {ex.Message}");
+        }
     }
 
     private enum BaseMapKind
