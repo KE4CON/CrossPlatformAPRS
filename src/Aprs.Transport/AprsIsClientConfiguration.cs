@@ -23,7 +23,7 @@ public sealed record AprsIsClientConfiguration(
         Passcode: "-1",
         ApplicationName: "APRSCommand",
         ApplicationVersion: "0.1.0",
-        Filter: null,
+        Filter: "r/42.328068/-88.454975/200",
         ReconnectEnabled: true,
         ReconnectDelay: TimeSpan.FromSeconds(10),
         ReceiveOnly: true,

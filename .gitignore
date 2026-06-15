@@ -8,3 +8,5 @@ artifacts/
 *.sln.docstates
 
 .DS_Store
+
+.fake
