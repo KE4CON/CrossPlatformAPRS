@@ -27,6 +27,11 @@ public sealed partial class MapView : UserControl
     private bool mapInitialized;
     private bool hasFitToData;
 
+    // Operator home position (KE4CON QTH). Could become a user setting later.
+    private const double HomeLatitude = 42.328068;
+    private const double HomeLongitude = -88.454975;
+    private const double HomeResolution = 611; // ~regional zoom level
+
     public MapView()
     {
         InitializeComponent();
@@ -56,6 +61,10 @@ public sealed partial class MapView : UserControl
         map.Info += OnMapInfo;
 
         RefreshFeatures();
+
+        // Open the map centered on the operator's home (QTH) instead of drifting to
+        // wherever the first received stations happen to be.
+        CenterOnHome();
     }
 
     private enum BaseMapKind
@@ -355,35 +364,23 @@ public sealed partial class MapView : UserControl
         };
     }
 
+    // Centers the map on the operator's home QTH at a regional zoom. Runs once at startup
+    // (guarded by hasFitToData) so it doesn't fight the user's later panning and zooming.
     private void FitToDataOnce(IReadOnlyCollection<IFeature> features)
     {
-        if (hasFitToData || features.Count == 0)
+        if (hasFitToData)
         {
             return;
         }
-
-        var points = features.OfType<PointFeature>().Select(f => f.Point).ToList();
-        if (points.Count == 0)
-        {
-            return;
-        }
-
-        var minX = points.Min(p => p.X);
-        var minY = points.Min(p => p.Y);
-        var maxX = points.Max(p => p.X);
-        var maxY = points.Max(p => p.Y);
 
         hasFitToData = true;
+        CenterOnHome();
+    }
 
-        if (maxX - minX < 1 && maxY - minY < 1)
-        {
-            // Single point (or all coincident): center and zoom to a regional resolution.
-            MapControl.Map.Navigator.CenterOnAndZoomTo(new MPoint(minX, minY), 611);
-            return;
-        }
-
-        var box = new MRect(minX, minY, maxX, maxY).Grow((maxX - minX + maxY - minY) * 0.08);
-        MapControl.Map.Navigator.ZoomToBox(box);
+    private void CenterOnHome()
+    {
+        var (x, y) = SphericalMercator.FromLonLat(HomeLongitude, HomeLatitude);
+        MapControl.Map.Navigator.CenterOnAndZoomTo(new MPoint(x, y), HomeResolution);
     }
 
     private void OnMapInfo(object? sender, MapInfoEventArgs e)
