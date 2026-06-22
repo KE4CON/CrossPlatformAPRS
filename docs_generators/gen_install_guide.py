@@ -549,6 +549,44 @@ bom_rows = [
     ['Icom IC-7300 HF transceiver', 'Icom IC-7300 (HF/50 MHz, built-in USB sound card)', 'Ham Radio Outlet · DX Engineering · Amazon'],
     ['USB-A to USB-B cable (IC-7300 to laptop)', 'USB-A to USB-B, shielded, 6 ft', 'Amazon · Monoprice'],
     ['Windows laptop (Winlink Express + JS8Call)', 'Any Windows 10/11 laptop with USB-A port and Wi-Fi', 'Best Buy · Amazon'],
+    cat_row('WAN Connectivity — InstyConnect Cellular  (Primary WAN)'),
+    ['InstyConnect Drum antenna  (primary)',
+     'InstyConnect Drum  —  omnidirectional 5G/LTE antenna  —  PoE powered  —  '
+     'mounts on any standard 1.5" to 2" pole  —  includes PoE injector and 25 ft PoE Ethernet cable  —  '
+     'connects directly to ASUS RT-BE58 Go WAN port  —  T-Mobile and Verizon multi-network capable',
+     'instyconnect.com  (~$350-400)'],
+    ['InstyConnect Switchblade antenna  (directional backup)',
+     'InstyConnect Switchblade  —  compact folding 4x directional LDAP antenna  —  '
+     'PoE powered  —  deploys and folds flat for transport  —  '
+     'use when Drum signal is insufficient at the deployment site  —  '
+     'same PoE cable connection as Drum — swap in minutes',
+     'instyconnect.com  (~$400-450)'],
+    ['InstyConnect PoE Ethernet cable  (spare)',
+     '25 ft outdoor-rated PoE Ethernet cable  —  connects outdoor antenna unit to ASUS WAN port  —  '
+     'one included with each antenna  —  carry one spare',
+     'instyconnect.com  or  Amazon  (~$20)'],
+    ['InstyConnect data plan  —  Multi-Network Unlimited',
+     'InstyConnect Multi-Network Unlimited plan  —  T-Mobile + Verizon dual-carrier  —  '
+     'automatic carrier failover  —  1.2 TB fair use per carrier (2.4 TB total)  —  '
+     'can be paused after first month for $5/month standby  —  '
+     'activate only during emergency activations  —  no long-term contract required',
+     'instyconnect.com  (~$79-99/month active  /  $5/month standby)'],
+    cat_row('WAN Connectivity — Starlink Satellite  (Secondary WAN / Automatic Failover)'),
+    ['Starlink satellite dish and router kit',
+     'Starlink Standard or Flat High Performance dish  —  includes dish, router, cables, and mount  —  '
+     'connects to ASUS RT-BE58 Go via Starlink Ethernet adapter  —  automatic failover when cellular WAN drops  —  '
+     'note: Starlink uses CGNAT  —  inbound connections from internet not possible',
+     'starlink.com  (~$350-600 hardware  +  $120/month service)'],
+    ['Starlink Ethernet adapter',
+     'Official Starlink Ethernet adapter  —  converts Starlink dish output to standard RJ45  —  '
+     'required to connect Starlink to ASUS router without using Starlink router  —  '
+     'plug Ethernet output into USB-to-Ethernet adapter for ASUS USB WAN port',
+     'starlink.com  (~$25)'],
+    ['USB-to-Ethernet adapter  (Starlink to ASUS USB WAN)',
+     'USB-A to Gigabit Ethernet adapter  —  plugs into ASUS RT-BE58 Go USB port  —  '
+     'connects Starlink Ethernet adapter to ASUS USB WAN for secondary WAN failover  —  '
+     'ASIX AX88179 chipset recommended for best ASUS router compatibility',
+     'Amazon  (~$15-20)'],
     cat_row('Accessories — Backup & Connectivity'),
     ['USB-A drive (32 GB+, labeled FIELDCOMMS)', '32 GB+ USB 3.0 drive — auto-backup trigger when inserted', 'Amazon'],
     ['External USB hard drive 1 TB+  (e.g. LaCie Rugged)', '1 TB+ USB 3.0/USB-C portable drive — label FIELDCOMMS for auto-backup', 'B&H · Amazon · Best Buy'],
@@ -869,10 +907,22 @@ story.append(H2('1.1  Physical Wiring'))
 story.append(P(
     'The UniFi Switch Lite 16 PoE is the central wiring hub for the entire EMCOMM-NET deployment. '
     'Connect everything to the switch, and the switch connects up to the ASUS router. '
-    'Use short CAT 6 patch cables (1 ft to 3 ft) to keep the rack or case tidy.'))
+    'Use short CAT 6 patch cables (1 ft to 3 ft) to keep the rack or case tidy. '
+    'The InstyConnect Drum antenna connects directly to the ASUS WAN port via its PoE Ethernet cable '
+    '— this is completely separate from the switch and does not use a switch port.'))
 story.append(SP(4))
-story.append(tbl(['SWITCH PORT', 'DEVICE', 'STATIC IP / NOTES'], [
-    ['Port 1  (uplink)',
+story.append(tbl(['CONNECTION', 'DEVICE', 'IP / NOTES'], [
+    ['ASUS WAN port  (PoE Ethernet)',
+     'InstyConnect Drum  (primary cellular WAN)',
+     'Primary internet — cellular via T-Mobile / Verizon.  '
+     'PoE cable from outdoor antenna unit to ASUS WAN port directly.  '
+     'InstyConnect serves DHCP on its own subnet — ASUS bridges to EMCOMM-NET.'],
+    ['ASUS USB WAN port  (USB-to-Ethernet)',
+     'Starlink  (secondary WAN — automatic failover)',
+     'Secondary internet — satellite.  '
+     'Starlink Ethernet adapter → USB-to-Ethernet adapter → ASUS USB port.  '
+     'ASUS switches automatically when cellular WAN drops.'],
+    ['Switch Port 1  (uplink)',
      'ASUS RT-BE58 Go  —  LAN 2.5G port',
      'Uplink from router to switch.  Router is DHCP server for 192.168.50.0/24.'],
     ['Port 2',
@@ -908,6 +958,78 @@ story.append(tbl(['DEVICE', 'POWER SOURCE'], [
      'Official 27W USB-C PD supply connected to Pironman MAX 5 power inlet'],
 ], [2.2*inch, CW-2.2*inch]))
 story.append(SP(6))
+story.append(H2('1.2  InstyConnect — Physical Setup and Antenna Mounting'))
+story.append(P(
+    'The InstyConnect system consists of an outdoor antenna/modem unit connected by a single PoE '
+    'Ethernet cable to the ASUS router WAN port. '
+    'The modem is built into the antenna enclosure — no separate modem box to install. '
+    'A single cable carries both power to the outdoor unit and data back to the router.'))
+story.append(SP(6))
+
+story.append(H3('Drum Antenna  (Primary — Omnidirectional)'))
+story.append(steps([
+    '<b>Mount the Drum</b> on a standard 1.5" to 2" mast, pole, or tripod at the deployment site. '
+    'Higher is better — roof edge, vehicle roof rack, or portable mast. '
+    'The Drum is omnidirectional so pointing direction does not matter.',
+    '<b>Run the PoE Ethernet cable</b> from the Drum down to the ASUS router location. '
+    'The cable carries power to the Drum and data back to the router. '
+    'Maximum cable length is typically 100 meters (328 ft) for PoE over CAT 6.',
+    '<b>Connect the PoE cable</b> to the <b>ASUS RT-BE58 Go WAN port</b>. '
+    'Do not connect to the switch — this goes directly to the router WAN port.',
+    '<b>Power on the InstyConnect system.</b> '
+    'The Drum status LED will indicate cellular connection status. '
+    'Open http://my.insty or http://10.1.1.1 on any device temporarily connected to the InstyConnect '
+    'Wi-Fi to verify the modem has cellular signal.',
+    '<b>Verify the ASUS WAN port shows "Connected"</b> in the ASUS router admin at '
+    'http://192.168.50.254 → WAN → Internet Status.',
+]))
+story.append(SP(6))
+
+story.append(H3('Switchblade Antenna  (Backup — Directional)'))
+story.append(P(
+    'Deploy the Switchblade when the Drum cannot get adequate signal at a specific site — '
+    'typically in areas with marginal cellular coverage or significant RF obstruction. '
+    'The Switchblade folds flat for transport and deploys in under 5 minutes.'))
+story.append(SP(4))
+story.append(steps([
+    '<b>Unfold the Switchblade</b> and mount it on the same mast or a portable tripod.',
+    '<b>Open the InstyConnect signal app</b> on a phone connected to the InstyConnect Wi-Fi. '
+    'Slowly rotate the Switchblade while watching signal strength in the app. '
+    'Stop at the direction giving the highest signal — typically facing the nearest '
+    'T-Mobile or Verizon tower.',
+    '<b>Unplug the Drum PoE cable</b> from the ASUS WAN port.',
+    '<b>Connect the Switchblade PoE cable</b> to the same ASUS WAN port.',
+    '<b>Verify connection</b> in the ASUS router admin — WAN should show "Connected" '
+    'with the InstyConnect cellular IP.',
+]))
+story.append(SP(6))
+
+story.append(H3('InstyConnect Data Plan — Activation and Standby'))
+story.append(tbl(['STATE', 'COST', 'WHEN TO USE', 'HOW TO CHANGE'], [
+    ['Active  —  Multi-Network Unlimited',
+     '~$79-99/month',
+     'During activations, exercises, and training events',
+     'Log in to InstyConnect portal — activate plan'],
+    ['Standby mode',
+     '$5/month',
+     'Between activations — holds your plan and SIM active without full monthly charge',
+     'Log in to InstyConnect portal — pause plan (available after first month)'],
+    ['Cancelled',
+     '$0',
+     'Extended periods of non-use  (re-activation required)',
+     'Cancel in portal — re-activate and receive new SIM when needed'],
+], [1.4*inch, 0.8*inch, 1.8*inch, CW-4.0*inch]))
+story.append(SP(4))
+story.append(NoteBox(
+    'For MCESV/MCEMA operations, the recommended approach is to keep the plan in '
+    'Standby mode ($5/month) between activations. '
+    'This maintains the SIM, the phone number, and the multi-network capability '
+    'so you can activate at full speed the moment an emergency is declared. '
+    'The standby cost is negligible for a 501(c)(3) organization and avoids the '
+    'delay of re-activating a cancelled plan during an actual emergency.',
+    'tip'))
+story.append(SP(8))
+
 story.append(H2('1.2  Configure the ASUS RT-BE58 Go'))
 story.append(steps([
     'Power on the router. Connect a device to it via Wi-Fi (default SSID on label) or Ethernet. Open http://192.168.50.1 (or the default router IP on the label).',
@@ -919,25 +1041,85 @@ story.append(steps([
     'Set the Wi-Fi SSID: go to <b>Wireless → General</b>. Set both the 2.4 GHz and 5 GHz SSIDs to <b>EMCOMM-NET</b>. Set a strong WPA3/WPA2 password. Apply.',
 ]))
 story.append(SP(6))
-story.append(tbl(['WAN SOURCE', 'SETUP', 'BEST FOR'], [
-    ['None  (fully offline)',
-     'Leave WAN port unplugged.  FieldComms runs entirely from the Pi.',
-     'Default field posture — all tools work without internet'],
-    ['Ethernet uplink  (site network)',
-     'Plug site Ethernet into WAN port.  Set WAN → Automatic IP (DHCP).',
-     'EOC with site LAN — enables NWS alerts, HF propagation data, APRS-IS'],
-    ['USB smartphone tether  (cellular)',
-     'Enable hotspot/tethering on the phone.  Plug phone USB into ASUS router USB port.  Set WAN → USB.',
-     'Field site with cellular coverage — provides internet without site LAN'],
-    ['Starlink satellite',
-     'Connect Starlink router Ethernet output to ASUS WAN port.  Set WAN → Automatic IP.  Note: Starlink uses CGNAT so inbound connections are not possible.',
-     'Remote sites with no cellular — provides internet when nothing else is available'],
-    ['WISP  (connect to site Wi-Fi)',
-     'ASUS Web UI → Administration → Operation Mode → WISP.  Select the site Wi-Fi and enter its password.',
-     'Hospital, shelter, or venue with existing guest Wi-Fi'],
-], [1.4*inch, 2.5*inch, CW-3.9*inch]))
+story.append(P(
+    'The ASUS RT-BE58 Go supports dual WAN with automatic failover. '
+    'InstyConnect cellular is the primary WAN source. '
+    'Starlink is the secondary — the ASUS switches automatically if cellular drops. '
+    'When both are unavailable, FieldComms continues operating on all local features '
+    'without interruption — net logging, ICS platform, APRS, and all tools remain fully functional.'))
+story.append(SP(6))
+story.append(tbl(['PRIORITY', 'WAN SOURCE', 'ASUS CONNECTION', 'SETUP', 'ACTIVATES'], [
+    ['1  — Primary', 'InstyConnect Drum  (omnidirectional cellular)',
+     'WAN Ethernet port  (PoE from modem)',
+     'PoE Ethernet cable from InstyConnect outdoor unit to ASUS WAN port.  '
+     'Set WAN → Automatic IP (DHCP).  InstyConnect modem serves DHCP.',
+     'Always — deployed at every activation'],
+    ['1b — Swap', 'InstyConnect Switchblade  (directional cellular)',
+     'Same WAN Ethernet port  (replaces Drum cable)',
+     'Unplug Drum PoE cable.  Plug Switchblade PoE cable into same ASUS WAN port.  '
+     'Aim Switchblade toward nearest tower using InstyConnect signal app.',
+     'Manual — when Drum signal is poor at the deployment site'],
+    ['2  — Secondary', 'Starlink satellite',
+     'ASUS USB WAN port  (via Ethernet adapter)',
+     'Starlink Ethernet adapter → USB-to-Ethernet adapter → ASUS USB WAN port.  '
+     'Set ASUS WAN failover: primary = WAN port, secondary = USB port.  '
+     'Automatic failover when cellular WAN drops.',
+     'Automatic — when InstyConnect WAN is down or degraded'],
+    ['3  — Site network', 'EOC site Ethernet',
+     'WAN Ethernet port  (replaces InstyConnect)',
+     'Plug site Ethernet directly into ASUS WAN port.  '
+     'Set WAN → Automatic IP (DHCP).  Use when site has reliable wired internet.',
+     'Manual — when site LAN is available at an EOC or shelter'],
+    ['4  — Last resort', 'USB smartphone tether',
+     'ASUS USB WAN port',
+     'Enable hotspot on phone.  Plug USB into ASUS router USB port.  '
+     'Set WAN → USB Tethering.',
+     'Manual — last resort when all other WAN sources are unavailable'],
+    ['5  — Site Wi-Fi', 'WISP (venue Wi-Fi)',
+     'ASUS wireless WAN',
+     'ASUS Web UI → Operation Mode → WISP.  '
+     'Select venue Wi-Fi and enter password.',
+     'Manual — hospital, shelter, or venue with existing guest Wi-Fi'],
+], [0.7*inch, 1.4*inch, 1.1*inch, 2.0*inch, CW-5.2*inch]))
 story.append(SP(8))
-story.append(H2('1.3  AiMesh Coverage Extension (Optional)'))
+story.append(H2('1.3  Configure Dual WAN Failover  (InstyConnect Primary  +  Starlink Secondary)'))
+story.append(P(
+    'With InstyConnect connected to the WAN port and Starlink connected via USB, '
+    'configure the ASUS router to switch automatically between them. '
+    'This takes about 3 minutes and requires no changes to FieldComms software.'))
+story.append(SP(6))
+story.append(steps([
+    'Open the ASUS router admin: <b>http://192.168.50.254</b>',
+    'Go to <b>WAN → Dual WAN</b>.',
+    'Set <b>Enable Dual WAN</b> to ON.',
+    'Set <b>Primary WAN</b> to <b>WAN</b> (the physical WAN port — InstyConnect).',
+    'Set <b>Secondary WAN</b> to <b>USB</b> (the USB port — Starlink via adapter).',
+    'Set <b>Dual WAN mode</b> to <b>Failover mode</b>.',
+    'Under <b>Heartbeat server</b>, set the primary check target to <b>1.1.1.1</b> (Cloudflare) '
+    'and secondary to <b>8.8.8.8</b> (Google). These are the IPs the router pings to confirm WAN is up.',
+    'Set <b>Failback to primary WAN when primary WAN is recovered</b> to ON. '
+    'This switches back to InstyConnect automatically when cellular returns.',
+    'Click <b>Apply</b>.',
+    'Test failover: unplug the InstyConnect PoE cable from the WAN port. '
+    'Within 30-60 seconds, the ASUS should switch to Starlink USB. '
+    'Check WAN status in the router admin — it should show USB WAN active. '
+    'Reconnect InstyConnect — the router should failback to WAN port within 60 seconds.',
+]))
+story.append(SP(4))
+story.append(tbl(['WAN STATE', 'WHAT EMCOMM-NET DEVICES SEE', 'FIELDCOMMS IMPACT'], [
+    ['InstyConnect  UP  (primary)',
+     'Full internet — cellular 5G/LTE via T-Mobile or Verizon',
+     'NWS weather alerts live, APRS-IS active, FCC DB refresh available, Pat Winlink via internet'],
+    ['InstyConnect  DOWN  →  Starlink  UP  (failover)',
+     'Full internet via satellite  —  slightly higher latency (~20-40ms typical)',
+     'All internet features remain active.  CGNAT on Starlink means no inbound connections possible.'],
+    ['Both WAN sources  DOWN',
+     'No internet  —  EMCOMM-NET still fully operational',
+     'All local FieldComms features work normally.  NWS alerts, APRS-IS, FCC refresh paused until WAN returns.'],
+], [1.4*inch, 2.2*inch, CW-3.6*inch]))
+story.append(SP(8))
+
+story.append(H2('1.4  AiMesh Coverage Extension (Optional)'))
 story.append(steps([
     'Factory reset the node router. Hold reset button for 5–10 seconds until power LED flashes.',
     'Power on the node within 30 ft of the primary router for initial pairing.',
@@ -2192,10 +2374,13 @@ story.append(SP(6))
 story.append(H2('Full Network Topology'))
 story.append(P(
     'The EMCOMM-NET deployment uses the ASUS RT-BE58 Go as the Wi-Fi access point and DHCP server. '
+    'The InstyConnect Drum provides primary cellular WAN (T-Mobile / Verizon) via a PoE Ethernet '
+    'cable directly to the ASUS WAN port. '
+    'Starlink provides automatic secondary WAN failover via the ASUS USB WAN port. '
     'The UniFi Switch Lite 16 PoE distributes wired connections to both Pi servers, '
-    'all operator workstations, the network printer, and any additional field devices. '
-    'The 44Net Gateway Pi provides AMPRNet connectivity to every device on EMCOMM-NET '
-    'by routing the 44.0.0.0/8 address block through a WireGuard tunnel to amprgw.ampr.org.'))
+    'all operator workstations, the network printer, and additional field devices. '
+    'The 44Net Gateway Pi routes the 44.0.0.0/8 AMPRNet address block for all EMCOMM-NET devices '
+    'via a WireGuard tunnel to amprgw.ampr.org.'))
 story.append(SP(6))
 story.append(tbl(['DEVICE', 'IP ADDRESS', 'ROLE', 'CONNECTION'], [
     ['ASUS RT-BE58 Go', '192.168.50.254  (LAN gateway)',
@@ -2334,7 +2519,11 @@ story.append(SP(6))
 story.append(tbl(['ITEM', 'VALUE'], [
     ['FieldComms dashboard',   'http://192.168.50.1'],
     ['Wi-Fi network (SSID)',   'EMCOMM-NET'],
+    ['WAN status dashboard',   'http://192.168.50.1/wan-status.html'],
     ['FieldComms Pi static IP','192.168.50.1'],
+    ['InstyConnect modem admin','http://10.1.1.1  or  http://my.insty  (connect to InstyConnect Wi-Fi first)'],
+    ['InstyConnect data plan', 'instyconnect.com  —  Multi-Network Unlimited  —  pause in portal between activations'],
+    ['Starlink admin',         'http://192.168.10.1  (Starlink app or browser)'],
     ['44Net Gateway Pi IP',    '192.168.50.2'],
     ['44Net gateway status',   'http://192.168.50.2:9000'],
     ['AMPRNet tunnel check',   'ping 44.0.0.1  (from any EMCOMM-NET device)'],

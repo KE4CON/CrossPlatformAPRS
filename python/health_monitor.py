@@ -48,6 +48,40 @@ def get_amprgate_status():
         pass
     return {"reachable": False, "tunnel": "not configured"}
 
+
+WAN_STATUS_FILE = DATA / "wan_status.json"
+
+def get_wan_status():
+    """
+    Read WAN status from wan_status.json written by the WAN monitor.
+    Falls back to basic internet connectivity check if file is not present.
+    """
+    # Try the WAN status file first (written by wan_monitor service)
+    try:
+        if WAN_STATUS_FILE.exists():
+            return json.loads(WAN_STATUS_FILE.read_text())
+    except Exception:
+        pass
+
+    # Fallback: basic internet check and return minimal status
+    internet = get_internet()
+    connected = internet.get("connected", False)
+    return {
+        "active_source": "cellular" if connected else "none",
+        "instyconnect": {
+            "connected": connected,
+            "carrier": "Unknown",
+            "technology": "Unknown",
+            "signal_strength": "Unknown",
+            "antenna": "Drum",
+        },
+        "starlink": {
+            "connected": False,
+            "dish_present": False,
+        },
+        "note": "wan_monitor service not running — basic internet check only",
+    }
+
 _cache = {}
 _cache_lock = threading.Lock()
 _CACHE_TTL = 10  # seconds
@@ -213,6 +247,7 @@ def collect_health():
         "dms": get_dms(),
         "tailscale": get_tailscale(),
         "amprgate": get_amprgate_status(),
+        "wan": get_wan_status(),
     }
 
     with _cache_lock:
