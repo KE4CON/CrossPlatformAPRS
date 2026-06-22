@@ -34,7 +34,7 @@ TODAY  = datetime.date.today().strftime('%B %Y')
 ORG    = 'McHenry County Emergency Services Volunteers and Emergency Management Agency'
 SHORT  = 'MCESV / MCEMA  ·  K9ESV  ·  RACES / ARES / Starcom'
 PAGE_W, PAGE_H = letter
-M  = 0.48 * inch
+M  = 0.42 * inch
 CW = PAGE_W - 2 * M
 
 # ── Canvas — full-page cover chrome ──────────────────────────────────────────
@@ -119,8 +119,8 @@ def section_hdr(icon, title, color, bg):
     t.setStyle(TableStyle([
         ('BACKGROUND',    (0,0), (-1,-1), bg),
         ('LEFTPADDING',   (0,0), (-1,-1), 8),
-        ('TOPPADDING',    (0,0), (-1,-1), 4),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+        ('TOPPADDING',    (0,0), (-1,-1), 2),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 2),
         ('LINEBELOW',     (0,0), (-1,-1), 1.5, color),
     ]))
     return t
@@ -166,7 +166,7 @@ def hex_str(c):
 story = []
 
 # ── INTRODUCTION ───────────────────────────────────────────────────────────────
-story.append(SP(4))
+story.append(SP(2))
 story.append(P(
     '<b>FieldComms</b> is a self-contained emergency communications server '
     'built on a Raspberry Pi 5 for McHenry County RACES, ARES, and Starcom operations. '
@@ -175,36 +175,36 @@ story.append(P(
     'no internet, no app installation, no per-device configuration required. '
     'All 30 tools, all ICS forms, all reference materials, and all offline maps '
     'remain fully functional when the site has no internet connectivity.',
-    S('intro', fontSize=8.5, leading=12.5, alignment=TA_JUSTIFY,
+    S('intro', fontSize=8, leading=11.5, alignment=TA_JUSTIFY,
       textColor=HexColor('#1a2a3a'))))
-story.append(SP(6))
+story.append(SP(4))
 
 # ── THREE-COLUMN CAPABILITY SUMMARY ───────────────────────────────────────────
 cap_hdr = Table([[
     P('📻  AMATEUR RADIO',
-      S('ch', fontName='Helvetica-Bold', fontSize=8.5, textColor=white, leading=11,
+      S('ch', fontName='Helvetica-Bold', fontSize=8, textColor=white, leading=10,
         alignment=TA_CENTER)),
     P('🚔  STARCOM / PUBLIC SAFETY',
-      S('ch', fontName='Helvetica-Bold', fontSize=8.5, textColor=white, leading=11,
+      S('ch', fontName='Helvetica-Bold', fontSize=8, textColor=white, leading=10,
         alignment=TA_CENTER)),
     P('🏛  ICS INCIDENT COMMAND',
-      S('ch', fontName='Helvetica-Bold', fontSize=8.5, textColor=white, leading=11,
+      S('ch', fontName='Helvetica-Bold', fontSize=8, textColor=white, leading=10,
         alignment=TA_CENTER)),
 ]], colWidths=[CW/3, CW/3, CW/3])
 cap_hdr.setStyle(TableStyle([
     ('BACKGROUND',    (0,0), (0,-1), EOC_LT),
     ('BACKGROUND',    (1,0), (1,-1), SGREEN),
     ('BACKGROUND',    (2,0), (2,-1), PURPLE),
-    ('TOPPADDING',    (0,0), (-1,-1), 5),
-    ('BOTTOMPADDING', (0,0), (-1,-1), 5),
-    ('LEFTPADDING',   (0,0), (-1,-1), 6),
-    ('RIGHTPADDING',  (0,0), (-1,-1), 6),
+    ('TOPPADDING',    (0,0), (-1,-1), 2),
+    ('BOTTOMPADDING', (0,0), (-1,-1), 2),
+    ('LEFTPADDING',   (0,0), (-1,-1), 5),
+    ('RIGHTPADDING',  (0,0), (-1,-1), 5),
     ('LINEAFTER',     (0,0), (1,-1), 0.5, white),
 ]))
 story.append(cap_hdr)
 
 def cap_bullets(items, color):
-    content = [P(f'• {i}', S('cb', fontSize=7.5, leading=10.5,
+    content = [P(f'• {i}', S('cb', fontSize=7, leading=9.5,
                               leftIndent=8, firstLineIndent=-6,
                               textColor=black)) for i in items]
     t = Table([[c] for c in content], colWidths=[CW/3])
@@ -269,12 +269,12 @@ cap_body.setStyle(TableStyle([
     ('LINEAFTER',   (0,0), (1,-1), 0.5, LINE),
 ]))
 story.append(cap_body)
-story.append(SP(6))
+story.append(SP(2))
 
 # ── CONNECTIVITY ───────────────────────────────────────────────────────────────
 story.append(section_hdr('📡', 'Connectivity — Dual WAN with Automatic Failover',
                          AMBER, HexColor('#fef3d8')))
-story.append(SP(3))
+story.append(SP(1))
 wan_tbl = Table([[
     P('InstyConnect Cellular  (Primary WAN)',
       S('wh', fontName='Helvetica-Bold', fontSize=8, textColor=EOC, leading=10)),
@@ -296,163 +296,236 @@ story.append(wan_tbl)
 wan_desc = Table([[
     P('InstyConnect Drum omnidirectional antenna + Switchblade directional backup. '
       'T-Mobile + Verizon dual-carrier. Pauses at $5/month between activations.',
-      S('wd', fontSize=7.5, leading=10.5)),
+      S('wd', fontSize=7, leading=9.5)),
     P('Automatic failover when cellular drops. '
       'ASUS RT-BE58 Go manages failover with no operator action required. '
       'All FieldComms features remain active during satellite operation.',
-      S('wd', fontSize=7.5, leading=10.5)),
+      S('wd', fontSize=7, leading=9.5)),
     P('Dedicated Raspberry Pi 5 gateway. '
       'WireGuard tunnel to amprgw.ampr.org. '
       'Routes 44.0.0.0/8 for all EMCOMM-NET devices. '
       'AMPRNet allocation required from portal.ampr.org.',
-      S('wd', fontSize=7.5, leading=10.5)),
+      S('wd', fontSize=7, leading=9.5)),
 ]], colWidths=[CW/3, CW/3, CW/3])
 wan_desc.setStyle(TableStyle([
     ('BACKGROUND',    (0,0), (-1,-1), LGRAY),
     ('VALIGN',        (0,0), (-1,-1), 'TOP'),
-    ('TOPPADDING',    (0,0), (-1,-1), 4),
-    ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+    ('TOPPADDING',    (0,0), (-1,-1), 3),
+    ('BOTTOMPADDING', (0,0), (-1,-1), 3),
     ('LEFTPADDING',   (0,0), (-1,-1), 6),
     ('RIGHTPADDING',  (0,0), (-1,-1), 6),
     ('LINEAFTER',     (0,0), (1,-1), 0.5, LINE),
     ('LINEBELOW',     (0,0), (-1,-1), 1, AMBER),
 ]))
 story.append(wan_desc)
-story.append(SP(6))
+story.append(SP(2))
 
 # ── HARDWARE ───────────────────────────────────────────────────────────────────
 story.append(section_hdr('🖥', 'Hardware Platform', EOC, EOC_BG))
-story.append(SP(3))
+story.append(SP(1))
 
 hw_data = [
     ['COMPONENT', 'SPECIFICATION', 'ROLE'],
     ['FieldComms Server',
-     'Raspberry Pi 5  16 GB  ·  Pironman MAX 5  ·  2× 1 TB NVMe RAID 1',
-     'Runs all 30 web pages, 12 Python services, FCC database, offline maps, Kiwix library'],
+     'Pi 5  16 GB  ·  Pironman MAX 5  ·  2× 1 TB NVMe RAID 1',
+     '32 pages  ·  15 services  ·  FCC DB  ·  Kiwix  ·  maps  ·  Pat'],
     ['44Net Gateway',
-     'Raspberry Pi 5  16 GB  ·  Argon NEO 5  ·  256 GB M.2 SSD  ·  Pi OS Desktop',
-     'Dedicated AMPRNet WireGuard gateway  ·  routes 44.0.0.0/8 for all devices'],
-    ['Wi-Fi Access Point',
-     'ASUS RT-BE58 Go  Wi-Fi 7  ·  Dual WAN  (cellular primary + satellite failover)',
-     'EMCOMM-NET SSID  ·  DHCP server  ·  WAN gateway with automatic failover'],
-    ['Network Switch',
-     'UniFi Switch Lite 16 PoE  ·  16-port GbE  ·  8× PoE  ·  2× SFP uplink',
-     'Wired distribution  ·  both Pis, workstations, printer, spare ports'],
-    ['Primary Cellular WAN',
-     'InstyConnect Drum  (omni)  +  Switchblade  (directional backup)  ·  5G/LTE',
-     'T-Mobile + Verizon dual-carrier  ·  PoE Ethernet to ASUS WAN port'],
-    ['Satellite WAN Backup',
-     'Starlink Standard or Flat HP dish  ·  auto-failover via ASUS USB WAN',
-     'Secondary internet when cellular unavailable  ·  CGNAT  ·  no inbound connections'],
-    ['Radio Station',
-     'Icom IC-7300  ·  Windows laptop  ·  Winlink Express + VARA HF  ·  JS8Call',
-     'HF digital voice and data  ·  Winlink email over radio  ·  IC-7300 via single USB'],
-    ['Operator Workstations',
-     'Raspberry Pi 500 / 500+  ×4  ·  Raspberry Pi Monitor 15.6"  ×4',
-     'Browser-based  ·  one per operator station  ·  USB-C powered from monitor'],
+     'Pi 5  16 GB  ·  Argon NEO 5  ·  256 GB SSD  ·  Pi OS Desktop',
+     'WireGuard to AMPRNet  ·  routes 44.0.0.0/8  ·  status at :9000'],
+    ['Wi-Fi  +  Switch',
+     'ASUS RT-BE58 Go  Wi-Fi 7  ·  UniFi Lite 16 PoE  (16-port GbE)',
+     'EMCOMM-NET  ·  DHCP  ·  dual WAN failover  ·  wired hub'],
+    ['Primary WAN  (Cellular)',
+     'InstyConnect Drum (omni)  +  Switchblade (directional)  ·  5G/LTE',
+     'T-Mobile + Verizon  ·  pause at $5/month  ·  swap in 5 min'],
+    ['Secondary WAN  (Satellite)',
+     'Starlink dish  +  Ethernet adapter  →  ASUS USB WAN',
+     'Auto-failover when cellular drops  ·  all features stay active'],
+    ['Radio  +  Workstations',
+     'IC-7300  ·  Winlink  ·  VARA HF  ·  JS8Call  ·  Pi 500 ×4  ·  Monitor ×4',
+     'HF comms  ·  browser operator stations  ·  no app install'],
 ]
+
 
 hw_rows = []
 for i, row in enumerate(hw_data):
-    fs = 7.5 if i == 0 else 8
+    fs = 6.5 if i == 0 else 7
     fn = 'Helvetica-Bold' if i == 0 else 'Helvetica'
     tc = white if i == 0 else black
     hw_rows.append([P(str(c), S('hw', fontName=fn, fontSize=fs,
-                                 textColor=tc, leading=10)) for c in row])
+                                 textColor=tc, leading=9.5)) for c in row])
 
-hw_t = Table(hw_rows, colWidths=[1.2*inch, 2.8*inch, CW-4.0*inch],
+hw_t = Table(hw_rows, colWidths=[1.0*inch, 2.5*inch, CW-3.5*inch],
              repeatRows=1)
 hw_t.setStyle(TableStyle([
     ('BACKGROUND',    (0,0), (-1,0),  EOC),
     ('ROWBACKGROUNDS',(0,1), (-1,-1), [white, LGRAY]),
     ('GRID',          (0,0), (-1,-1), 0.3, LINE),
     ('VALIGN',        (0,0), (-1,-1), 'TOP'),
-    ('TOPPADDING',    (0,0), (-1,-1), 3),
-    ('BOTTOMPADDING', (0,0), (-1,-1), 3),
-    ('LEFTPADDING',   (0,0), (-1,-1), 5),
-    ('RIGHTPADDING',  (0,0), (-1,-1), 5),
+    ('TOPPADDING',    (0,0), (-1,-1), 2),
+    ('BOTTOMPADDING', (0,0), (-1,-1), 2),
+    ('LEFTPADDING',   (0,0), (-1,-1), 4),
+    ('RIGHTPADDING',  (0,0), (-1,-1), 4),
 ]))
 story.append(hw_t)
-story.append(SP(5))
+story.append(SP(2))
 
-# ── REFERENCE + ACCESS ─────────────────────────────────────────────────────────
-ref_col = Table([[
-    # Reference tools
+# ── BOTTOM SECTION — 3 columns: Reference | How to Access | Why ─────────────
+
+C1 = CW * 0.33
+C2 = CW * 0.34
+C3 = CW - C1 - C2
+
+# ── COLUMN 1: Reference & Administration ─────────────────────────────────────
+ref_items = [
+    ('📚', 'Kiwix Library',     'WikiMed, Wikipedia, iFixit — offline'),
+    ('📁', 'Reference Library', 'SOGs, plans, field docs — searchable'),
+    ('🖨', 'Print Center',      'ICS 213/214/309, NTS, access cards'),
+    ('📻', 'Cheat Sheets',      'Phonetics, Q-codes, CTCSS, band plan'),
+    ('🔍', 'Callsign Lookup',   '800K licensees — instant offline'),
+    ('✅', 'Pre-Flight Check',  'GO / CAUTION / NO-GO readiness'),
+    ('📡', 'WAN Dashboard',     'InstyConnect, Starlink, 44Net live'),
+    ('🗺', 'Offline Maps',      'USGS topo — APRS and SAR maps'),
+    ('💻', 'Health Monitor',    'CPU, disk, GPS, internet, services'),
+    ('🖥', 'Access Cards',      'Avery 5371 printable wallet cards'),
+]
+
+RI = S('ri', fontSize=9,   leading=10,  alignment=TA_CENTER)
+RT = S('rt', fontName='Helvetica-Bold', fontSize=7.5, textColor=EOC, leading=9.5)
+RD = S('rd', fontSize=7,   leading=9,   textColor=HexColor('#2a3a4a'))
+
+ref_rows = [[
+    P('Reference  &  Administration',
+      S('rh', fontName='Helvetica-Bold', fontSize=8.5,
+        textColor=EOC_LT, leading=10)),
+    P('', S('x')), P('', S('x')),
+]]
+for icon, title, desc in ref_items:
+    ref_rows.append([P(icon, RI), P(f'<b>{title}</b>', RT), P(desc, RD)])
+
+col1 = Table(ref_rows, colWidths=[0.20*inch, 0.82*inch, C1 - 1.02*inch])
+col1.setStyle(TableStyle([
+    ('SPAN',          (0,0), (2,0)),
+    ('LINEBELOW',     (0,0), (2,0), 1.2, EOC_LT),
+    ('ROWBACKGROUNDS',(0,1), (-1,-1), [white, HexColor('#f0f4f9')]),
+    ('VALIGN',        (0,0), (-1,-1), 'TOP'),
+    ('TOPPADDING',    (0,0), (-1,-1), 1),
+    ('BOTTOMPADDING', (0,0), (-1,-1), 1),
+    ('LEFTPADDING',   (0,0), (-1,-1), 3),
+    ('RIGHTPADDING',  (0,0), (-1,-1), 3),
+    ('TOPPADDING',    (0,0), (2,0),   3),
+    ('BOTTOMPADDING', (0,0), (2,0),   3),
+    ('LINEBELOW',     (0,1), (-1,-1), 0.15, LINE),
+]))
+
+# ── COLUMN 2: How to Access (navy box) ───────────────────────────────────────
+access_content = [
+    P('HOW TO ACCESS',
+      S('ah', fontName='Helvetica-Bold', fontSize=9, textColor=GOLD,
+        leading=11, alignment=TA_CENTER)),
+    SP(4),
+    P('<b>1</b>  Wi-Fi:  <b>EMCOMM-NET</b>',
+      S('a1', fontSize=8.5, textColor=white, leading=12)),
+    P('<b>2</b>  Browser:  <b>http://192.168.50.1</b>',
+      S('a2', fontSize=8.5, textColor=white, leading=12)),
+    P('<b>3</b>  Select mode:  Amateur / Starcom / ICS',
+      S('a3', fontSize=8.5, textColor=white, leading=12)),
+    SP(5),
+    P('No app  ·  No login  ·  Any device  ·  Any OS',
+      S('a4', fontName='Helvetica-Bold', fontSize=8, textColor=GOLD,
+        leading=10, alignment=TA_CENTER)),
+    SP(6),
     Table([[
-        P('Reference & Administration',
-          S('rh', fontName='Helvetica-Bold', fontSize=8, textColor=EOC_LT, leading=10)),
-        SP(2),
-        P('• Kiwix Offline Library — WikiMed, Wikipedia, iFixit, Wikivoyage',
-          S('rb', fontSize=7.5, leading=10)),
-        P('• Reference Library — upload, tag, and serve field documents',
-          S('rb', fontSize=7.5, leading=10)),
-        P('• Radio Cheat Sheets — phonetics, Q-codes, prowords, band plan',
-          S('rb', fontSize=7.5, leading=10)),
-        P('• Print Center — all ICS forms, reference cards, operator access cards',
-          S('rb', fontSize=7.5, leading=10)),
-        P('• Pre-Flight Checklist — GO / CAUTION / NO-GO deployment readiness',
-          S('rb', fontSize=7.5, leading=10)),
-        P('• FCC Callsign Lookup — 800K licensees, offline, instant response',
-          S('rb', fontSize=7.5, leading=10)),
-        P('• System Health Monitor — CPU, memory, disk, all services, GPS, WAN',
-          S('rb', fontSize=7.5, leading=10)),
-        P('• WAN Status Dashboard — InstyConnect, Starlink, 44Net status live',
-          S('rb', fontSize=7.5, leading=10)),
-    ]], colWidths=[CW*0.48]),
-    # How to access + key specs
+        P('32', S('sn', fontName='Helvetica-Bold', fontSize=18,
+                   textColor=GOLD, alignment=TA_CENTER, leading=20)),
+        P('15', S('sn2', fontName='Helvetica-Bold', fontSize=18,
+                   textColor=HexColor('#90d4a0'), alignment=TA_CENTER, leading=20)),
+        P('6', S('sn3', fontName='Helvetica-Bold', fontSize=18,
+                  textColor=HexColor('#d4a0d0'), alignment=TA_CENTER, leading=20)),
+    ]], colWidths=[C2/3]*3),
     Table([[
-        P('How to Access',
-          S('ah', fontName='Helvetica-Bold', fontSize=8, textColor=GREEN, leading=10)),
-        SP(2),
-        P('<b>1.</b>  Connect to Wi-Fi:  <b>EMCOMM-NET</b>',
-          S('ab', fontSize=8, leading=11)),
-        P('<b>2.</b>  Open any browser to:  <b>http://192.168.50.1</b>',
-          S('ab', fontSize=8, leading=11)),
-        P('<b>3.</b>  Enter your callsign or Radio ID',
-          S('ab', fontSize=8, leading=11)),
-        SP(5),
-        P('No app  ·  No login  ·  No internet required',
-          S('ac', fontName='Helvetica-Bold', fontSize=8,
-            textColor=GREEN, leading=10, alignment=TA_CENTER)),
-        SP(5),
-        HR(LINE, 0.4),
-        SP(4),
-        P('Key Statistics',
-          S('kh', fontName='Helvetica-Bold', fontSize=8, textColor=EOC, leading=10)),
-        SP(2),
-        Table([[
-            P('30', S('kn', fontName='Helvetica-Bold', fontSize=16,
-                       textColor=EOC_LT, alignment=TA_CENTER, leading=18)),
-            P('12', S('kn', fontName='Helvetica-Bold', fontSize=16,
-                       textColor=GREEN, alignment=TA_CENTER, leading=18)),
-            P('3', S('kn', fontName='Helvetica-Bold', fontSize=16,
-                      textColor=AMBER, alignment=TA_CENTER, leading=18)),
-            P('6', S('kn', fontName='Helvetica-Bold', fontSize=16,
-                      textColor=PURPLE, alignment=TA_CENTER, leading=18)),
-        ]], colWidths=[(CW*0.48)/4]*4),
-        Table([[
-            P('Web Pages', S('kl', fontSize=7, textColor=MUTED,
-                              alignment=TA_CENTER, leading=9)),
-            P('Background\nServices', S('kl', fontSize=7, textColor=MUTED,
-                                        alignment=TA_CENTER, leading=9)),
-            P('Dashboard\nModes', S('kl', fontSize=7, textColor=MUTED,
-                                     alignment=TA_CENTER, leading=9)),
-            P('WAN\nSources', S('kl', fontSize=7, textColor=MUTED,
-                                  alignment=TA_CENTER, leading=9)),
-        ]], colWidths=[(CW*0.48)/4]*4),
-    ]], colWidths=[CW*0.48]),
-]], colWidths=[CW*0.52, CW*0.48])
-ref_col.setStyle(TableStyle([
+        P('Web Pages', S('sl',  fontSize=7, textColor=HexColor('#90a8c0'),
+                          alignment=TA_CENTER, leading=9)),
+        P('Services',  S('sl2', fontSize=7, textColor=HexColor('#90a8c0'),
+                          alignment=TA_CENTER, leading=9)),
+        P('WAN Sources',S('sl3',fontSize=7, textColor=HexColor('#90a8c0'),
+                           alignment=TA_CENTER, leading=9)),
+    ]], colWidths=[C2/3]*3),
+]
+access_inner = Table([[item] for item in access_content],
+                     colWidths=[C2 - 0.20*inch])
+access_inner.setStyle(TableStyle([
+    ('VALIGN',        (0,0), (-1,-1), 'TOP'),
+    ('TOPPADDING',    (0,0), (-1,-1), 0),
+    ('BOTTOMPADDING', (0,0), (-1,-1), 0),
+    ('LEFTPADDING',   (0,0), (-1,-1), 0),
+    ('RIGHTPADDING',  (0,0), (-1,-1), 0),
+]))
+col2 = Table([[access_inner]], colWidths=[C2])
+col2.setStyle(TableStyle([
+    ('BACKGROUND',    (0,0), (-1,-1), EOC),
+    ('TOPPADDING',    (0,0), (-1,-1), 8),
+    ('BOTTOMPADDING', (0,0), (-1,-1), 8),
+    ('LEFTPADDING',   (0,0), (-1,-1), 10),
+    ('RIGHTPADDING',  (0,0), (-1,-1), 10),
+    ('LINEBELOW',     (0,0), (-1,-1), 2, GOLD),
+]))
+
+# ── COLUMN 3: Why FieldComms ─────────────────────────────────────────────────
+why_items = [
+    ('Fully Offline',    'All 32 tools work with zero internet'),
+    ('Multi-User',       'Every operator sees live data simultaneously'),
+    ('30-Min Deploy',    'Unpack and operational in under 30 minutes'),
+    ('Dual WAN',         'Cellular primary, satellite auto-failover'),
+    ('RAID 1',           'Drive failure does not stop operations'),
+    ('Full ICS',         'All 5 sections, Planning P, printable IAP'),
+    ('Radio Integrated', 'Winlink, JS8Call, APRS, PACTOR, Pat'),
+    ('Grant Eligible',   'FEMA BRIC, ARPA-E, ARRL Foundation, DHS'),
+]
+WT = S('wt', fontName='Helvetica-Bold', fontSize=7.5, textColor=EOC, leading=9.5)
+WD = S('wd', fontSize=7, leading=9, textColor=HexColor('#2a3a4a'))
+WA = 0.85*inch
+
+why_rows = [[
+    P('WHY FIELDCOMMS',
+      S('wh', fontName='Helvetica-Bold', fontSize=8.5,
+        textColor=EOC_LT, leading=10)),
+    P('', S('x')),
+]]
+for bold, rest in why_items:
+    why_rows.append([P(f'<b>{bold}</b>', WT), P(rest, WD)])
+
+col3 = Table(why_rows, colWidths=[WA, C3 - WA])
+col3.setStyle(TableStyle([
+    ('SPAN',          (0,0), (1,0)),
+    ('LINEBELOW',     (0,0), (1,0), 1.2, EOC_LT),
+    ('ROWBACKGROUNDS',(0,1), (-1,-1), [white, HexColor('#f0f4f9')]),
+    ('VALIGN',        (0,0), (-1,-1), 'TOP'),
+    ('TOPPADDING',    (0,0), (-1,-1), 1),
+    ('BOTTOMPADDING', (0,0), (-1,-1), 1),
+    ('LEFTPADDING',   (0,0), (-1,-1), 4),
+    ('RIGHTPADDING',  (0,0), (-1,-1), 4),
+    ('TOPPADDING',    (0,0), (1,0),   3),
+    ('BOTTOMPADDING', (0,0), (1,0),   3),
+    ('LINEBELOW',     (0,1), (-1,-1), 0.15, LINE),
+]))
+
+# ── Assemble 3-column bottom ──────────────────────────────────────────────────
+bottom3 = Table([[col1, col2, col3]], colWidths=[C1, C2, C3])
+bottom3.setStyle(TableStyle([
     ('VALIGN',        (0,0), (-1,-1), 'TOP'),
     ('LEFTPADDING',   (0,0), (-1,-1), 0),
     ('RIGHTPADDING',  (0,0), (-1,-1), 0),
     ('TOPPADDING',    (0,0), (-1,-1), 0),
     ('BOTTOMPADDING', (0,0), (-1,-1), 0),
-    ('LINEAFTER',     (0,0), (0,-1), 0.5, LINE),
-    ('LEFTPADDING',   (1,0), (1,-1), 10),
+    ('LINEAFTER',     (0,0), (0,-1), 0.6, LINE),
+    ('LINEAFTER',     (1,0), (1,-1), 0.6, LINE),
+    ('LEFTPADDING',   (1,0), (1,-1), 8),
+    ('RIGHTPADDING',  (1,0), (1,-1), 8),
+    ('LEFTPADDING',   (2,0), (2,-1), 8),
 ]))
-story.append(ref_col)
-story.append(SP(5))
+story.append(bottom3)
+story.append(SP(3))
 
 # ── FUNDING NOTE ───────────────────────────────────────────────────────────────
 fund = Table([[
@@ -477,7 +550,7 @@ out = '/mnt/user-data/outputs/IncidentManagement_Overview.pdf'
 doc = SimpleDocTemplate(
     out, pagesize=letter,
     leftMargin=M, rightMargin=M,
-    topMargin=0.62*inch, bottomMargin=0.44*inch,
+    topMargin=0.54*inch, bottomMargin=0.36*inch,
     title='FieldComms IMS v1.0 — System Overview',
     author='McHenry County Emergency Services Volunteers and McHenry County Emergency Management Agency')
 doc.build(story, canvasmaker=NC)
@@ -485,4 +558,4 @@ doc.build(story, canvasmaker=NC)
 from pypdf import PdfReader
 r = PdfReader(out)
 print(f'BUILT: {out}')
-print(f'Pages: {len(r.pages)}')
+print(f'Pages: {len(r.pages)}')# ──
