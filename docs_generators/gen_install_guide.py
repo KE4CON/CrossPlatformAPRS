@@ -363,12 +363,14 @@ story.append(H1('1. Overview & What\'s Included'))
 story.append(HR(EOC_LT, 0.5))
 story.append(SP(6))
 story.append(P(
-    'FieldComms is a complete off-grid emergency communications server for Raspberry Pi. '
-    'The ASUS RT-BE58 Go travel router provides a dedicated Wi-Fi access point called EMCOMM-NET — '
-    'the Pi itself does not broadcast Wi-Fi. Any phone, tablet, or laptop on scene connects '
-    'to EMCOMM-NET and accesses all EmComm tools through a standard web browser with no internet '
-    'required. When Ethernet internet is available at the site, live features such as NWS weather '
-    'alerts, HF propagation data, and APRS-IS automatically activate.',
+    'FieldComms is a complete off-grid emergency communications server built on two Raspberry Pi 5 units '
+    '— one running all 32 EmComm tools, one dedicated to the AMPRNet / 44Net gateway. '
+    'InstyConnect cellular (T-Mobile + Verizon) is the primary WAN source with Starlink satellite '
+    'as automatic failover, both managed by the ASUS RT-BE58 Go Wi-Fi 7 router. '
+    'Two additional ASUS RT-BE58 Go routers extend EMCOMM-NET as AiMesh nodes for large venues. '
+    'Any phone, tablet, or laptop connects to EMCOMM-NET and reaches all tools at '
+    'http://192.168.50.1 — no internet, no app, no per-device setup required. '
+    'When WAN is available, NWS alerts, APRS-IS, and HF propagation data activate automatically.',
     S('body', fontSize=9.5, leading=14, alignment=TA_JUSTIFY)))
 story.append(SP(8))
 story.append(NoteBox(
@@ -644,39 +646,56 @@ story.append(bom_t)
 story.append(SP(8))
 
 # Mesh BOM
-story.append(H2('AiMesh Coverage Extension — Optional Bill of Materials'))
+story.append(H2('EMCOMM-NET Coverage Extension — 2× ASUS RT-BE58 Go Mesh Nodes'))
+story.append(P(
+    'FieldComms uses two additional ASUS RT-BE58 Go routers as AiMesh nodes to extend '
+    'EMCOMM-NET coverage across large EOC buildings, shelters, and outdoor staging areas. '
+    'Using identical hardware for all three routers (primary + 2 nodes) simplifies deployment, '
+    'eliminates compatibility issues, and means any unit can serve as the primary router if needed. '
+    'All three broadcast the same EMCOMM-NET SSID — operators never know they switched nodes.'))
+story.append(SP(6))
 mesh_data = [['ITEM', 'MODEL / SPEC', 'WHERE TO BUY'],
-    ['AiMesh node router (wireless backhaul)',
-     'ASUS RT-BE58 Go (same as primary — simplest pairing) or any AiMesh-compatible ASUS router',
-     'Amazon · Best Buy · B&H'],
-    ['AiMesh node router (high-capacity venues)',
-     'ASUS ZenWiFi Pro ET12 or RT-AX88U Pro — better range and capacity for large buildings',
-     'Amazon · B&H · Costco'],
-    ['CAT 6 Ethernet cable (wired backhaul — recommended)',
-     'CAT 6 cable from UniFi switch to node LAN port. Length as needed.',
-     'Amazon · Monoprice · Home Depot'],
-    ['USB-C power bank (field power for node)',
-     '10,000+ mAh, 18W+ USB-C PD — one per node for field deployment without shore power',
-     'Amazon'],
+    ['ASUS RT-BE58 Go  ×2  (mesh nodes)',
+     'ASUS RT-BE58 Go — identical to primary router — '
+     'pairs instantly as AiMesh node with no extra configuration — '
+     'extends EMCOMM-NET at full Wi-Fi 7 speed — '
+     'wired backhaul via UniFi switch ports 11 and 12',
+     'Amazon · Best Buy · B&H  (~$120-150 each)'],
+    ['USB-C power supply  ×2  (for mesh nodes)',
+     'USB-C 18W PD adapter — one per node — '
+     'or USB-C power bank (10,000+ mAh, 18W+) for field use without shore power',
+     'Amazon  (~$15-25 each)'],
+    ['CAT 6 Ethernet cable  ×2  (wired backhaul)',
+     'CAT 6 patch cable from UniFi Switch Lite 16 PoE to each node LAN port — '
+     'wired backhaul is strongly recommended — provides full throughput vs wireless backhaul — '
+     'length as needed for the venue',
+     'Amazon · Monoprice · Home Depot  (~$10-20 each)'],
 ]
 mesh_t = Table([[P(c, S('TH' if i==0 else 'TC',
                          fontName='Helvetica-Bold' if i==0 else 'Helvetica',
                          fontSize=8, textColor=white if i==0 else black, leading=11))
                  for c in row] for i, row in enumerate(mesh_data)],
-                colWidths=[1.8*inch, 3.0*inch, CW-4.8*inch])
+                colWidths=[1.8*inch, 3.0*inch, CW-4.8*inch], repeatRows=1)
 mesh_t.setStyle(make_table_style(3))
 story.append(mesh_t)
 story.append(SP(6))
 story.append(ref_tbl_2col(['DEPLOYMENT SCENARIO', 'RECOMMENDED SETUP'], [
-    ['Single room EOC (≤ 2,500 sq ft)', '1× RT-BE58 Go primary only — no extension needed'],
-    ['Multi-room EOC or large shelter (2,500–7,500 sq ft)', '1× RT-BE58 Go primary + 1 AiMesh node (wireless or wired backhaul)'],
-    ['Large building or campus (7,500–20,000 sq ft)', '1× primary + 2–3 nodes, wired backhaul recommended for all nodes'],
-    ['Outdoor SAR staging area', '1× primary at command post + RT-BE58 Go nodes at field positions on battery'],
-], [2.3*inch, CW-2.3*inch]))
+    ['Single room EOC  (under 2,500 sq ft)',
+     '1× RT-BE58 Go primary only — no extension needed'],
+    ['Multi-room EOC or large shelter  (2,500–7,500 sq ft)',
+     '1× primary + 1 RT-BE58 Go node  —  wired backhaul via switch Port 11'],
+    ['Large building or campus  (7,500–20,000 sq ft)',
+     '1× primary + 2 RT-BE58 Go nodes  —  wired backhaul via switch Ports 11 and 12'],
+    ['Outdoor SAR staging area',
+     '1× primary at command post + 1-2 RT-BE58 Go nodes at field positions on battery'],
+], [2.5*inch, CW-2.5*inch]))
 story.append(SP(4))
-story.append(NoteBox('You do not need to pre-purchase AiMesh nodes for every deployment. '
-                     'Start with the primary RT-BE58 Go and add nodes only when coverage is insufficient. '
-                     'Pairing a new node takes under 5 minutes on site.', 'tip'))
+story.append(NoteBox(
+    'All three ASUS RT-BE58 Go routers broadcast the same EMCOMM-NET SSID and password. '
+    'Operators and devices roam between them automatically — no reconnection, '
+    'no password re-entry, no awareness of which router they are connected to. '
+    'Pairing a new node to the primary takes under 5 minutes on site.',
+    'tip'))
 story.append(SP(8))
 
 # SD card sizing
@@ -937,9 +956,15 @@ story.append(tbl(['CONNECTION', 'DEVICE', 'IP / NOTES'], [
      'Pi 500 Operator Workstations  (up to 4)', '192.168.50.20 – 192.168.50.23  (static DHCP reservations)'],
     ['Port 10',
      'Starlink Router  (if deployed)', 'Optional second WAN path  —  connect Starlink Ethernet output to switch, use as WAN source on ASUS router.'],
-    ['Ports 11 – 16',
+    ['Port 11',
+     'ASUS RT-BE58 Go  —  Mesh Node 1',
+     'Wired backhaul to first mesh node.  Node extends EMCOMM-NET to secondary coverage zone.'],
+    ['Port 12',
+     'ASUS RT-BE58 Go  —  Mesh Node 2',
+     'Wired backhaul to second mesh node.  Node extends EMCOMM-NET to third coverage zone.'],
+    ['Ports 13 – 16',
      'Spare',
-     'Available for additional devices, IP radios, second TNC, future expansion.'],
+     'Available for additional devices, IP radios, second TNC, or future expansion.'],
 ], [1.1*inch, 1.9*inch, CW-3.0*inch]))
 story.append(SP(6))
 story.append(tbl(['DEVICE', 'POWER SOURCE'], [
@@ -1119,14 +1144,56 @@ story.append(tbl(['WAN STATE', 'WHAT EMCOMM-NET DEVICES SEE', 'FIELDCOMMS IMPACT
 ], [1.4*inch, 2.2*inch, CW-3.6*inch]))
 story.append(SP(8))
 
-story.append(H2('1.4  AiMesh Coverage Extension (Optional)'))
+story.append(H2('1.4  AiMesh Mesh Node Setup — Extending EMCOMM-NET Coverage'))
+story.append(P(
+    'The standard FieldComms deployment includes three ASUS RT-BE58 Go routers: '
+    'one primary (connected to InstyConnect WAN and the UniFi switch) '
+    'and two mesh nodes that extend EMCOMM-NET to additional rooms, floors, or outdoor areas. '
+    'All three use the same hardware, the same SSID, and the same password. '
+    'Devices roam between them automatically.'))
+story.append(SP(4))
+story.append(NoteBox(
+    'Connect the two mesh nodes via wired Ethernet backhaul (switch Ports 11 and 12) '
+    'rather than wireless backhaul whenever possible. '
+    'Wired backhaul provides full Wi-Fi 7 throughput on both upstream and downstream — '
+    'wireless backhaul cuts bandwidth roughly in half because the node uses its radios '
+    'for both the backhaul link and the client connections simultaneously.',
+    'tip'))
+story.append(SP(6))
+story.append(P('<b>Repeat these steps for each of the two mesh nodes:</b>'))
+story.append(SP(4))
 story.append(steps([
-    'Factory reset the node router. Hold reset button for 5–10 seconds until power LED flashes.',
-    'Power on the node within 30 ft of the primary router for initial pairing.',
-    'On primary router (http://192.168.50.1): go to <b>AiMesh → Add AiMesh Node</b>.',
-    'Select the new node. Click Connect. The primary pushes EMCOMM-NET config to the node (1–3 minutes).',
-    'Move the node to its final position. Test coverage with a phone on EMCOMM-NET.',
+    '<b>Connect the node Ethernet</b> — run a CAT 6 cable from UniFi Switch Port 11 '
+    '(first node) or Port 12 (second node) to the LAN port of the mesh node router. '
+    'This is the wired backhaul — it carries all traffic between the node and the primary.',
+    '<b>Power on the node</b> — connect the USB-C power supply to the mesh node. '
+    'For initial pairing, position the node within 30 feet of the primary router. '
+    'After pairing it can be moved to its final location.',
+    '<b>Open AiMesh on the primary router</b> — go to '
+    '<b>http://192.168.50.254 → AiMesh → AiMesh Node</b>. '
+    'The new node appears in the device list within 1-2 minutes.',
+    '<b>Click Connect</b> on the new node. '
+    'The primary router pushes the EMCOMM-NET SSID, password, and configuration '
+    'to the node automatically. This takes 1-3 minutes.',
+    '<b>Move the node to its final position</b> — mount or place it in the coverage '
+    'area it needs to serve. The wired backhaul cable connects back to the UniFi switch. '
+    'Test coverage with a phone on EMCOMM-NET at the furthest point in the area.',
+    '<b>Verify in AiMesh dashboard</b> — on the primary router, '
+    'AiMesh → AiMesh Node should show both nodes as Connected with backhaul type Ethernet. '
+    'Green status on both nodes confirms the mesh is fully operational.',
 ]))
+story.append(SP(6))
+story.append(ref_tbl_2col(['NODE', 'SWITCH PORT', 'RECOMMENDED PLACEMENT'], [
+    ['Primary RT-BE58 Go  (router)',
+     'Uplink to ASUS 2.5G LAN port',
+     'Central to the deployment — EOC command post or entrance area'],
+    ['Mesh Node 1  (first RT-BE58 Go)',
+     'UniFi Switch Port 11',
+     'Secondary room, opposite wing, or upper floor'],
+    ['Mesh Node 2  (second RT-BE58 Go)',
+     'UniFi Switch Port 12',
+     'Third coverage zone — outdoor staging, parking, or far building wing'],
+], [1.4*inch, 1.4*inch, CW-2.8*inch]))
 story.append(PB())
 
 # ── STEP 2 — DOWNLOAD & INSTALL ──────────────────────────────────────────────
@@ -2404,9 +2471,15 @@ story.append(tbl(['DEVICE', 'IP ADDRESS', 'ROLE', 'CONNECTION'], [
     ['Pi 500 Workstations x4', '192.168.50.20-23  (DHCP reservations)',
      'Operator browser stations',
      'Wired via Ports 6-9 or Wi-Fi (EMCOMM-NET).'],
+    ['ASUS RT-BE58 Go  Mesh Node 1', 'Managed by AiMesh',
+     'EMCOMM-NET extension  (same SSID, seamless roaming)',
+     'Wired backhaul via UniFi Port 11.  Extends coverage to secondary zone.'],
+    ['ASUS RT-BE58 Go  Mesh Node 2', 'Managed by AiMesh',
+     'EMCOMM-NET extension  (same SSID, seamless roaming)',
+     'Wired backhaul via UniFi Port 12.  Extends coverage to third zone.'],
     ['Field Devices  (phones, tablets, laptops)', '192.168.50.100-200  (DHCP)',
      'Additional operator browsers',
-     'Wi-Fi — EMCOMM-NET  —  2.4 GHz or 5 GHz.'],
+     'Wi-Fi — EMCOMM-NET — roam between primary and mesh nodes automatically.'],
 ], [1.6*inch, 1.1*inch, 1.6*inch, CW-4.3*inch]))
 story.append(SP(6))
 story.append(NoteBox(
