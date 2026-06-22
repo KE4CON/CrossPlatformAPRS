@@ -260,6 +260,7 @@ if [[ "$PROFILE" != "3" ]]; then
         gen_operator_cards.py
         tile_server.py
         amprgate_poll.py
+        wan_monitor.py
     )
     
     for f in "${PY_FILES[@]}"; do
@@ -309,6 +310,7 @@ if [[ "$PROFILE" != "3" ]]; then
         fieldcomms-refs.service
         pat.service
         amprgate-poll.service
+        wan-monitor.service
     )
     
     for f in "${SERVICES[@]}"; do
@@ -322,7 +324,7 @@ if [[ "$PROFILE" != "3" ]]; then
     
     systemctl daemon-reload
     
-    for svc in fcc-lookup health-monitor deadmans ics-platform amprgate-poll; do
+    for svc in fcc-lookup health-monitor deadmans ics-platform amprgate-poll wan-monitor; do
         systemctl enable "$svc.service" 2>>"$FC_LOG" && success "Enabled: $svc"
     done
     
@@ -905,7 +907,7 @@ fi
 if [[ "$PROFILE" != "3" ]]; then
     step "Starting Services"
     
-    for svc in fcc-lookup health-monitor deadmans ics-platform fieldcomms-tiles fieldcomms-refs amprgate-poll; do
+    for svc in fcc-lookup health-monitor deadmans ics-platform fieldcomms-tiles fieldcomms-refs amprgate-poll wan-monitor; do
         if systemctl start "$svc.service" 2>>"$FC_LOG"; then
             success "Started: $svc"
         else

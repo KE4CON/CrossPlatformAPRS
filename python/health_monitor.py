@@ -28,6 +28,7 @@ SERVICES = [
     ("tailscaled",      "Tailscale"),
     ("ics-platform",    "ICS Platform"),
     ("amprgate-poll",   "44Net Gateway Poll"),
+    ("wan-monitor",      "WAN Status Monitor"),
 ]
 
 AMPRGATE_STATUS_FILE = DATA / "amprgate_status.json"
