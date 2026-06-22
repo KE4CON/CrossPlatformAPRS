@@ -99,17 +99,17 @@ def toc_page(chapters):
     for num, title, url in chapters:
         row = Table([[
             P(str(num),
-              _s('tcn', fontName='Helvetica-Bold', fontSize=9, textColor=EOC_LT,
-                 alignment=TA_CENTER, leading=12)),
-            P(title, _s('tct', fontSize=9, leading=12)),
+              _s('tcn', fontName='Helvetica-Bold', fontSize=8.5, textColor=EOC_LT,
+                 alignment=TA_CENTER, leading=11)),
+            P(title, _s('tct', fontSize=8.5, leading=11)),
             P(url or '',
-              _s('tcu', fontName='Courier', fontSize=7.5, textColor=HexColor('#6080a0'),
-                 leading=12)),
-        ]], colWidths=[0.35*inch, CW*0.55, CW*0.42])
+              _s('tcu', fontName='Courier', fontSize=7, textColor=HexColor('#6080a0'),
+                 leading=11)),
+        ]], colWidths=[0.35*inch, CW*0.55, CW-0.35*inch-CW*0.55])
         row.setStyle(TableStyle([
-            ('LINEBELOW',     (0,0), (-1,-1), 0.25, LINE),
-            ('TOPPADDING',    (0,0), (-1,-1), 3),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 3),
+            ('LINEBELOW',     (0,0), (-1,-1), 0.2, LINE),
+            ('TOPPADDING',    (0,0), (-1,-1), 2),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 2),
             ('LEFTPADDING',   (0,0), (-1,-1), 4),
             ('RIGHTPADDING',  (0,0), (-1,-1), 4),
             ('VALIGN',        (0,0), (-1,-1), 'MIDDLE'),

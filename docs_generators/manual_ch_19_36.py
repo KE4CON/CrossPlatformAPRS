@@ -427,9 +427,21 @@ def ch32():
     s = chapter(32, 'Kiwix Offline Library', 'http://192.168.50.1:8081/')
     s.append(P(
         'Kiwix serves a complete offline reference library from the Pi on port 8081. '
-        'Every device on EMCOMM-NET can browse it with no internet. Content is stored '
-        'as ZIM files — compressed, self-contained web archives organized into tiers '
-        'by size and operational value.'))
+        'Every device on EMCOMM-NET can browse it with no internet connection at all. '
+        'The content is stored as ZIM files — compressed, self-contained web archives '
+        'that function like offline snapshots of entire websites. '
+        'WikiMed gives your medical support personnel the same reference content '
+        'a physician would look up during a mass casualty event. '
+        'Wikipedia Mini provides general field reference for briefings. '
+        'iFixit gives your communications team step-by-step repair guides '
+        'for radio equipment, laptops, and generators — all without internet.'))
+    s.append(SP(4))
+    s.append(P(
+        'Kiwix has its own built-in full-text search bar that searches across all '
+        'installed content at once. Type any medical symptom, procedure, equipment '
+        'model number, or topic and results appear instantly, fully offline. '
+        'The library is accessible from the dashboard Kiwix Library card, '
+        'or directly at http://192.168.50.1:8081.'))
     s.append(SP(6))
     s.append(P('Accessing Kiwix', H2))
     s.append(P(
@@ -461,8 +473,12 @@ def ch32():
 
 def ch33():
     s = chapter(33, 'Offline Maps, GPS & Health Monitor')
-    s.append(P('This chapter covers three infrastructure features: the offline map '
-               'tile system, GPS live position, and the system Health Monitor.'))
+    s.append(P(
+        'This chapter covers three infrastructure features that operate in the background '
+        'to support the rest of FieldComms: the offline map tile system that powers both '
+        'the Tactical APRS Map and the Starcom Resource Map, the GPS live position feed '
+        'that provides accurate coordinates across all tools, and the Health Monitor '
+        'that tracks system vitals and service status in real time.'))
     s.append(SP(6))
 
     s.append(P('32.1  Offline Map Tile System', H2))
@@ -523,9 +539,19 @@ def ch34():
     s = chapter(34, 'Network Hardware — ASUS RT-BE58 Go & UniFi Switch Flex 2.5G')
     s.append(P(
         'FieldComms v1.0 uses a dedicated Wi-Fi 7 travel router and a 2.5 GbE managed '
-        'switch instead of the Pi broadcasting its own Wi-Fi hotspot. This gives every '
-        'device on scene a faster, more reliable connection and lets the Pi focus '
-        'entirely on serving the FieldComms application.'))
+        'switch rather than having the Pi broadcast its own Wi-Fi hotspot. '
+        'This architecture gives every device on scene a faster and more reliable wireless '
+        'connection, lets the Pi dedicate all its CPU and memory to running FieldComms '
+        'services, and provides a clean separation between the application server '
+        'and the network infrastructure.'))
+    s.append(SP(4))
+    s.append(P(
+        'The ASUS RT-BE58 Go travel router handles everything wireless: '
+        'DHCP, SSID broadcast, WPA2 authentication, and optional WAN internet routing. '
+        'The UniFi Switch Flex 2.5G-5 provides five wired 2.5 GbE ports for the Pi, '
+        'the Windows laptop, and any other wired devices. '
+        'The Pi itself always communicates over wired Ethernet at its static address '
+        '192.168.50.1 — rock solid, no wireless interference, no Wi-Fi dropouts.'))
     s.append(SP(6))
     s.append(P('Network Architecture Overview', H2))
     s.append(tbl(['DEVICE', 'ROLE', 'CONNECTION'], [

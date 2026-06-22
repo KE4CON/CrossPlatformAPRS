@@ -42,39 +42,113 @@ class NC(canvas.Canvas):
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
         self._saved = []
+
     def showPage(self):
         self._saved.append(dict(self.__dict__))
         self._startPage()
+
     def save(self):
         total = len(self._saved)
         for st in self._saved:
             self.__dict__.update(st)
+            self.TOTAL = total
             n = self._pageNumber
-            if n > 1:
-                self.setFillColor(EOC)
-                self.rect(0, PAGE_H-0.40*inch, PAGE_W, 0.40*inch, fill=1, stroke=0)
-                self.setFillColor(GOLD)
-                self.rect(0, PAGE_H-0.42*inch, PAGE_W, 0.02*inch, fill=1, stroke=0)
-                self.setFillColor(white)
-                self.setFont('Helvetica-Bold', 8)
-                self.drawString(M, PAGE_H-0.22*inch, 'FieldComms IMS v1.0')
-                self.setFont('Helvetica', 7.5)
-                self.drawRightString(PAGE_W-M, PAGE_H-0.22*inch, 'Installation Guide')
-            self.setFillColor(EOC)
-            self.rect(0, 0, PAGE_W, 0.32*inch, fill=1, stroke=0)
-            self.setFillColor(GOLD)
-            self.rect(0, 0.32*inch, PAGE_W, 0.015*inch, fill=1, stroke=0)
-            self.setFillColor(white)
-            self.setFont('Helvetica', 6.5)
-            if n > 1:
-                self.drawString(M, 0.11*inch,
-                    'For Amateur Radio Emergency Communications (EmComm) Use')
-                self.drawRightString(PAGE_W-M, 0.11*inch, f'Page {n} of {total}')
+            if n == 1:
+                self._draw_cover()
             else:
-                self.drawCentredString(PAGE_W/2, 0.11*inch,
-                    f'FieldComms IMS v1.0  ·  {ORG}  ·  {TODAY}')
+                self._draw_chrome(n, total)
             super().showPage()
         super().save()
+
+    def _draw_cover(self):
+        """Full-page cover drawn directly on canvas."""
+        # Full-page deep navy background
+        self.setFillColor(EOC)
+        self.rect(0, 0, PAGE_W, PAGE_H, fill=1, stroke=0)
+
+        # Gold accent stripe at top
+        self.setFillColor(GOLD)
+        self.rect(0, PAGE_H - 0.18*inch, PAGE_W, 0.18*inch, fill=1, stroke=0)
+
+        # Gold accent stripe at bottom
+        self.setFillColor(GOLD)
+        self.rect(0, 0, PAGE_W, 0.18*inch, fill=1, stroke=0)
+
+        # Subtle mid-tone band behind the title area
+        self.setFillColor(HexColor('#1e4480'))
+        self.rect(0, PAGE_H*0.38, PAGE_W, PAGE_H*0.36, fill=1, stroke=0)
+
+        # ── Org / callsign header ──────────────────────────────────────────────
+        self.setFillColor(GOLD)
+        self.setFont('Helvetica-Bold', 10)
+        self.drawCentredString(PAGE_W/2, PAGE_H - 0.70*inch,
+            'K9ESV  ·  McHenry County Emergency Services Volunteers')
+        self.setFillColor(HexColor('#c0d4f0'))
+        self.setFont('Helvetica', 9)
+        self.drawCentredString(PAGE_W/2, PAGE_H - 0.88*inch,
+            'and McHenry County Emergency Management Agency')
+
+        # ── FIELDCOMMS main title ──────────────────────────────────────────────
+        self.setFillColor(white)
+        self.setFont('Helvetica-Bold', 58)
+        self.drawCentredString(PAGE_W/2, PAGE_H*0.60, 'FIELDCOMMS')
+
+        # ── Subtitle ──────────────────────────────────────────────────────────
+        self.setFillColor(GOLD)
+        self.setFont('Helvetica-Bold', 15)
+        self.drawCentredString(PAGE_W/2, PAGE_H*0.545,
+            'Incident Management System  v1.0')
+
+        # ── Gold rule ─────────────────────────────────────────────────────────
+        self.setStrokeColor(GOLD)
+        self.setLineWidth(1.5)
+        self.line(M*2, PAGE_H*0.505, PAGE_W - M*2, PAGE_H*0.505)
+
+        # ── Document type ─────────────────────────────────────────────────────
+        self.setFillColor(white)
+        self.setFont('Helvetica-Bold', 28)
+        self.drawCentredString(PAGE_W/2, PAGE_H*0.445, 'INSTALLATION GUIDE')
+
+        # ── Hardware subtitle ──────────────────────────────────────────────────
+        self.setFillColor(HexColor('#8090c0'))
+        self.setFont('Helvetica', 9.5)
+        self.drawCentredString(PAGE_W/2, PAGE_H*0.30,
+            'ASUS RT-BE58 Go  ·  UniFi Switch Flex 2.5G  ·  Raspberry Pi 5  ·  Pironman MAX 5')
+
+        # ── Affiliation line ───────────────────────────────────────────────────
+        self.setFillColor(HexColor('#6070a0'))
+        self.setFont('Helvetica', 9)
+        self.drawCentredString(PAGE_W/2, PAGE_H*0.25,
+            f'RACES  ·  ARES  ·  Starcom  ·  K9ESV  ·  {TODAY}')
+
+        # ── Bottom footer ──────────────────────────────────────────────────────
+        self.setFillColor(EOC)
+        self.setFont('Helvetica', 7)
+        self.drawCentredString(PAGE_W/2, 0.05*inch,
+            f'FieldComms IMS v1.0  ·  {ORG}  ·  {TODAY}')
+
+    def _draw_chrome(self, n, total):
+        """Header and footer for pages 2+."""
+        # Header
+        self.setFillColor(EOC)
+        self.rect(0, PAGE_H-0.40*inch, PAGE_W, 0.40*inch, fill=1, stroke=0)
+        self.setFillColor(GOLD)
+        self.rect(0, PAGE_H-0.42*inch, PAGE_W, 0.02*inch, fill=1, stroke=0)
+        self.setFillColor(white)
+        self.setFont('Helvetica-Bold', 8)
+        self.drawString(M, PAGE_H-0.22*inch, 'FieldComms IMS v1.0')
+        self.setFont('Helvetica', 7.5)
+        self.drawRightString(PAGE_W-M, PAGE_H-0.22*inch, 'Installation Guide')
+        # Footer
+        self.setFillColor(EOC)
+        self.rect(0, 0, PAGE_W, 0.32*inch, fill=1, stroke=0)
+        self.setFillColor(GOLD)
+        self.rect(0, 0.32*inch, PAGE_W, 0.015*inch, fill=1, stroke=0)
+        self.setFillColor(white)
+        self.setFont('Helvetica', 6.5)
+        self.drawString(M, 0.11*inch,
+            'For Amateur Radio Emergency Communications (EmComm) Use')
+        self.drawRightString(PAGE_W-M, 0.11*inch, f'Page {n} of {total}')
 
 # ── Style helpers ─────────────────────────────────────────────────────────────
 def S(name, **kw):
@@ -98,38 +172,58 @@ def H3(t): return P(t, S('h3', fontName='Helvetica-Bold', fontSize=9.5,
 
 def tbl(headers, rows, widths, hbg=EOC):
     data = [[P(str(h), S('TH', fontName='Helvetica-Bold', fontSize=8,
-                           textColor=white, leading=11)) for h in headers]]
+                           textColor=white, leading=10, spaceAfter=0))
+             for h in headers]]
     for row in rows:
-        data.append([P(str(c), S('TC', fontSize=8.5, leading=12)) for c in row])
-    t = Table(data, colWidths=widths)
+        data.append([P(str(c), S('TC', fontSize=8.5, leading=12, spaceAfter=0))
+                     for c in row])
+    t = Table(data, colWidths=widths, repeatRows=1)
     t.setStyle(TableStyle([
         ('BACKGROUND',    (0,0), (-1,0),  hbg),
         ('TEXTCOLOR',     (0,0), (-1,0),  white),
+        ('FONTNAME',      (0,0), (-1,0),  'Helvetica-Bold'),
         ('ROWBACKGROUNDS',(0,1), (-1,-1), [white, LGRAY]),
         ('GRID',          (0,0), (-1,-1), 0.3, LINE),
         ('VALIGN',        (0,0), (-1,-1), 'TOP'),
-        ('TOPPADDING',    (0,0), (-1,-1), 4),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
-        ('LEFTPADDING',   (0,0), (-1,-1), 6),
-        ('RIGHTPADDING',  (0,0), (-1,-1), 6),
-        ('FONTSIZE',      (0,0), (-1,-1), 8.5),
+        ('TOPPADDING',    (0,0), (-1,-1), 5),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ('LEFTPADDING',   (0,0), (-1,-1), 7),
+        ('RIGHTPADDING',  (0,0), (-1,-1), 7),
+        ('WORDWRAP',      (0,0), (-1,-1), 'CJK'),
     ]))
     return t
 
 def CodeBlock(lines):
-    code = '\n'.join(lines)
-    t = Table([[P(f'<font face="Courier" size="8">{code}</font>',
-                   S('cb', fontSize=8, leading=11, fontName='Courier'))]],
-              colWidths=[CW])
-    t.setStyle(TableStyle([
+    """Each line is a separate row — no text wrapping, no run-on lines."""
+    CS = S('cs', fontName='Courier', fontSize=7.5, leading=10.5,
+            textColor=HexColor('#1a1a2e'), spaceAfter=0, spaceBefore=0)
+    rows = [[P(line if line.strip() else '\xa0', CS)] for line in lines]
+    t = Table(rows, colWidths=[CW - 0.28*inch])
+    style = [
         ('BACKGROUND',    (0,0), (-1,-1), LGRAY),
         ('LEFTPADDING',   (0,0), (-1,-1), 10),
         ('RIGHTPADDING',  (0,0), (-1,-1), 10),
-        ('TOPPADDING',    (0,0), (-1,-1), 8),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
-        ('BOX',           (0,0), (-1,-1), 0.5, LINE),
+        ('TOPPADDING',    (0,0), (-1,-1), 1),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 1),
+        ('TOPPADDING',    (0,0), (0,0),   5),
+        ('BOTTOMPADDING', (-1,-1), (-1,-1), 5),
+        ('BOX',           (0,0), (-1,-1), 0.5, EOC_LT),
+    ]
+    t.setStyle(TableStyle(style))
+    # Wrap in outer table with left accent bar
+    outer = Table([[
+        Table([['']], colWidths=[0.18*inch]),
+        t,
+    ]], colWidths=[0.18*inch, CW - 0.18*inch])
+    outer.setStyle(TableStyle([
+        ('BACKGROUND',    (0,0), (0,-1), EOC_LT),
+        ('LEFTPADDING',   (0,0), (-1,-1), 0),
+        ('RIGHTPADDING',  (0,0), (-1,-1), 0),
+        ('TOPPADDING',    (0,0), (-1,-1), 0),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 0),
+        ('VALIGN',        (0,0), (-1,-1), 'TOP'),
     ]))
-    return t
+    return outer
 
 def NoteBox(text, kind='note'):
     cfg = {'note': (EOC_LT, EOC_BG, '📝'), 'tip': (GREEN, HexColor('#e4f5ea'), '💡'),
@@ -195,19 +289,21 @@ def make_table_style(ncols):
         ('TEXTCOLOR',     (0,0), (-1,0),  white),
         ('FONTNAME',      (0,0), (-1,0),  'Helvetica-Bold'),
         ('FONTSIZE',      (0,0), (-1,-1), 8.5),
+        ('FONTSIZE',      (0,0), (-1,0),  8.0),
         ('ROWBACKGROUNDS',(0,1), (-1,-1), [white, LGRAY]),
         ('GRID',          (0,0), (-1,-1), 0.3, LINE),
         ('VALIGN',        (0,0), (-1,-1), 'TOP'),
-        ('TOPPADDING',    (0,0), (-1,-1), 4), ('BOTTOMPADDING', (0,0), (-1,-1), 4),
-        ('LEFTPADDING',   (0,0), (-1,-1), 6), ('RIGHTPADDING',  (0,0), (-1,-1), 6),
+        ('TOPPADDING',    (0,0), (-1,-1), 5), ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ('LEFTPADDING',   (0,0), (-1,-1), 7), ('RIGHTPADDING',  (0,0), (-1,-1), 7),
     ])
 
 def ref_tbl_2col(headers, rows, widths):
     data = [[P(str(h), S('TH', fontName='Helvetica-Bold', fontSize=8.5,
                            textColor=white, leading=11)) for h in headers]]
     for row in rows:
-        data.append([P(str(c), S('TC', fontSize=8.5, leading=12)) for c in row])
-    t = Table(data, colWidths=widths)
+        data.append([P(str(c), S('TC', fontSize=8.5, leading=12, spaceAfter=0))
+                     for c in row])
+    t = Table(data, colWidths=widths, repeatRows=1)
     t.setStyle(make_table_style(2))
     return t
 
@@ -215,35 +311,7 @@ def ref_tbl_2col(headers, rows, widths):
 story = []
 
 # ── COVER ─────────────────────────────────────────────────────────────────────
-story.append(SP(50))
-cov = Table([[Table([[
-    P('FIELDCOMMS', S('ct', fontName='Helvetica-Bold', fontSize=36,
-                       textColor=white, alignment=TA_CENTER, leading=42)),
-    SP(4),
-    P('Incident Management System v1.0',
-      S('cs', fontName='Helvetica', fontSize=14, textColor=GOLD,
-        alignment=TA_CENTER, leading=18)),
-    SP(14),
-    HR(GOLD, 0.5),
-    SP(8),
-    P('Installation Guide',
-      S('cg', fontName='Helvetica-Bold', fontSize=22, textColor=white,
-        alignment=TA_CENTER, leading=26)),
-    SP(8),
-    P('ASUS RT-BE58 Go  ·  UniFi Switch  ·  Raspberry Pi 5  ·  Pironman MAX 5',
-      S('ch', fontName='Helvetica', fontSize=9, textColor=HexColor('#8090b0'),
-        alignment=TA_CENTER, leading=13)),
-    SP(18),
-    P(f'K9ESV  ·  MCESV/MCEMA  ·  {TODAY}',
-      S('cf', fontName='Helvetica', fontSize=9, textColor=HexColor('#6070a0'),
-        alignment=TA_CENTER, leading=12)),
-]], colWidths=[CW])]], colWidths=[CW])
-cov.setStyle(TableStyle([
-    ('BACKGROUND', (0,0), (-1,-1), EOC),
-    ('TOPPADDING', (0,0), (-1,-1), 50), ('BOTTOMPADDING', (0,0), (-1,-1), 50),
-    ('LEFTPADDING', (0,0), (-1,-1), 40), ('RIGHTPADDING', (0,0), (-1,-1), 40),
-]))
-story.append(cov)
+# Cover drawn by NC._draw_cover() — page 1 is blank in the story
 story.append(PB())
 
 # ── TABLE OF CONTENTS ─────────────────────────────────────────────────────────
@@ -296,12 +364,21 @@ story.append(HR(EOC_LT, 0.5))
 story.append(SP(6))
 story.append(P(
     'FieldComms is a complete off-grid emergency communications server for Raspberry Pi. '
-    'It provides a Wi-Fi access point (EMCOMM-NET) that any phone, tablet, or laptop on scene '
-    'can connect to, then access all EmComm tools through a web browser — no internet required. '
-    'When Ethernet internet is available, live features such as NWS weather alerts, HF propagation '
-    'data, and APRS-IS automatically activate.',
+    'The ASUS RT-BE58 Go travel router provides a dedicated Wi-Fi access point called EMCOMM-NET — '
+    'the Pi itself does not broadcast Wi-Fi. Any phone, tablet, or laptop on scene connects '
+    'to EMCOMM-NET and accesses all EmComm tools through a standard web browser with no internet '
+    'required. When Ethernet internet is available at the site, live features such as NWS weather '
+    'alerts, HF propagation data, and APRS-IS automatically activate.',
     S('body', fontSize=9.5, leading=14, alignment=TA_JUSTIFY)))
 story.append(SP(8))
+story.append(NoteBox(
+    'SAR Network Operations:  The Starcom Net Logger includes a dedicated SAR Net mode '
+    '(Search & Rescue) accessible directly from the Starcom / Public Safety dashboard. '
+    'It provides a SAR-specific check-in log with unit type tracking, zone assignments, '
+    'and resource status.  The Starcom Resource Map provides the tactical overlay for SAR unit positions.  '
+    'These features are integrated into the main FieldComms platform — no separate module is required.',
+    'note'))
+story.append(SP(6))
 story.append(tbl(['COMPONENT', 'DESCRIPTION', 'COMPONENT', 'DESCRIPTION'], [
     ['30 Web Pages', 'Full dashboard, net logs, ICS forms, maps, roster, cheat sheets',
      'Dead Man\'s Switch', 'Per-net inactivity monitor with warning and trigger states'],
@@ -328,24 +405,45 @@ story.append(PB())
 story.append(H1('2. Hardware Requirements'))
 story.append(HR(EOC_LT, 0.5))
 story.append(SP(6))
-story.append(H2('Supported Hardware — Pi Server'))
-story.append(tbl(['CONFIGURATION', 'STORAGE', 'NOTES'], [
-    ['Pi 5 (16 GB) + Pironman MAX 5 enclosure',
-     '2× 1 TB NVMe SSD RAID 1 mirror',
-     'Tower form factor with OLED display, active cooling, dual M.2 NVMe slots. '
-     'Two 1 TB SSDs configured as RAID 1 — drives mirror each other for data redundancy. '
-     'If one SSD fails, the system keeps running on the other with no data loss.'],
-], [2.0*inch, 1.4*inch, CW-3.4*inch]))
+story.append(H2('Supported Hardware — Raspberry Pi Servers'))
+story.append(P(
+    'FieldComms v1.0 uses two Raspberry Pi 5 units: one as the FieldComms application server '
+    'and one as the dedicated AMPRNet / 44Net gateway. '
+    'Keeping them separate means the gateway can be rebooted, reconfigured, or upgraded '
+    'without affecting the FieldComms server, net logs, or active incidents.'))
+story.append(SP(4))
+story.append(tbl(['UNIT', 'HARDWARE', 'STORAGE', 'ROLE'], [
+    ['FieldComms Server',
+     'Raspberry Pi 5  —  16 GB RAM  /  Pironman MAX 5 tower enclosure  (dual M.2 NVMe, OLED, active cooling)',
+     '2× 1 TB NVMe SSD  /  configured as RAID 1',
+     'Runs all FieldComms services: web server, FCC database, net logging, ICS platform, '
+     'APRS, Kiwix, Winlink, maps, and health monitor.  Static IP: 192.168.50.1'],
+    ['44Net Gateway',
+     'Raspberry Pi 5  —  16 GB RAM  /  Argon NEO 5 M.2 BRED case  (compact, passive-cooled, M.2 SATA slot)  /  Pi OS Desktop (64-bit)',
+     '256 GB M.2 SATA SSD  (OS + WireGuard + routing + status service)',
+     'Dedicated AMPRNet / 44Net gateway.  Runs WireGuard tunnel to amprgw.ampr.org, '
+     'ip routing between EMCOMM-NET and 44.0.0.0/8, and a status page at 192.168.50.2.  '
+     'Completely independent from the FieldComms server.'],
+], [1.0*inch, 1.8*inch, 1.2*inch, CW-4.0*inch]))
 story.append(SP(6))
 story.append(H2('Network Hardware'))
-story.append(P('Wi-Fi is provided by the ASUS RT-BE58 Go travel router — the Pi does not run a Wi-Fi hotspot. '
-               'The UniFi switch provides wired 2.5 GbE ports for the Pi and other fixed devices.'))
+story.append(P(
+    'Wi-Fi is provided by the ASUS RT-BE58 Go travel router — neither Pi runs a Wi-Fi hotspot. '
+    'The UniFi Switch Lite 16 PoE provides 16 wired gigabit ports for both Pi servers, '
+    'the Windows laptop, four operator workstations, a network printer, and room for expansion. '
+    'This replaces the original 5-port Flex 2.5G which is too small for the full deployment.'))
 story.append(SP(4))
 story.append(tbl(['DEVICE', 'ROLE', 'NOTES'], [
-    ['ASUS RT-BE58 Go', 'Wi-Fi 7 access point + DHCP server',
-     'Dual-band Wi-Fi 7 (802.11be), 2.5G LAN port, USB-C 18W power.'],
-    ['UniFi Switch Flex 2.5G-5', '5-port 2.5 GbE managed switch',
-     'PoE powered. Ports: 1=uplink to ASUS, 2=Pi, 3=laptop, 4-5=spare.'],
+    ['ASUS RT-BE58 Go',
+     'Wi-Fi 7 access point  /  DHCP server  /  WAN gateway',
+     'Dual-band Wi-Fi 7 (802.11be).  2.5G LAN uplink to switch.  USB-C 18W power.  '
+     'Handles EMCOMM-NET Wi-Fi, DHCP for 192.168.50.100-200, and optional WAN routing.'],
+    ['UniFi Switch Lite 16 PoE',
+     '16-port gigabit managed switch  /  8x PoE + 8x non-PoE  /  2x 1G SFP uplink',
+     'Replaces the 5-port Flex 2.5G.  Port layout: 1=ASUS router uplink, '
+     '2=FieldComms Pi, 3=44Net Gateway Pi, 4=Windows laptop, '
+     '5=color MFP printer, 6-9=Pi 500 workstations, 10=Starlink (optional), 11-16=spare.  '
+     '~$200.  PoE powers future UniFi APs without a separate injector.'],
 ], [1.6*inch, 1.6*inch, CW-3.2*inch]))
 story.append(SP(8))
 story.append(H2('Accessories & Cables'))
@@ -432,38 +530,78 @@ def cat_row(title):
             P('', S('TC')), P('', S('TC'))]
 
 bom_rows = [
-    cat_row('Core Server'),
-    ['Raspberry Pi 5 — 16 GB RAM', 'Raspberry Pi 5 Model B (16 GB)', 'raspberrypi.com · Adafruit · PiShop.us'],
-    ['Pironman MAX 5 enclosure', 'Pironman MAX 5 (tower, dual NVMe, OLED, fans)', '52pi.com · Amazon'],
-    ['NVMe SSD × 2 (for RAID 1)', '1 TB M.2 2280 PCIe Gen 3/4 NVMe (e.g. WD Blue SN580)', 'Amazon · B&H · Newegg'],
+    cat_row('FieldComms Server  (Pi 5 — 16 GB)'),
+    ['Raspberry Pi 5  —  16 GB RAM', 'Raspberry Pi 5 Model B  (16 GB)', 'raspberrypi.com · Adafruit · PiShop.us'],
+    ['Pironman MAX 5 enclosure', 'Pironman MAX 5  (tower, dual M.2 NVMe, OLED display, active cooling fans)', '52pi.com · Amazon'],
+    ['NVMe SSD × 2  (RAID 1)', '1 TB M.2 2280 PCIe Gen 3/4 NVMe  (e.g. WD Blue SN580 or Samsung 980)', 'Amazon · B&H · Newegg'],
     ['Pi 5 USB-C power supply', 'Official Raspberry Pi 27W USB-C PD power supply', 'raspberrypi.com · Adafruit · Amazon'],
-    ['MicroSD card (boot / initial RAID setup)', '32 GB Class 10 / A1 microSD', 'Amazon'],
-    cat_row('Networking'),
-    ['ASUS RT-BE58 Go travel router', 'ASUS RT-BE58 Go (Wi-Fi 7, 2.5G LAN, USB-C power)', 'Amazon · Best Buy · B&H'],
-    ['UniFi Switch Flex 2.5G-5', 'Ubiquiti USW-Flex-2.5G-5 (5-port 2.5 GbE)', 'ui.com · Amazon · B&H'],
-    ['CAT 6 Ethernet cables × 4', '3 ft – 10 ft CAT 6 patch cables (router→switch, switch→Pi, spares)', 'Amazon · Monoprice'],
+    ['MicroSD card  (boot / initial RAID setup)', '32 GB Class 10 / A1 microSD  (removed after RAID is built)', 'Amazon'],
+    cat_row('44Net Gateway  (Pi 5 — 8 GB)'),
+    ['Raspberry Pi 5  —  16 GB RAM', 'Raspberry Pi 5 Model B  (16 GB)  —  dedicated AMPRNet gateway  (matches FieldComms Pi for spare-parts commonality)', 'raspberrypi.com · Adafruit · PiShop.us'],
+    ['Argon NEO 5 M.2 BRED case', 'Argon NEO 5 M.2 BRED  (compact, passive-cooled, M.2 SATA slot, aluminum)  —  fits Pi 5', 'argon40.com · Amazon  (~$35)'],
+    ['M.2 SATA SSD  (gateway OS + config)', '256 GB M.2 2242 or 2280 SATA SSD  —  OS, WireGuard config, routing tables', 'Amazon · Newegg  (~$25)'],
+    ['Pi 5 USB-C power supply', 'Official Raspberry Pi 27W USB-C PD power supply  —  one per Pi', 'raspberrypi.com · Adafruit · Amazon'],
+    cat_row('Networking  (upgraded from 5-port to 16-port)'),
+    ['ASUS RT-BE58 Go travel router', 'ASUS RT-BE58 Go  (Wi-Fi 7, 2.5G LAN uplink, USB-C 18W power)', 'Amazon · Best Buy · B&H'],
+    ['UniFi Switch Lite 16 PoE', 'Ubiquiti USW-Lite-16-PoE  (16-port GbE, 8× PoE, 2× SFP uplink, 45W)  —  replaces Flex 2.5G-5', 'ui.com · Amazon · B&H  (~$200)'],
+    ['CAT 6 Ethernet cables × 10', '1 ft – 6 ft CAT 6 patch cables  —  router to switch, both Pis, laptop, printer, 4× workstations', 'Amazon · Monoprice'],
     cat_row('Radio & Comms'),
     ['Icom IC-7300 HF transceiver', 'Icom IC-7300 (HF/50 MHz, built-in USB sound card)', 'Ham Radio Outlet · DX Engineering · Amazon'],
     ['USB-A to USB-B cable (IC-7300 to laptop)', 'USB-A to USB-B, shielded, 6 ft', 'Amazon · Monoprice'],
     ['Windows laptop (Winlink Express + JS8Call)', 'Any Windows 10/11 laptop with USB-A port and Wi-Fi', 'Best Buy · Amazon'],
-    cat_row('Accessories'),
+    cat_row('Accessories — Backup & Connectivity'),
     ['USB-A drive (32 GB+, labeled FIELDCOMMS)', '32 GB+ USB 3.0 drive — auto-backup trigger when inserted', 'Amazon'],
-    ['External USB hard drive 1 TB+ (e.g. LaCie Rugged)', '1 TB+ USB 3.0/USB-C portable — Label FIELDCOMMS', 'B&H · Amazon · Best Buy'],
-    ['USB GPS receiver (optional)', 'GlobalSat BU-353-S4 or u-blox USB GPS puck', 'Amazon'],
-    ['USB TNC — Digirig Mobile (optional)', 'Digirig Mobile v1.x — USB soundcard + serial CAT in one unit', 'digirig.net · Amazon'],
-    ['USB TNC — SignaLink USB (optional)', 'Tigertronics SignaLink USB — rig-specific cable required', 'tigertronics.com · Ham Radio Outlet · Amazon'],
-    ['Powered USB hub (optional)', 'Anker 7-Port USB 3.0 with power adapter — powered hub required', 'Amazon · Best Buy'],
-    ['USB Printer — laser (recommended)', 'Brother HL-L2350DW or HP LaserJet P1102w — shared via CUPS', 'Best Buy · Amazon'],
-    ['USB Printer — portable/battery (optional)', 'Canon PIXMA TR150 or HP OfficeJet 200 — battery-powered', 'Best Buy · Amazon · Office Depot'],
-    ['Avery 5371 business card sheets (operator cards)', 'Avery 5371, 10 cards per sheet — laser or inkjet', 'Office Depot · Amazon · Staples'],
+    ['External USB hard drive 1 TB+  (e.g. LaCie Rugged)', '1 TB+ USB 3.0/USB-C portable drive — label FIELDCOMMS for auto-backup', 'B&H · Amazon · Best Buy'],
+    ['USB GPS receiver  (optional)', 'GlobalSat BU-353-S4 or u-blox USB GPS puck — provides live position to tactical map and NWS alerts', 'Amazon'],
+    ['USB TNC — Digirig Mobile  (optional)', 'Digirig Mobile v1.x — USB soundcard + serial CAT in one compact unit', 'digirig.net · Amazon'],
+    ['USB TNC — SignaLink USB  (optional)', 'Tigertronics SignaLink USB — requires rig-specific interface cable', 'tigertronics.com · Ham Radio Outlet · Amazon'],
+    ['Powered USB hub  (optional)', 'Anker 7-Port USB 3.0 with AC power adapter — must be powered hub, not bus-powered', 'Amazon · Best Buy'],
+    ['Avery 5371 business card sheets  (operator access cards)', 'Avery 5371 — 10 cards per sheet, laser or inkjet — for printed operator access cards', 'Office Depot · Amazon · Staples'],
+    cat_row('Printers — Monochrome Laser  (USB via CUPS or direct Wi-Fi)'),
+    ['Brother HL-L2350DW  (recommended)', 'Monochrome laser — USB + Wi-Fi — excellent Linux driver — fast, duplex, durable', 'Best Buy · Amazon  (~$130)'],
+    ['HP LaserJet Pro M15w  /  P1102w', 'Monochrome laser — USB + Wi-Fi — HPLIP driver auto-installs with CUPS', 'Best Buy · Amazon  (~$150)'],
+    cat_row('Printers — Color Multifunction Laser  (USB, Wi-Fi, or Ethernet)'),
+    ['Brother MFC-L3770CDW', 'Color laser MFP — print, scan, copy, fax — USB + Wi-Fi + Ethernet — full Linux CUPS support — prints color ICS maps and IAP packages', 'Amazon · Best Buy  (~$400)'],
+    ['HP Color LaserJet Pro MFP M479fdw', 'Color laser MFP — print, scan, copy, fax — USB + Wi-Fi + Ethernet — HPLIP driver works out of the box with CUPS', 'Amazon · B&H  (~$500)'],
+    ['Canon imageCLASS MF743Cdw', 'Color laser MFP — letter + legal — USB + Wi-Fi + Ethernet — Linux CAPT driver — good for permanent EOC installations', 'Amazon · Office Depot  (~$450)'],
+    cat_row('Printers — Portable / Battery-Powered  (field deployments without shore power)'),
+    ['Canon PIXMA TR150', 'Compact inkjet — built-in rechargeable battery — ~200 pages per charge — USB + Wi-Fi — letter size', 'Best Buy · Amazon  (~$200)'],
+    ['HP OfficeJet 200', 'Portable inkjet — larger paper tray — optional battery accessory — USB + Wi-Fi — good for shelter stations', 'Best Buy · Amazon  (~$180)'],
+    cat_row('Operator Workstations — Raspberry Pi 500 / 500+  (qty: 4 recommended)'),
+    ['Raspberry Pi 500 keyboard computer  ×4', 'Pi 500 standalone — Pi 5 chip, 8 GB RAM, 32 GB A2 microSD, integrated keyboard — one per operator station', 'raspberrypi.com · Adafruit · Amazon  (~$90 each)'],
+    ['Raspberry Pi 500+  ×4  (alternative)', 'Pi 500+ — same as Pi 500 but with Pi 5 latest revision chip and 2× USB3 — specify if 501(c)(3) funding allows premium spec', 'raspberrypi.com · Adafruit  (~$110 each)'],
+    ['Raspberry Pi Monitor 15.6"  ×4', '15.6" Full HD IPS touchscreen — built-in speakers — kickstand — VESA mount — USB-C powered from Pi 500 — one per station', 'raspberrypi.com · GigaParts · Amazon  (~$100 each)'],
+    ['micro-HDMI to HDMI cable  ×4', '1m micro-HDMI to standard HDMI — Pi 500 to Monitor video connection — one per station', 'Included in Pi 500 Desktop Kit · Amazon  (~$8 each)'],
+    ['USB-C power supply for Pi 500  ×4', 'Official Raspberry Pi 27W USB-C PD supply — one per station — Pi 500 can also be powered from Monitor USB-C port', 'raspberrypi.com · Adafruit  (~$12 each)'],
+    ['Raspberry Pi 500 Desktop Kit  ×4  (bundle option)', 'Pi 500 + official mouse + micro-HDMI cable bundled — add Monitor separately — simpler ordering than individual parts', 'raspberrypi.com · Amazon  (~$120 each)'],
 ]
 all_bom = [bom_data[0]] + [[r[0], r[1], r[2]] if len(r)==3 else r for r in bom_rows]
-bom_t = Table([[P(str(c), S('TH' if i==0 else 'TC',
-                             fontName='Helvetica-Bold' if i==0 else 'Helvetica',
-                             fontSize=8, textColor=white if i==0 else black, leading=11))
-                for c in row] for i, row in enumerate(all_bom)],
-               colWidths=[2.2*inch, 2.5*inch, CW-4.7*inch])
-bom_t.setStyle(make_table_style(3))
+
+# Build the BOM table properly handling both string rows and Paragraph rows (cat_row)
+bom_table_data = []
+for i, row in enumerate(all_bom):
+    if i == 0:
+        # Header row
+        bom_table_data.append([P(str(c), S('TH', fontName='Helvetica-Bold',
+                                             fontSize=8, textColor=white, leading=11))
+                                for c in row])
+    elif isinstance(row[0], str):
+        # Normal data row - convert strings to Paragraphs
+        bom_table_data.append([P(str(c), S('TC', fontSize=8.5, leading=12))
+                                for c in row])
+    else:
+        # cat_row - already contains Paragraph objects
+        bom_table_data.append(row)
+
+bom_t = Table(bom_table_data, colWidths=[2.2*inch, 2.5*inch, CW-4.7*inch], repeatRows=1)
+bom_style = make_table_style(3)
+# Add span for category rows
+from reportlab.platypus import TableStyle as TS2
+for i, row in enumerate(all_bom):
+    if i > 0 and not isinstance(row[0], str):
+        bom_style.add('SPAN', (0, i), (2, i))
+        bom_style.add('BACKGROUND', (0, i), (2, i), HexColor('#dce8f4'))
+bom_t.setStyle(bom_style)
 story.append(bom_t)
 story.append(SP(8))
 
@@ -515,6 +653,121 @@ story.append(ref_tbl_2col(['TIER', 'WHAT FITS / REQUIREMENT'], [
 story.append(PB())
 
 # ── SECTION 3 — PREREQUISITES ────────────────────────────────────────────────
+story.append(StepBox(1, 'Flash OS  &  Build RAID 1 — Do This First'))
+story.append(SP(8))
+story.append(H1('Step 1:  Flash the OS and Build the RAID Array'))
+story.append(HR(EOC_LT, 0.5))
+story.append(SP(4))
+story.append(P(
+    'These two tasks must be completed before anything else. '
+    'The Raspberry Pi OS must be installed and the RAID 1 array assembled '
+    'before the FieldComms installer runs. '
+    'If you are using a single NVMe drive (no RAID), flash the OS to it directly '
+    'and skip the RAID build section.'))
+story.append(SP(6))
+story.append(H2('1A  Flash the Operating System'))
+story.append(tbl(['OS EDITION', 'PROS', 'CONS'], [
+    ['Raspberry Pi OS Lite (64-bit)  —  Recommended for production',
+     'Minimal overhead.  All RAM available to FieldComms.  Fast boot.  Smaller attack surface.',
+     'No local browser or GUI.  All interaction via SSH or via EMCOMM-NET browser on another device.'],
+    ['Raspberry Pi OS Desktop (64-bit)  —  Good for setup and troubleshooting',
+     'Local browser for testing.  GUI for initial Wi-Fi setup and configuration.  Easier for new users.',
+     'More RAM used by desktop environment.  Slightly longer install time.'],
+    ['Ubuntu Server 24.04 LTS  —  Also supported',
+     'LTS kernel.  Familiar to Linux admins.  Long-term package support.',
+     'Some package names differ from Raspberry Pi OS.  Slightly more manual setup.'],
+], [1.8*inch, 2.2*inch, CW-4.0*inch]))
+story.append(SP(6))
+story.append(P('Use <b>Raspberry Pi Imager</b> (download from raspberrypi.com/software) to flash the OS '
+               'to either a microSD card (for single-drive setup) or directly to the NVMe SSD '
+               '(if not using RAID). During the Imager advanced options, set:'))
+story.append(SP(4))
+story.append(tbl(['IMAGER OPTION', 'VALUE  /  REASON'], [
+    ['Hostname',          'fieldcomms.local  — makes the Pi discoverable as fieldcomms.local on the network'],
+    ['Username',          'fieldcomms  — the FieldComms installer expects this username'],
+    ['Password',          'Choose a strong password and record it  —  required for SSH and CUPS admin'],
+    ['Enable SSH',        'Yes  —  required for remote access from your laptop during setup'],
+    ['Wi-Fi',             'Set your home or lab Wi-Fi during initial OS setup.  EMCOMM-NET comes later.'],
+    ['Locale / Timezone', 'US/Central for McHenry County operations'],
+], [1.8*inch, CW-1.8*inch]))
+story.append(SP(8))
+
+story.append(H2('1B  Build the RAID 1 Array  (Pironman MAX 5 — Dual NVMe)'))
+story.append(P(
+    'The Pironman MAX 5 enclosure has two M.2 NVMe slots. '
+    'Configuring them as a RAID 1 mirror means both drives always contain identical data. '
+    'If one SSD fails, the Pi keeps running on the surviving drive with no data loss '
+    'and no operator action required. '
+    'Skip this section entirely if you are using a single NVMe drive.'))
+story.append(SP(4))
+story.append(NoteBox(
+    'Complete the RAID build BEFORE running the FieldComms installer. '
+    'The installer must be run on the final storage configuration. '
+    'If your OS is already running from a single drive, back it up before proceeding.',
+    'warn'))
+story.append(SP(6))
+story.append(H3('Physical Installation'))
+story.append(tbl(['SLOT', 'DRIVE', 'LINUX DEVICE NAME'], [
+    ['M.2 Slot 1  (primary)',    '1 TB NVMe SSD  (e.g. WD Blue SN580)',  '/dev/nvme0n1'],
+    ['M.2 Slot 2  (mirror)',     '1 TB NVMe SSD  —  identical model recommended',  '/dev/nvme1n1'],
+], [1.4*inch, 2.4*inch, CW-3.8*inch]))
+story.append(SP(6))
+story.append(P('Boot from a microSD card with Raspberry Pi OS Lite to perform the initial RAID setup. '
+               'After the array is built and the OS copied to it, the SD card is removed.'))
+story.append(SP(4))
+story.append(H3('Build the Array'))
+story.append(CodeBlock([
+    '# Install mdadm (RAID management tool)',
+    'sudo apt-get update && sudo apt-get install -y mdadm',
+    '',
+    '# Create the RAID 1 array  (--run skips the "all zeroes" check for speed)',
+    'sudo mdadm --create --verbose /dev/md0  \\',
+    '    --level=1 --raid-devices=2  \\',
+    '    /dev/nvme0n1 /dev/nvme1n1',
+    '',
+    '# Check build progress  (shows resync percentage — takes ~15 min for 1 TB)',
+    'cat /proc/mdstat',
+    '',
+    '# Create a filesystem on the array',
+    'sudo mkfs.ext4 -L fieldcomms-raid /dev/md0',
+    '',
+    '# Mount and copy the running OS to the RAID array',
+    'sudo mkdir -p /mnt/raid',
+    'sudo mount /dev/md0 /mnt/raid',
+    'sudo apt-get install -y rsync',
+    'sudo rsync -axv --progress / /mnt/raid/',
+    '',
+    '# Save the RAID config so it survives reboots',
+    'sudo mdadm --detail --scan | sudo tee -a /mnt/raid/etc/mdadm/mdadm.conf',
+    'sudo update-initramfs -u -k all',
+    '',
+    '# Update /boot/cmdline.txt to boot from the RAID array instead of the SD',
+    'sudo nano /boot/cmdline.txt',
+    '# Change:  root=PARTUUID=xxxx   →   root=/dev/md0',
+    '# Then reboot — Pi boots from RAID.  Verify with:',
+    'cat /proc/mdstat',
+    '# Expected:  md0 : active raid1 nvme0n1[0] nvme1n1[1]  [UU]',
+]))
+story.append(SP(6))
+story.append(tbl(['RAID STATUS', 'MEANING', 'ACTION REQUIRED'], [
+    ['[UU]  (both drives active)',
+     'Normal — both drives healthy and in sync',
+     'None'],
+    ['[U_] or [_U]  (one drive failed)',
+     'One drive has failed.  Pi is still running on the other.',
+     'Power down.  Replace failed drive.  Run:  sudo mdadm /dev/md0 --add /dev/nvme1n1.  Array rebuilds automatically.'],
+    ['Resync in progress',
+     'Array is rebuilding — normal after first setup or drive replacement',
+     'Leave running.  Takes 15 – 30 minutes.  Pi is usable during rebuild.'],
+], [1.2*inch, 2.3*inch, CW-3.5*inch]))
+story.append(SP(4))
+story.append(NoteBox(
+    'RAID 1 protects against drive failure — it is NOT a backup. '
+    'Both drives contain identical data, so accidental deletion affects both drives simultaneously. '
+    'Continue to use the FIELDCOMMS USB auto-backup for regular data backups.',
+    'warn'))
+story.append(PB())
+
 story.append(H1('3. Before You Begin — Prerequisites'))
 story.append(HR(EOC_LT, 0.5))
 story.append(SP(6))
@@ -560,8 +813,42 @@ story.append(CodeBlock([
 ]))
 story.append(SP(6))
 story.append(H2('3.4  Internet Connection'))
-story.append(P('Connect the Pi to the internet via Ethernet before running the installer. Wi-Fi can be used, '
-               'but Ethernet is preferred for downloading large files (FCC database ~600 MB, Kiwix ZIMs up to 25 GB).'))
+story.append(P(
+    'Connect the Pi to the internet via Ethernet before running the installer. '
+    'Wi-Fi can be used during initial setup but Ethernet is strongly preferred '
+    'for downloading large files — the FCC database is ~600 MB and Kiwix ZIMs '
+    'range from 500 MB to 25 GB.'))
+story.append(SP(8))
+
+story.append(H2('3.5  Operator Workstation — Browser Options'))
+story.append(P(
+    'FieldComms runs entirely in a web browser. '
+    'Any modern browser on any device connected to EMCOMM-NET works. '
+    'For the Raspberry Pi 500 / 500+ used as an operator workstation, '
+    'three browsers are available:'))
+story.append(SP(6))
+story.append(tbl(['BROWSER', 'HOW TO INSTALL', 'NOTES FOR FIELDCOMMS'], [
+    ['Chromium  (default)',
+     'Pre-installed on Raspberry Pi OS.  No action needed.',
+     'Best performance for FieldComms. Discovers CUPS printers automatically via Bonjour. '
+     'Set http://192.168.50.1 as the startup page under Settings → On startup.'],
+    ['Firefox ESR',
+     'sudo apt install firefox-esr',
+     'Excellent compatibility with all FieldComms pages. '
+     'Good fallback if Chromium behaves unexpectedly. '
+     'Also discovers network printers. Slightly lower memory footprint on the Pi 500.'],
+    ['GNOME Web  (Epiphany)',
+     'sudo apt install epiphany-browser',
+     'Very lightweight WebKit browser. Good for Pi 500 with many tabs open. '
+     'Best for dedicated check-in stations where memory is tight.'],
+], [1.4*inch, 1.8*inch, CW-3.2*inch]))
+story.append(SP(6))
+story.append(NoteBox(
+    'For dedicated FieldComms operator stations running Pi 500:  '
+    'set Chromium to open http://192.168.50.1 on startup. '
+    'In Chromium: Settings → On startup → Open a specific page → enter http://192.168.50.1. '
+    'The dashboard loads automatically every time the Pi 500 boots.',
+    'tip'))
 story.append(SP(4))
 story.append(NoteBox(
     'Wi-Fi is provided by the ASUS RT-BE58 Go router — the Pi does NOT run hostapd. '
@@ -570,27 +857,56 @@ story.append(NoteBox(
 story.append(PB())
 
 # ── STEP 1 — NETWORK SETUP ────────────────────────────────────────────────────
-story.append(StepBox(1, 'Network Hardware Setup — ASUS Router + UniFi Switch'))
+story.append(StepBox(2, 'Network Hardware Setup — ASUS Router + UniFi Switch'))
 story.append(SP(8))
-story.append(H1('4. Step 1: Network Hardware Setup'))
+story.append(H1('Step 2:  Network Hardware Setup — ASUS Router + UniFi Switch'))
 story.append(HR(EOC_LT, 0.5))
 story.append(SP(4))
 story.append(P('Complete this step before running the FieldComms installer. The ASUS router must be configured '
                'with the correct LAN subnet (192.168.50.x) before FieldComms is reachable at http://192.168.50.1.'))
 story.append(SP(6))
 story.append(H2('1.1  Physical Wiring'))
-story.append(CodeBlock([
-    'ASUS RT-BE58 Go WAN port  →  Ethernet uplink (EOC internet) or leave unplugged for offline',
-    'ASUS RT-BE58 Go LAN port  →  UniFi Switch Flex 2.5G-5, Port 1 (uplink)',
-    'UniFi Switch Port 2       →  Raspberry Pi 5 Ethernet',
-    'UniFi Switch Port 3       →  Windows laptop (optional, or use Wi-Fi)',
-    'UniFi Switch Ports 4–5    →  Spare (second TNC, Starlink, etc.)',
-    '',
-    'Power:',
-    '  ASUS router  — USB-C 18W PD adapter or power bank',
-    '  UniFi switch — included USB-C 5V/1A adapter (or PoE from uplink)',
-    '  Pi 5         — 27W USB-C PD supply via Pironman MAX 5 enclosure PSU',
-]))
+story.append(P(
+    'The UniFi Switch Lite 16 PoE is the central wiring hub for the entire EMCOMM-NET deployment. '
+    'Connect everything to the switch, and the switch connects up to the ASUS router. '
+    'Use short CAT 6 patch cables (1 ft to 3 ft) to keep the rack or case tidy.'))
+story.append(SP(4))
+story.append(tbl(['SWITCH PORT', 'DEVICE', 'STATIC IP / NOTES'], [
+    ['Port 1  (uplink)',
+     'ASUS RT-BE58 Go  —  LAN 2.5G port',
+     'Uplink from router to switch.  Router is DHCP server for 192.168.50.0/24.'],
+    ['Port 2',
+     'FieldComms Pi 5  (Pironman MAX 5)', '192.168.50.1  —  FieldComms application server.  All browser tools live here.'],
+    ['Port 3',
+     '44Net Gateway Pi 5  (Argon NEO 5)', '192.168.50.2  —  AMPRNet WireGuard gateway.  Routes 44.0.0.0/8 for all EMCOMM-NET devices.'],
+    ['Port 4',
+     'Windows Laptop  (Winlink Express + JS8Call)', '192.168.50.3  (recommended static reservation)  —  or connect via EMCOMM-NET Wi-Fi.'],
+    ['Port 5',
+     'Color MFP Network Printer', '192.168.50.10  (recommended static reservation)  —  auto-discovered by all devices via Bonjour.'],
+    ['Ports 6 – 9',
+     'Pi 500 Operator Workstations  (up to 4)', '192.168.50.20 – 192.168.50.23  (static DHCP reservations)'],
+    ['Port 10',
+     'Starlink Router  (if deployed)', 'Optional second WAN path  —  connect Starlink Ethernet output to switch, use as WAN source on ASUS router.'],
+    ['Ports 11 – 16',
+     'Spare',
+     'Available for additional devices, IP radios, second TNC, future expansion.'],
+], [1.1*inch, 1.9*inch, CW-3.0*inch]))
+story.append(SP(6))
+story.append(tbl(['DEVICE', 'POWER SOURCE'], [
+    ['ASUS RT-BE58 Go router',  'USB-C 18W PD adapter  —  or USB-C power bank for field use'],
+    ['UniFi Switch Lite 16 PoE', 'Included 45W AC power supply'],
+    ['FieldComms Pi 5  (Pironman MAX 5)', 'Official Raspberry Pi 27W USB-C PD supply via Pironman MAX 5 power inlet'],
+    ['44Net Gateway Pi 5  (Argon NEO 5)', 'Official Raspberry Pi 27W USB-C PD supply directly to Pi USB-C port'],
+], [2.4*inch, CW-2.4*inch]))
+story.append(SP(6))
+story.append(tbl(['DEVICE', 'POWER SOURCE'], [
+    ['ASUS RT-BE58 Go router',
+     'USB-C 18W PD adapter  —  or USB-C power bank for field use'],
+    ['UniFi Switch Flex 2.5G-5',
+     'Included USB-C 5V / 1A adapter  —  or PoE from ASUS router uplink port'],
+    ['Raspberry Pi 5  (in Pironman MAX 5)',
+     'Official 27W USB-C PD supply connected to Pironman MAX 5 power inlet'],
+], [2.2*inch, CW-2.2*inch]))
 story.append(SP(6))
 story.append(H2('1.2  Configure the ASUS RT-BE58 Go'))
 story.append(steps([
@@ -603,12 +919,23 @@ story.append(steps([
     'Set the Wi-Fi SSID: go to <b>Wireless → General</b>. Set both the 2.4 GHz and 5 GHz SSIDs to <b>EMCOMM-NET</b>. Set a strong WPA3/WPA2 password. Apply.',
 ]))
 story.append(SP(6))
-story.append(tbl(['WAN SOURCE', 'SETTING', 'WHEN TO USE'], [
-    ['No WAN (offline only)',    'Leave WAN unplugged', 'Default field posture — all FieldComms tools work without internet'],
-    ['Ethernet uplink',          'WAN → Automatic IP', 'EOC with site network — enables NWS alerts, HF prop data, APRS-IS'],
-    ['USB smartphone tether',    'Enable tethering on phone, plug into ASUS USB port, WAN → USB', 'Field site with cellular coverage'],
-    ['WISP (connect to site Wi-Fi)', 'ASUS Web UI → Operation Mode → WISP', 'Hospital / shelter with guest Wi-Fi available'],
-], [1.5*inch, 1.8*inch, CW-3.3*inch]))
+story.append(tbl(['WAN SOURCE', 'SETUP', 'BEST FOR'], [
+    ['None  (fully offline)',
+     'Leave WAN port unplugged.  FieldComms runs entirely from the Pi.',
+     'Default field posture — all tools work without internet'],
+    ['Ethernet uplink  (site network)',
+     'Plug site Ethernet into WAN port.  Set WAN → Automatic IP (DHCP).',
+     'EOC with site LAN — enables NWS alerts, HF propagation data, APRS-IS'],
+    ['USB smartphone tether  (cellular)',
+     'Enable hotspot/tethering on the phone.  Plug phone USB into ASUS router USB port.  Set WAN → USB.',
+     'Field site with cellular coverage — provides internet without site LAN'],
+    ['Starlink satellite',
+     'Connect Starlink router Ethernet output to ASUS WAN port.  Set WAN → Automatic IP.  Note: Starlink uses CGNAT so inbound connections are not possible.',
+     'Remote sites with no cellular — provides internet when nothing else is available'],
+    ['WISP  (connect to site Wi-Fi)',
+     'ASUS Web UI → Administration → Operation Mode → WISP.  Select the site Wi-Fi and enter its password.',
+     'Hospital, shelter, or venue with existing guest Wi-Fi'],
+], [1.4*inch, 2.5*inch, CW-3.9*inch]))
 story.append(SP(8))
 story.append(H2('1.3  AiMesh Coverage Extension (Optional)'))
 story.append(steps([
@@ -621,9 +948,9 @@ story.append(steps([
 story.append(PB())
 
 # ── STEP 2 — DOWNLOAD & INSTALL ──────────────────────────────────────────────
-story.append(StepBox(2, 'Download & Run the FieldComms Installer'))
+story.append(StepBox(3, 'Download & Run the FieldComms Installer'))
 story.append(SP(8))
-story.append(H1('5. Step 2: Download & Run the FieldComms Installer'))
+story.append(H1('Step 3:  Download & Run the FieldComms Installer'))
 story.append(HR(EOC_LT, 0.5))
 story.append(SP(4))
 story.append(H2('Method A — Direct download to the Pi (requires internet on Pi)'))
@@ -697,9 +1024,9 @@ story.append(CodeBlock([
 story.append(PB())
 
 # ── STEP 3 — INSTALLER CONFIGURATION ─────────────────────────────────────────
-story.append(StepBox(3, 'Installer Configuration Options'))
+story.append(StepBox(4, 'Installer Configuration Options'))
 story.append(SP(8))
-story.append(H1('6. Step 3: Installer Configuration Options'))
+story.append(H1('Step 4:  Installer Configuration Options'))
 story.append(HR(EOC_LT, 0.5))
 story.append(SP(4))
 story.append(tbl(['PROMPT', 'DEFAULT', 'DESCRIPTION'], [
@@ -741,9 +1068,9 @@ story.append(NoteBox(
 story.append(PB())
 
 # ── STEP 4 — STATIC IP ───────────────────────────────────────────────────────
-story.append(StepBox(4, 'Raspberry Pi 5 — Static IP Configuration'))
+story.append(StepBox(5, 'Raspberry Pi 5 — Static IP Configuration'))
 story.append(SP(8))
-story.append(H1('7. Step 4: Raspberry Pi 5 — Static IP Configuration'))
+story.append(H1('Step 5:  Raspberry Pi 5 — Static IP Configuration'))
 story.append(HR(EOC_LT, 0.5))
 story.append(SP(4))
 story.append(P('The Pi must always be reachable at 192.168.50.1. If the installer already set this via a DHCP '
@@ -758,8 +1085,7 @@ story.append(CodeBlock([
     'nmcli con show',
     '# Usually: "Wired connection 1" or "Preconfigured Connection 1"',
     '# Set static IP',
-    'sudo nmcli con mod "Wired connection 1" \\',
-    '  ipv4.addresses 192.168.50.1/24 \\',
+    'sudo nmcli con mod "Wired connection 1"  ipv4.addresses 192.168.50.1/24  ipv4.method manual',
     '  ipv4.method manual',
     '# Apply the change',
     'sudo nmcli con up "Wired connection 1"',
@@ -877,15 +1203,87 @@ story.append(SP(6))
 story.append(CodeBlock([
     '# Check what is installed and service status',
     'sudo bash /opt/fieldcomms/scripts/kiwix_setup.sh --status',
-    '# Add Tier 2 content later (resumes interrupted downloads)',
+    '',
+    '# Add Tier 2 content (resumes interrupted downloads automatically)',
     'sudo bash /opt/fieldcomms/scripts/kiwix_setup.sh --tier 2',
+    '',
     '# Service management',
     'sudo systemctl status kiwix',
-    'sudo systemctl restart kiwix    # after adding new ZIM files',
+    'sudo systemctl restart kiwix    # required after adding new ZIM files',
 ]))
 story.append(SP(4))
-story.append(NoteBox('ZIM downloads are resumable. If a download is interrupted, simply re-run '
-                     'kiwix_setup.sh with the same --tier flag. curl will resume from where it stopped.', 'tip'))
+story.append(NoteBox('ZIM downloads are resumable. If a download is interrupted by power loss or '
+                     'network drop, simply re-run kiwix_setup.sh with the same --tier flag. '
+                     'curl resumes from where it stopped — no need to start over.', 'tip'))
+story.append(SP(8))
+story.append(H2('Additional Kiwix Content — Install Any ZIM File'))
+story.append(P(
+    'Kiwix.org (kiwix.org/en/content/) publishes hundreds of ZIM archives beyond the two built-in tiers. '
+    'Any ZIM file can be added to FieldComms. The following table lists the most useful '
+    'additions for emergency communications and public safety operations:'))
+story.append(SP(6))
+story.append(tbl(['CONTENT', 'APPROX SIZE', 'BEST FOR'], [
+    ['OpenStreetMap  (Wikimedia Maps)',
+     '~500 MB',
+     'Offline detailed maps for any region.  Download your county or state for SAR and shelter mapping.'],
+    ['Stack Overflow  (programming Q&A)',
+     '~3.5 GB',
+     'Technical troubleshooting reference.  Useful for net managers debugging FieldComms.'],
+    ['Project Gutenberg  (public domain books)',
+     '~65 GB (full) / ~1 GB (best-of)',
+     'Field reference library.  Includes FCC regulations, ARRL handbook excerpts, first aid guides.'],
+    ['Khan Academy  (education)',
+     '~30 GB',
+     'Training resource for shelter and EOC staff during extended activations.'],
+    ['Red Cross First Aid  (WikiMed companion)',
+     '~200 MB',
+     'Practical first aid procedures in plain language — supplements WikiMed for non-medical staff.'],
+    ['Wiktionary  (dictionary)',
+     '~520 MB',
+     'Reference for unfamiliar ICS terminology and acronyms.'],
+    ['Amateur Radio Wiki  (if available)',
+     'Variable',
+     'Band plans, antenna theory, Winlink and APRS procedures.'],
+], [1.8*inch, 1.0*inch, CW-2.8*inch]))
+story.append(SP(6))
+story.append(H3('How to Install Any ZIM File'))
+story.append(CodeBlock([
+    '# Step 1 — Find and download the ZIM from a device with internet',
+    '#           Browse to:  https://library.kiwix.org',
+    '#           Filter by language (English) and category.',
+    '#           Download the .zim file to your laptop or phone.',
+    '',
+    '# Step 2 — Transfer the ZIM to the Pi',
+    '#           Option A: USB drive (copy to USB, insert in Pi)',
+    'sudo mount /dev/sda1 /mnt',
+    'cp /mnt/my_content.zim /opt/kiwix/zim/',
+    '',
+    '#           Option B: SCP from your laptop over EMCOMM-NET',
+    'scp my_content.zim fieldcomms@192.168.50.1:/opt/kiwix/zim/',
+    '',
+    '# Step 3 — Register the new ZIM with the Kiwix library index',
+    'sudo kiwix-manage /opt/kiwix/library.xml add /opt/kiwix/zim/my_content.zim',
+    '',
+    '# Step 4 — Restart Kiwix to load the new content',
+    'sudo systemctl restart kiwix',
+    '',
+    '# Step 5 — Verify it appears at http://192.168.50.1:8081',
+    '# The new content appears in the Kiwix home page search bar.',
+    '',
+    '# To list all installed ZIM files:',
+    'ls -lh /opt/kiwix/zim/',
+    '',
+    '# To remove a ZIM file:',
+    'sudo rm /opt/kiwix/zim/my_content.zim',
+    'sudo systemctl restart kiwix',
+]))
+story.append(SP(4))
+story.append(NoteBox(
+    'ZIM files can be large.  Check available disk space before downloading: '
+    'df -h /opt/kiwix/  '
+    'The RAID array provides 2× 1 TB = ~900 GB usable after OS and FieldComms.  '
+    'Tier 1 uses ~2.5 GB.  Tier 2 uses ~10 GB.  There is ample space for additional content.',
+    'tip'))
 story.append(PB())
 
 # ── STEP 6 — FCC ─────────────────────────────────────────────────────────────
@@ -894,8 +1292,19 @@ story.append(SP(8))
 story.append(H1('9. Step 6: FCC Amateur Database'))
 story.append(HR(EOC_LT, 0.5))
 story.append(SP(4))
-story.append(P('The FCC database provides offline callsign lookup for the entire US amateur license database '
-               '(~800,000 licensees). Once built, lookups are instant and completely offline.'))
+story.append(P(
+    'The FCC database gives FieldComms instant offline access to the entire US amateur '
+    'radio license database — approximately 800,000 active licensees. '
+    'When a net control operator types a callsign into the check-in field, '
+    'FieldComms looks up the licensee name, license class, and address automatically '
+    'in under a millisecond, with no internet connection required. '
+    'This is one of the most-used features during ARES/RACES net operations.'))
+story.append(SP(4))
+story.append(P(
+    'The installer offers to download and build the database during Step 4 (answer Y). '
+    'If you skipped it during installation, or if the database needs to be rebuilt, '
+    'run the commands below. Building takes approximately 5 to 10 minutes '
+    'on a Pi 5 and requires an active internet connection.'))
 story.append(SP(6))
 story.append(CodeBlock([
     '# If you selected "y" during install, it already ran.',
@@ -916,8 +1325,18 @@ story.append(SP(8))
 story.append(H1('10. Step 7: APRS Setup (Graywolf + YAAC)'))
 story.append(HR(EOC_LT, 0.5))
 story.append(SP(4))
-story.append(P('FieldComms supports two simultaneous APRS clients: Graywolf TNC (port 8080) and YAAC — '
-               'Yet Another APRS Client (port 8082). Both are optional — FieldComms runs fully without them.'))
+story.append(P(
+    'FieldComms integrates two APRS client applications: '
+    'Graywolf TNC (accessible on port 8080) and YAAC — Yet Another APRS Client (port 8082). '
+    'Both run as background services and feed live station data to the Tactical APRS Map '
+    'on the dashboard. The map merges data from both sources, deduplicates by callsign, '
+    'and maintains a live WebSocket feed to all connected browsers simultaneously.'))
+story.append(SP(4))
+story.append(P(
+    'APRS is entirely optional. FieldComms runs fully without it — '
+    'you simply will not see live APRS stations on the tactical map. '
+    'If you are not planning to use a TNC or radio interface, skip this step entirely '
+    'and proceed to Step 8 (Printer Setup).'))
 story.append(SP(4))
 story.append(NoteBox('The FieldComms installer attempts to download and install both YAAC and Graywolf automatically. '
                      'If internet was available during installation, they should already be present. '
@@ -1020,42 +1439,113 @@ story.append(steps([
 story.append(SP(6))
 story.append(H3('B.3  Add the Shared Printer on Operator Devices'))
 story.append(tbl(['DEVICE TYPE', 'HOW TO ADD THE SHARED PRINTER'], [
-    ['Windows laptop', 'Settings → Bluetooth & devices → Printers & scanners → Add a printer. '
-                       'Windows discovers the CUPS printer automatically on EMCOMM-NET.'],
-    ['Mac / macOS', 'System Settings → Printers & Scanners → + Add Printer. '
-                    'The printer appears under the Default tab via Bonjour. Select it and click Add.'],
-    ['iPad / iPhone', 'iOS prints via AirPrint. CUPS with Avahi shares the printer as AirPrint-compatible. '
-                      'Tap Share → Print in any FieldComms page and select the printer.'],
-    ['Android', 'Install the CUPS Print app (Google Play). Add printer at IP 192.168.50.1, port 631, protocol IPP.'],
-    ['Chromebook', 'Settings → Advanced → Printing → Add Printer. '
-                   'Enter: Address=192.168.50.1, Protocol=IPP, Queue=/printers/FieldComms-Printer.'],
-], [1.4*inch, CW-1.4*inch]))
+    ['Windows laptop  (Winlink / JS8Call station)',
+     'Settings → Bluetooth & devices → Printers & scanners → Add a printer or scanner.  '
+     'Windows discovers the CUPS shared printer automatically on EMCOMM-NET via Bonjour.  '
+     'Select FieldComms-Printer when it appears and click Add device.'],
+    ['Mac / macOS',
+     'System Settings → Printers & Scanners → click + (Add Printer).  '
+     'Click the Default tab — the shared printer appears via Bonjour discovery.  '
+     'Select it and click Add.'],
+    ['iPad / iPhone  (AirPrint)',
+     'No setup required.  CUPS + Avahi advertises the printer as AirPrint-compatible.  '
+     'Open any FieldComms page → tap the Share icon → tap Print → select the printer.  '
+     'Works on any iOS device on EMCOMM-NET.'],
+    ['Android tablet / phone',
+     'Install the free CUPS Print app from Google Play.  '
+     'Open the app → Add Printer → enter IP 192.168.50.1,  Port 631,  Protocol IPP.  '
+     'The printer appears in the Android print dialog for all apps.'],
+    ['Chromebook',
+     'Settings → Advanced → Printing → Printers → Add Printer.  '
+     'Enter:  Name = FieldComms-Printer,  Address = 192.168.50.1,  Protocol = IPP,  '
+     'Queue = /printers/FieldComms-Printer.  Click Add.'],
+    ['Raspberry Pi 500 / 500+  (operator workstation)',
+     'Chromium browser  (pre-installed): the CUPS printer appears automatically in the print dialog.  '
+     'No additional setup needed — Chromium on Pi OS discovers CUPS printers via Bonjour.  '
+     'For Firefox ESR on the Pi 500:  install via  sudo apt install firefox-esr  '
+     'then open Print → More Settings → select the printer from the destination list.  '
+     'Alternatively, run:  sudo usermod -aG lpadmin fieldcomms  to give the Pi 500 user '
+     'full access to the CUPS admin at http://192.168.50.1:631.'],
+], [1.6*inch, CW-1.6*inch]))
 story.append(SP(6))
 story.append(H3('B.4  Recommended Printers for Field Use'))
-story.append(tbl(['PRINTER', 'TYPE', 'WHY IT WORKS WELL'], [
-    ['Brother HL-L2350DW', 'Laser, USB + Wi-Fi',
-     'Excellent Linux support. Fast, compact, duplex, great field durability.'],
-    ['HP LaserJet P1102w', 'Laser, USB + Wi-Fi',
-     'Excellent Linux driver via HPLIP. Fast, reliable, low cost per page.'],
-    ['Canon PIXMA TR150', 'Inkjet, USB + Wi-Fi, battery',
-     'Portable battery-powered option for mobile deployments. ~200 pages per charge.'],
-    ['HP OfficeJet 200', 'Inkjet, USB + Wi-Fi, battery',
-     'Portable battery printer with larger paper tray. Good field option without shore power.'],
-], [1.6*inch, 1.3*inch, CW-2.9*inch]))
+story.append(P('<b>Monochrome Laser  (recommended for most EOC deployments)</b>',
+               S('ph2', fontSize=9.5, fontName='Helvetica-Bold', textColor=EOC_LT, leading=13)))
+story.append(SP(3))
+story.append(tbl(['PRINTER', 'CONNECTION', 'WHY IT WORKS WELL'], [
+    ['Brother HL-L2350DW',
+     'USB  or  Wi-Fi',
+     'Excellent Linux driver support out of the box.  Fast, compact, duplex, durable.  '
+     'Best all-round choice for field EOC use.  Under $130.'],
+    ['HP LaserJet Pro M15w  /  P1102w',
+     'USB  or  Wi-Fi',
+     'Full Linux support via HP HPLIP driver (installed automatically with CUPS).  '
+     'Fast, reliable, very low cost per page.  Under $150.'],
+], [1.8*inch, 0.9*inch, CW-2.7*inch]))
+story.append(SP(6))
+story.append(P('<b>Color Multifunction Laser  (ICS maps, colored forms, and chart printing)</b>',
+               S('ph2', fontSize=9.5, fontName='Helvetica-Bold', textColor=EOC_LT, leading=13)))
+story.append(SP(3))
+story.append(tbl(['PRINTER', 'CONNECTION', 'WHY IT WORKS WELL'], [
+    ['Brother MFC-L3770CDW',
+     'USB,  Wi-Fi,  or  Ethernet',
+     'Color laser all-in-one with duplex, scan, copy, fax.  '
+     'Full Linux support via Brother driver.  '
+     'Prints color ICS maps and resource boards clearly.  Under $400.'],
+    ['HP Color LaserJet Pro MFP M479fdw',
+     'USB,  Wi-Fi,  or  Ethernet',
+     'Color laser multifunction — print, scan, copy, fax.  '
+     'HPLIP driver works with CUPS out of the box.  '
+     'Excellent for IAP packages with color-coded sections.  Under $500.'],
+    ['Canon imageCLASS MF743Cdw',
+     'USB,  Wi-Fi,  or  Ethernet',
+     'Color laser multifunction with excellent Linux CUPS driver (CAPT driver).  '
+     'Handles letter and legal paper.  Good choice for permanent EOC installations.  Under $450.'],
+], [1.8*inch, 1.2*inch, CW-3.0*inch]))
+story.append(SP(6))
+story.append(P('<b>Portable / Battery-Powered  (mobile and field deployments without shore power)</b>',
+               S('ph2', fontSize=9.5, fontName='Helvetica-Bold', textColor=EOC_LT, leading=13)))
+story.append(SP(3))
+story.append(tbl(['PRINTER', 'CONNECTION', 'WHY IT WORKS WELL'], [
+    ['Canon PIXMA TR150',
+     'USB  or  Wi-Fi  (battery built-in)',
+     'Compact inkjet with rechargeable battery.  Prints ~200 pages per charge.  '
+     'Letter size.  Wi-Fi connects directly to EMCOMM-NET.  Under $200.'],
+    ['HP OfficeJet 200',
+     'USB  or  Wi-Fi  (battery optional)',
+     'Portable inkjet with larger paper tray than TR150.  Optional battery accessory.  '
+     'Good for shelter check-in stations and mobile command posts.  Under $180.'],
+], [1.8*inch, 1.2*inch, CW-3.0*inch]))
 story.append(PB())
 
 story.append(H2('Option C — Network Printer on EMCOMM-NET (Simplest Shared Setup)'))
-story.append(P('A Wi-Fi or Ethernet printer is connected directly to the ASUS router or UniFi switch — '
-               'no Pi involvement at all. All devices on EMCOMM-NET can discover and print to it.'))
+story.append(P(
+    'A Wi-Fi or Ethernet printer is connected directly to the ASUS router or UniFi switch — '
+    'no Pi involvement required at all. '
+    'All devices on EMCOMM-NET can discover and print to it automatically via Bonjour / mDNS. '
+    'This works with any network-capable printer including color multifunction laser printers '
+    'that have built-in Wi-Fi or Ethernet. '
+    'This is the simplest option for permanent EOC installations where a color MFP is already on site.'))
 story.append(SP(6))
-story.append(tbl(['CONNECTION METHOD', 'HOW TO SET UP'], [
-    ['Wi-Fi (wireless)',
-     'Use the printer\'s own control panel to connect it to EMCOMM-NET. Enter the password when prompted. '
-     'The printer receives an IP in the 192.168.50.100–200 range from the ASUS router DHCP server.'],
-    ['Ethernet (wired)',
-     'Run a CAT 6 cable from the printer\'s Ethernet port to any spare port on the UniFi Switch (Ports 3–5). '
-     'The printer receives an IP automatically. Check the ASUS router DHCP table for the assigned IP.'],
-], [1.5*inch, CW-1.5*inch]))
+story.append(P(
+    'Option C works with any network-capable printer — including all three color multifunction '
+    'laser printers listed in the BOM. These are the best choice for a permanent EOC installation '
+    'because they connect directly to EMCOMM-NET with no Pi configuration, provide color printing '
+    'for ICS maps and IAP packages, and are discoverable by every device on scene automatically.'))
+story.append(SP(6))
+story.append(tbl(['CONNECTION METHOD', 'COMPATIBLE PRINTERS', 'HOW TO SET UP'], [
+    ['Wi-Fi  (wireless)',
+     'Brother MFC-L3770CDW  /  HP Color LaserJet M479fdw  /  Canon MF743Cdw  /  Canon PIXMA TR150  /  HP OfficeJet 200',
+     'Use the printer control panel to join EMCOMM-NET. '
+     'Enter the Wi-Fi password when prompted. '
+     'The printer receives a 192.168.50.x address from the ASUS router automatically. '
+     'All EMCOMM-NET devices discover it via Bonjour — no driver installation needed.'],
+    ['Ethernet  (wired)',
+     'Brother MFC-L3770CDW  /  HP Color LaserJet M479fdw  /  Canon MF743Cdw',
+     'Run a CAT 6 cable from the printer Ethernet port to any spare UniFi Switch port (Ports 3 through 5). '
+     'The printer receives an IP automatically. '
+     'Set a static DHCP reservation in the ASUS router so the IP never changes between activations.'],
+], [1.1*inch, 1.8*inch, CW-2.9*inch]))
 story.append(SP(6))
 story.append(H3('Reserve a Static IP for the Printer (Recommended)'))
 story.append(CodeBlock([
@@ -1087,8 +1577,17 @@ story.append(SP(8))
 story.append(H1('12. Step 9: Pat Winlink — Verify & Configure'))
 story.append(HR(EOC_LT, 0.5))
 story.append(SP(4))
-story.append(P('Pat Winlink is installed automatically by the FieldComms installer. It runs as pat.service '
-               'and provides a browser-based backup Winlink client at http://192.168.50.1:8090.'))
+story.append(P(
+    'Pat is an open-source Winlink client that runs directly on the Pi and is accessible '
+    'from any browser on EMCOMM-NET at http://192.168.50.1:8090. '
+    'The FieldComms installer downloads and configures Pat automatically, so this step '
+    'is primarily about verifying it is running and adding your Winlink account password.'))
+story.append(SP(4))
+story.append(P(
+    'Pat serves as the backup Winlink path when the Windows laptop is unavailable, '
+    'or for VHF Packet operations when a TNC is connected directly to the Pi. '
+    'MCESV/MCEMA primary Winlink operations use Winlink Express on the Windows laptop '
+    '(Step 10). Pat is the fallback.'))
 story.append(SP(6))
 story.append(CodeBlock([
     '# Check pat.service status',
@@ -1172,19 +1671,503 @@ story.append(CodeBlock([
 ]))
 story.append(SP(6))
 story.append(tbl(['SWITCHING TO...', 'PROCEDURE'], [
-    ['Winlink Express', 'Close/disconnect JS8Call → open VARA HF → it reclaims USB audio → open Winlink Express'],
-    ['JS8Call', 'Finish any Winlink TX → close VARA HF → minimize Winlink Express → open JS8Call and click Connect'],
-    ['Both simultaneously (two radios)',
-     'Connect a second HF radio to the laptop via a separate USB audio and CAT interface. Configure JS8Call to use the second radio port. Both can run at the same time with no conflicts.'],
-], [1.5*inch, CW-1.5*inch]))
+    ['Winlink Express  (from JS8Call)',
+     'Click Disconnect in JS8Call or close it.  '
+     'Open VARA HF — it automatically reclaims the USB audio device.  '
+     'Open Winlink Express and connect normally.'],
+    ['JS8Call  (from Winlink)',
+     'Finish any active Winlink transmission.  '
+     'Close VARA HF.  Minimize Winlink Express.  '
+     'Open JS8Call and click Connect — it reclaims the COM port and audio.'],
+    ['Both simultaneously  (two radios)',
+     'Connect a second HF radio via a separate USB audio and CAT interface.  '
+     'Configure JS8Call to use that radio\'s COM port and audio device.  '
+     'Both run at the same time without conflicts.'],
+], [1.6*inch, CW-1.6*inch]))
+story.append(PB())
+
+# ── STEP 10b — SCS PACTOR MODEM ──────────────────────────────────────────────
+story.append(StepBox('10b', 'SCS PACTOR Modem Setup  (Optional — High-Performance HF)'))
+story.append(SP(8))
+story.append(H1('Step 10b:  SCS PACTOR Modem Setup'))
+story.append(HR(EOC_LT, 0.5))
+story.append(SP(4))
+story.append(P(
+    'PACTOR is a high-performance HF digital mode used extensively in Winlink operations. '
+    'It provides significantly better throughput than VARA HF on marginal or noisy HF paths, '
+    'and is the only mode that supports PACTOR 4 compression on Winlink. '
+    'SCS (Special Communications Systems) manufactures the only PACTOR-licensed TNCs available. '
+    'A PACTOR TNC connects between the IC-7300 and the Windows laptop. '
+    'This step is optional — Winlink via VARA HF works well for most activations.'))
+story.append(SP(6))
+
+story.append(H2('Supported SCS PACTOR Modems'))
+story.append(tbl(['MODEL', 'PACTOR LEVEL', 'INTERFACE', 'NOTES'], [
+    ['SCS Tracker DSP TNC',
+     'PACTOR 1 / 2 / 3',
+     'USB (COM port)',
+     'Entry-level PACTOR TNC.  Good for most Winlink operations.  '
+     'Also supports PACKET and ROBUST PR.  ~$250.'],
+    ['SCS PTC-IIIusb',
+     'PACTOR 1 / 2 / 3',
+     'USB (COM port)',
+     'Full-featured controller with front-panel display.  '
+     'Supports PACTOR, PACKET, AMTOR, RTTY.  ~$650.'],
+    ['SCS P4dragon DR-7400',
+     'PACTOR 1 / 2 / 3 / 4',
+     'USB (COM port)',
+     'Top-of-line PACTOR 4 TNC.  Maximum throughput on HF.  '
+     'Required for PACTOR 4 sessions.  ~$1,100.  '
+     'Recommended for permanent EOC and EMCOMM stations.'],
+], [1.6*inch, 1.0*inch, 0.9*inch, CW-3.5*inch]))
+story.append(SP(6))
+
+story.append(H2('Physical Connection'))
+story.append(tbl(['FROM', 'TO', 'CABLE / NOTE'], [
+    ['SCS TNC  —  AFSK audio output',
+     'IC-7300  —  ACC jack audio input  or  3.5mm mic input',
+     'SCS-supplied audio cable  (included with TNC)'],
+    ['SCS TNC  —  AFSK audio input',
+     'IC-7300  —  ACC jack audio output  or  3.5mm speaker output',
+     'SCS-supplied audio cable  (included with TNC)'],
+    ['SCS TNC  —  PTT output',
+     'IC-7300  —  remote jack  (ACC or SEND)',
+     'SCS-supplied PTT cable  (check your TNC model)'],
+    ['SCS TNC  —  USB port',
+     'Windows laptop  —  any USB-A port',
+     'USB-A to USB-B or USB-A to micro-USB  (included with TNC)'],
+], [1.8*inch, 2.2*inch, CW-4.0*inch]))
+story.append(SP(4))
+story.append(NoteBox(
+    'If you are also using VARA HF via the IC-7300 USB audio:  '
+    'configure the PACTOR TNC to use the IC-7300 ACC jack for audio, '
+    'not the USB sound card.  '
+    'This allows VARA (USB audio path) and PACTOR (ACC audio path) to coexist on the same radio.  '
+    'Never transmit both modes simultaneously.', 'warn'))
+story.append(SP(6))
+
+story.append(H2('Configure Winlink Express for PACTOR'))
+story.append(steps([
+    'In Winlink Express, go to <b>Settings → Radio Setup</b>.',
+    'Click <b>Add</b> to create a new radio entry.',
+    'Set <b>Template</b> to:  <b>SCS PTC-IIx</b>  (works for all SCS PACTOR TNCs including the Tracker and P4dragon).',
+    'Set <b>Control Port</b> to the COM port assigned to your SCS TNC.  '
+    'Check Windows Device Manager → Ports (COM & LPT) to find the correct number.  '
+    'The TNC appears as  "USB Serial Port  (COM X)".',
+    'Set <b>Baud Rate</b> to <b>115200</b>.',
+    'Leave <b>PTT via CAT</b> unchecked  —  the TNC handles PTT directly via the ACC cable.',
+    'Click <b>OK</b> to save the radio profile.',
+]))
+story.append(SP(6))
+
+story.append(H2('Open a PACTOR Winlink Session'))
+story.append(steps([
+    'In Winlink Express, click the session type dropdown and select <b>Open Session → PACTOR Winlink</b>.',
+    'The session window opens.  The TNC initializes and you will see the SCS banner text in the session log.',
+    'Set your frequency on the IC-7300 to a known Winlink RMS gateway frequency for your region.  '
+    'Common 40m PACTOR frequencies:  7.038 MHz,  7.040 MHz,  7.103 MHz.',
+    'Click <b>Start</b>.  Winlink Express scans for and connects to the nearest RMS gateway.',
+    'The PACTOR handshake completes automatically — the session connects at the highest common level '
+    '(PACTOR 1 through 4) that both stations support.',
+    'Send and receive messages as normal.  '
+    'PACTOR 4 typically completes a full ICS-213 exchange in under 2 minutes on a good path.',
+]))
+story.append(SP(6))
+
+story.append(H2('Verify the TNC is Responding'))
+story.append(CodeBlock([
+    '# Method: use PuTTY or Windows Terminal to open a direct serial session',
+    '# Open PuTTY  →  Connection type: Serial  →  COM port: (your TNC port)',
+    '# Speed: 115200  →  click Open',
+    '',
+    '# Type the following TNC command:',
+    'cmd',
+    '# The TNC responds with its command prompt:  cmd:',
+    '',
+    '# Useful TNC verification commands:',
+    'ver              # shows firmware version and TNC model',
+    'status           # shows current operating status',
+    'mycall K9ESV     # sets your callsign in the TNC (replace K9ESV with yours)',
+    '',
+    '# If the TNC does not respond:',
+    '#   1. Confirm the correct COM port in Device Manager',
+    '#   2. Confirm no other application has the COM port open',
+    '#   3. Try baud rate 9600 (some TNC models default lower)',
+]))
+story.append(SP(4))
+story.append(NoteBox(
+    'PACTOR levels 3 and 4 require a separate Winlink license fee beyond the standard Winlink account.  '
+    'PACTOR 1 and 2 are available to all licensed amateur radio operators at no additional cost.  '
+    'The SCS TNC also supports AX.25 Packet, which Pat Winlink on the Pi can use via a KISS TCP connection '
+    '(typically for VHF packet via a separate TNC or via the Digirig).  '
+    'This provides a VHF backup to the HF PACTOR path.', 'note'))
 story.append(PB())
 
 # ── STEP 11 — FIRST BOOT ─────────────────────────────────────────────────────
-story.append(StepBox(11, 'First Boot Verification'))
+story.append(StepBox(11, 'AMPRNet  /  44Net Gateway Setup'))
 story.append(SP(8))
-story.append(H1('13. Step 11: First Boot Verification'))
+story.append(H1('Step 11:  AMPRNet / 44Net Gateway Setup'))
 story.append(HR(EOC_LT, 0.5))
 story.append(SP(4))
+story.append(P(
+    'The following files are part of FieldComms and work together to provide '
+    'integrated 44Net gateway support across both Pis:'))
+story.append(SP(4))
+story.append(tbl(['FILE', 'RUNS ON', 'PURPOSE'], [
+    ['scripts/setup_44net.sh',
+     'Gateway Pi  (192.168.50.2)',
+     'Installer for the gateway Pi.  Sets up WireGuard, static IP, IP forwarding, '
+     'status service, and Desktop autostart.  Run once on the gateway Pi.'],
+    ['python/amprgate_status.py',
+     'Gateway Pi  (192.168.50.2)',
+     'Flask status service on port 9000.  Serves the gateway dashboard UI and '
+     '/api/status JSON endpoint.  Installed by setup_44net.sh.'],
+    ['systemd/amprgate-status.service',
+     'Gateway Pi  (192.168.50.2)',
+     'Systemd unit that keeps amprgate_status.py running.  '
+     'Installed by setup_44net.sh.  Starts after wg-quick@ampr0.'],
+    ['python/amprgate_poll.py',
+     'FieldComms Pi  (192.168.50.1)',
+     'Polls the gateway Pi every 30 seconds and writes status to '
+     '/opt/fieldcomms/data/amprgate_status.json for the dashboard.'],
+    ['systemd/amprgate-poll.service',
+     'FieldComms Pi  (192.168.50.1)',
+     'Systemd unit for the poll service.  '
+     'Installed automatically by the FieldComms install.sh.'],
+    ['html/amprgate.html',
+     'FieldComms Pi  (192.168.50.1)',
+     'Dashboard page at http://192.168.50.1/amprgate.html.  '
+     'Shows tunnel state, AMPRNet address, traffic stats, and tunnel controls.'],
+], [1.6*inch, 0.9*inch, CW-2.5*inch]))
+story.append(SP(8))
+story.append(P(
+    'AMPRNet (Amateur Packet Radio Network) is the global amateur radio IP network '
+    'using the reserved 44.0.0.0/8 address block assigned by IANA to ARRL. '
+    'It provides licensed amateur radio operators with globally routable IP addresses '
+    'reachable over RF links or via encrypted internet tunnels to the AMPRNet gateway. '
+    'Adding a dedicated 44Net gateway Pi to FieldComms gives every device on EMCOMM-NET '
+    'full access to the AMPRNet — Winlink gateways, APRS-IS servers, Mesh networking '
+    'nodes, and other amateur stations worldwide that are reachable on 44.x.x.x addresses.'))
+story.append(SP(4))
+story.append(NoteBox(
+    'The 44Net Gateway Pi is completely separate from the FieldComms server Pi. '
+    'It runs WireGuard, ip routing, and a status page only. '
+    'If the gateway goes down or needs reconfiguring, FieldComms continues operating normally. '
+    'This isolation was an intentional design choice — keep routing infrastructure '
+    'separate from the communications server.',
+    'note'))
+story.append(SP(8))
+
+story.append(H2('Part A  —  Get Your AMPRNet Allocation  (Do This First — Allow 2-4 Weeks)'))
+story.append(P(
+    'Before configuring any software, you need an AMPRNet IP address block assigned to K9ESV. '
+    'This is a one-time registration process managed by the AMPRNet administrators at ampr.org. '
+    'The block you receive will be something like 44.x.x.x/29 (6 usable addresses) '
+    'or 44.x.x.x/28 (14 usable addresses) depending on what is available in your region.'))
+story.append(SP(6))
+story.append(steps([
+    '<b>Create an account at portal.ampr.org</b> — go to https://portal.ampr.org and click Register. '
+    'You must use your callsign K9ESV as your username. '
+    'Verify your license via the FCC ULS lookup that the portal performs automatically.',
+    '<b>Request a subnet allocation</b> — after logging in, click Subnets → Request Subnet. '
+    'Select your region (Illinois — typically 44.24.x.x or 44.172.x.x range). '
+    'Request a /29 block for a small deployment or a /28 if you anticipate growth. '
+    'In the justification field, explain the MCESV/MCEMA EMCOMM-NET deployment and intended use.',
+    '<b>Coordinate with your regional AMPRNet administrator</b> — Illinois AMPRNet administration '
+    'is coordinated through ARRL. You may be contacted by the regional admin for verification. '
+    'Response times vary from days to several weeks. Be patient.',
+    '<b>Receive your allocation</b> — you will get an email with your assigned 44.x.x.x/29 block. '
+    'The portal will also show your allocation under Subnets → My Subnets. '
+    'Record this allocation — you will need it in Part B.',
+    '<b>Note your WireGuard endpoint credentials</b> — the portal provides a WireGuard '
+    'configuration for your specific subnet. Download or copy this — it contains your '
+    'private key, allowed IPs, and the amprgw.ampr.org endpoint address.',
+]))
+story.append(SP(4))
+story.append(NoteBox(
+    'ARRL membership is not required for an AMPRNet allocation, but a valid FCC amateur '
+    'radio license (any class) is required. The K9ESV club callsign is valid for this purpose. '
+    'The allocation is tied to the callsign and is permanent as long as the license remains active.',
+    'note'))
+story.append(SP(8))
+
+story.append(H2('Part B  —  Set Up the 44Net Gateway Pi'))
+story.append(P(
+    'Once you have your AMPRNet allocation, the following steps configure the dedicated '
+    'gateway Pi running in the Argon NEO 5 case. '
+    'This Pi should be freshly flashed with Raspberry Pi OS Lite (64-bit). '
+    'It does not need the FieldComms installer — it runs WireGuard and routing only.'))
+story.append(SP(6))
+
+story.append(H3('B.1  Initial OS Setup'))
+story.append(P(
+    'Flash Raspberry Pi OS Desktop (64-bit) to the M.2 SATA SSD using Raspberry Pi Imager. '
+    'Desktop is used on the gateway Pi so any team member can check tunnel status '
+    'from the local keyboard and monitor without SSH. '
+    'Chromium opens the status page automatically on login. '
+    'During Imager advanced options set:'))
+story.append(SP(4))
+story.append(tbl(['OPTION', 'VALUE'], [
+    ['Hostname',  'amprgate.local  —  discoverable as amprgate.local on EMCOMM-NET'],
+    ['Username',  'amprgate  —  used by the gateway setup script'],
+    ['Password',  'Choose a strong password and record it with the FieldComms credentials'],
+    ['Enable SSH','Yes  —  useful for remote diagnostics if the monitor is not available'],
+    ['Wi-Fi',     'Your home or lab Wi-Fi for initial package downloads  —  switched to wired EMCOMM-NET after setup'],
+    ['Locale',    'US/Central  —  matches the FieldComms Pi for consistent log timestamps'],
+], [1.6*inch, CW-1.6*inch]))
+story.append(SP(6))
+
+story.append(H3('B.2  Assign Static IP and Install WireGuard'))
+story.append(CodeBlock([
+    '# SSH into the gateway Pi',
+    'ssh amprgate@[current-pi-ip]',
+    '',
+    '# Update packages',
+    'sudo apt-get update && sudo apt-get full-upgrade -y',
+    '',
+    '# Install WireGuard',
+    'sudo apt-get install -y wireguard wireguard-tools',
+    '',
+    '# Set static IP on eth0',
+    'sudo nmcli con mod "Wired connection 1",' +
+    '    ipv4.addresses 192.168.50.2/24,' +
+    '    ipv4.gateway 192.168.50.254,' +
+    '    ipv4.dns "8.8.8.8 8.8.4.4",' +
+    '    ipv4.method manual',
+    'sudo nmcli con up "Wired connection 1"',
+    '',
+    '# Verify',
+    'ip addr show eth0',
+    '# Expected: inet 192.168.50.2/24',
+]))
+story.append(SP(6))
+
+story.append(H3('B.3  Configure the WireGuard Tunnel'))
+story.append(P(
+    'The AMPRNet portal provides a WireGuard configuration specific to your subnet. '
+    'The following is the general structure — replace the placeholder values with '
+    'the actual values from your portal allocation.'))
+story.append(SP(4))
+story.append(CodeBlock([
+    '# Create the WireGuard config directory',
+    'sudo mkdir -p /etc/wireguard',
+    'sudo chmod 700 /etc/wireguard',
+    '',
+    '# Create the tunnel config file',
+    'sudo nano /etc/wireguard/ampr0.conf',
+    '',
+    '# Paste the following — replace ALL values in [brackets] with your portal values:',
+    '[Interface]',
+    'PrivateKey = [your-private-key-from-portal]',
+    'Address = [your-44.x.x.x/29-address]',
+    'ListenPort = 51820',
+    'PostUp   = ip route add 44.0.0.0/8 dev ampr0',
+    'PostUp   = iptables -A FORWARD -i ampr0 -j ACCEPT',
+    'PostUp   = iptables -A FORWARD -o ampr0 -j ACCEPT',
+    'PostUp   = iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE',
+    'PostDown = ip route del 44.0.0.0/8 dev ampr0',
+    'PostDown = iptables -D FORWARD -i ampr0 -j ACCEPT',
+    'PostDown = iptables -D FORWARD -o ampr0 -j ACCEPT',
+    'PostDown = iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE',
+    '',
+    '[Peer]',
+    'PublicKey = [amprnet-gateway-public-key-from-portal]',
+    'Endpoint  = amprgw.ampr.org:51820',
+    'AllowedIPs = 44.0.0.0/8',
+    'PersistentKeepalive = 25',
+]))
+story.append(SP(6))
+
+story.append(H3('B.4  Enable IP Forwarding and Start the Tunnel'))
+story.append(CodeBlock([
+    '# Enable IP forwarding (required for routing between EMCOMM-NET and AMPRNet)',
+    'echo "net.ipv4.ip_forward = 1" | sudo tee -a /etc/sysctl.conf',
+    'sudo sysctl -p',
+    '',
+    '# Start the WireGuard tunnel',
+    'sudo wg-quick up ampr0',
+    '',
+    '# Enable at boot',
+    'sudo systemctl enable wg-quick@ampr0',
+    '',
+    '# Check tunnel status',
+    'sudo wg show ampr0',
+    '# Expected: shows latest handshake, transfer stats, allowed IPs',
+    '',
+    '# Test reachability into AMPRNet',
+    'ping 44.0.0.1 -c 4',
+    '# Expected: replies from 44.0.0.1 (AMPRNet gateway)',
+]))
+story.append(SP(6))
+
+story.append(H3('B.5  Advertise the 44Net Route to EMCOMM-NET Devices'))
+story.append(P(
+    'For other devices on EMCOMM-NET to use the 44Net gateway automatically, '
+    'the ASUS router needs to push a static route to all DHCP clients. '
+    'This tells every device: "to reach anything in 44.0.0.0/8, use 192.168.50.2".'))
+story.append(SP(4))
+story.append(steps([
+    'Open the ASUS router admin at <b>http://192.168.50.254</b>.',
+    'Go to <b>LAN → Route</b>.',
+    'Click <b>Add</b> and enter: Network/Host IP = <b>44.0.0.0</b>, '
+    'Netmask = <b>255.0.0.0</b>, Gateway = <b>192.168.50.2</b>, Interface = <b>LAN</b>.',
+    'Click <b>Apply</b>.',
+    'On any EMCOMM-NET device, verify the route was received:',
+]))
+story.append(CodeBlock([
+    '# On any EMCOMM-NET device (Pi 500, Windows laptop, etc.)',
+    'ip route show | grep 44',
+    '# Expected: 44.0.0.0/8 via 192.168.50.2 dev eth0',
+    '',
+    '# Windows equivalent (Command Prompt)',
+    'route print | find "44."',
+    '# Expected: 44.0.0.0  0.0.0.0  192.168.50.2  ...',
+    '',
+    '# Test from the FieldComms Pi',
+    'ping 44.0.0.1 -c 4',
+    '# If reachable, FieldComms can now connect to AMPRNet resources',
+]))
+story.append(SP(6))
+
+story.append(H3('B.6  Gateway Status Page'))
+story.append(P(
+    'Install a lightweight status page on the 44Net Pi so operators can verify '
+    'the tunnel state from any EMCOMM-NET browser without SSH access. '
+    'This is a small Flask application that displays tunnel status, '
+    'connected peers, and recent handshake times.'))
+story.append(SP(4))
+story.append(CodeBlock([
+    '# Install Python and Flask on the 44Net Pi',
+    'sudo apt-get install -y python3 python3-pip python3-venv',
+    'python3 -m venv /opt/amprgate/venv',
+    '/opt/amprgate/venv/bin/pip install flask',
+    '',
+    '# Create the status app',
+    'sudo mkdir -p /opt/amprgate',
+    'sudo nano /opt/amprgate/status.py',
+    '',
+    '# Paste the following into status.py:',
+    '# ---',
+    'from flask import Flask, jsonify',
+    'import subprocess, json',
+    'app = Flask(__name__)',
+    '',
+    '@app.route("/")',
+    'def index():',
+    '    return open("/opt/amprgate/status.html").read()',
+    '',
+    '@app.route("/api/status")',
+    'def status():',
+    '    wg = subprocess.run(["sudo","wg","show","ampr0","dump"],',
+    '        capture_output=True, text=True).stdout',
+    '    lines = [l.split("\t") for l in wg.strip().split("\n") if l]',
+    '    return jsonify({"tunnel":"up" if lines else "down","peers":len(lines)-1})',
+    '',
+    'if __name__ == "__main__":',
+    '    app.run(host="0.0.0.0", port=9000)',
+    '# ---',
+    '',
+    '# Create systemd service',
+    'sudo nano /etc/systemd/system/amprgate-status.service',
+    '# Paste:',
+    '[Unit]',
+    'Description=AMPRNet Gateway Status Page',
+    'After=network.target wg-quick@ampr0.service',
+    '',
+    '[Service]',
+    'User=amprgate',
+    'ExecStart=/opt/amprgate/venv/bin/python /opt/amprgate/status.py',
+    'Restart=always',
+    '',
+    '[Install]',
+    'WantedBy=multi-user.target',
+    '',
+    'sudo systemctl enable --now amprgate-status',
+    '# Status page now at: http://192.168.50.2:9000',
+]))
+story.append(SP(8))
+
+story.append(H2('Part C  —  What You Can Do on AMPRNet'))
+story.append(P(
+    'Once the gateway is operational and the route is advertised to EMCOMM-NET, '
+    'every device on EMCOMM-NET has full access to the AMPRNet. '
+    'Here are the most useful applications for MCESV/MCEMA operations:'))
+story.append(SP(6))
+story.append(tbl(['APPLICATION', 'HOW IT USES 44NET', 'ACCESS FROM EMCOMM-NET'], [
+    ['Winlink via AMPRNet',
+     'Some Winlink RMS gateways have 44.x.x.x addresses. '
+     'Pat Winlink on the FieldComms Pi can connect to them directly over the AMPRNet tunnel '
+     'rather than the commercial internet — useful when only amateur radio paths are available.',
+     'Pat Winlink at http://192.168.50.1:8090  Add AMPRNet RMS in Pat settings'],
+    ['APRS-IS via AMPRNet',
+     'The APRS-IS network has servers reachable on 44.x.x.x. '
+     'Graywolf and YAAC can connect to APRS-IS via the AMPRNet path, '
+     'keeping APRS traffic within the amateur radio network.',
+     'Configure APRS-IS server address in Graywolf or YAAC settings'],
+    ['Inter-node FieldComms',
+     'If another MCESV station runs a second FieldComms system with its own 44Net gateway, '
+     'the two systems can share net data and resource boards over AMPRNet '
+     'without routing traffic through the commercial internet.',
+     'Future capability — requires second FieldComms deployment'],
+    ['HamSphere / Echolink via AMPRNet',
+     'Some VoIP amateur radio nodes are reachable on 44.x.x.x addresses, '
+     'providing RF-to-AMPRNet linking without commercial internet dependency.',
+     'Direct connection to 44.x.x.x node addresses'],
+    ['Direct amateur station communication',
+     'Any amateur station worldwide with a 44.x.x.x address '
+     '(whether via RF packet or WireGuard tunnel) is directly reachable '
+     'from any EMCOMM-NET device for data exchange, file transfer, or status checking.',
+     'Direct TCP/IP connections to 44.x.x.x addresses'],
+], [1.5*inch, 2.2*inch, CW-3.7*inch]))
+story.append(SP(6))
+story.append(NoteBox(
+    'AMPRNet does not carry voice traffic and is not a replacement for your radio links. '
+    'It is a data network for IP-based amateur radio applications. '
+    'All traffic on AMPRNet is subject to Part 97 rules — no encryption of content, '
+    'no commercial traffic, licensed operator identification required. '
+    'WireGuard encryption of the tunnel itself is permitted as it is the transport, '
+    'not the content.',
+    'note'))
+story.append(SP(8))
+
+story.append(H2('Part D  —  Verification Checklist'))
+story.append(tbl(['CHECK', 'COMMAND / METHOD', 'EXPECTED RESULT'], [
+    ['AMPRNet portal shows allocation',
+     'Login to portal.ampr.org → Subnets → My Subnets',
+     'Your 44.x.x.x/29 block shows Status: Active'],
+    ['WireGuard tunnel is up on gateway Pi',
+     'SSH to 192.168.50.2 then: sudo wg show ampr0',
+     'Shows latest handshake within last 2 minutes'],
+    ['AMPRNet gateway reachable from gateway Pi',
+     'ping 44.0.0.1 -c 4',
+     'Replies received — round trip time typically 10-50 ms'],
+    ['EMCOMM-NET devices have 44 route',
+     'ip route show | grep 44  (on any EMCOMM-NET device)',
+     '44.0.0.0/8 via 192.168.50.2'],
+    ['AMPRNet reachable from FieldComms Pi',
+     'ping 44.0.0.1 -c 4  (on FieldComms Pi)',
+     'Replies received'],
+    ['Status page accessible',
+     'Open http://192.168.50.2:9000 in any browser on EMCOMM-NET',
+     'Shows tunnel status: UP, peer count, last handshake time'],
+    ['AMPRNet reachable from Pi 500 workstation',
+     'Open http://192.168.50.2:9000 in Chromium on Pi 500',
+     'Status page loads and shows tunnel UP'],
+], [1.5*inch, 2.0*inch, CW-3.5*inch]))
+story.append(PB())
+
+story.append(StepBox(12, 'First Boot Verification  —  Full System'))
+story.append(SP(8))
+story.append(H1('Step 12:  First Boot Verification'))
+story.append(HR(EOC_LT, 0.5))
+story.append(SP(4))
+story.append(P(
+    'After the installer completes and the Pi reboots, run through this verification checklist '
+    'before handing off the system. Every service should show "active" and the dashboard '
+    'should load cleanly from another device on EMCOMM-NET. '
+    'If anything is not running, the troubleshooting section at the end of this guide '
+    'covers the most common issues and their fixes.'))
+story.append(SP(6))
 story.append(CodeBlock([
     '# Check all FieldComms services',
     'for svc in fcc-lookup health-monitor deadmans ics-platform kiwix nginx pat; do',
@@ -1206,22 +2189,40 @@ story.append(PB())
 story.append(H1('14. Network Architecture Reference'))
 story.append(HR(EOC_LT, 0.5))
 story.append(SP(6))
-story.append(H2('Network Topology'))
-story.append(P('Wi-Fi is provided by the ASUS RT-BE58 Go router. The Pi is a wired client with a static IP of '
-               '192.168.50.1, connected via the UniFi Switch Flex 2.5G-5. The Pi does not run hostapd or dnsmasq.'))
-story.append(SP(4))
+story.append(H2('Full Network Topology'))
+story.append(P(
+    'The EMCOMM-NET deployment uses the ASUS RT-BE58 Go as the Wi-Fi access point and DHCP server. '
+    'The UniFi Switch Lite 16 PoE distributes wired connections to both Pi servers, '
+    'all operator workstations, the network printer, and any additional field devices. '
+    'The 44Net Gateway Pi provides AMPRNet connectivity to every device on EMCOMM-NET '
+    'by routing the 44.0.0.0/8 address block through a WireGuard tunnel to amprgw.ampr.org.'))
+story.append(SP(6))
 story.append(tbl(['DEVICE', 'IP ADDRESS', 'ROLE', 'CONNECTION'], [
-    ['ASUS RT-BE58 Go', '192.168.50.1 (LAN gateway)', 'Wi-Fi AP + DHCP server',
-     'WAN: site Ethernet or USB tether (optional)'],
-    ['UniFi Switch Flex 2.5G-5', 'N/A (Layer 2 switch)', 'Wired distribution',
-     'Port 1 → ASUS router · Port 2 → Pi · Ports 3–5 spare'],
-    ['Raspberry Pi 5', '192.168.50.1 (static)', 'FieldComms application server',
-     'Wired Ethernet via UniFi switch'],
-    ['Windows laptop', '192.168.50.2 (recommended static)', 'Winlink Express + JS8Call station',
-     'Wi-Fi (EMCOMM-NET) or wired via UniFi Port 3'],
-    ['Field devices (phones, tablets)', '192.168.50.100–200 (DHCP)', 'Operator browsers',
-     'Wi-Fi (EMCOMM-NET, 2.4 GHz or 5 GHz)'],
-], [1.5*inch, 1.3*inch, 1.5*inch, CW-4.3*inch]))
+    ['ASUS RT-BE58 Go', '192.168.50.254  (LAN gateway)',
+     'Wi-Fi 7 AP + DHCP server + WAN gateway',
+     'WAN: site Ethernet, Starlink, or USB tether (optional).  EMCOMM-NET SSID on 2.4 GHz and 5 GHz.'],
+    ['UniFi Switch Lite 16 PoE', 'N/A  (Layer 2 switch)',
+     'Wired distribution hub  —  16 ports',
+     'Port 1 uplink to ASUS router.  Ports 2-16 to all wired devices.'],
+    ['FieldComms Pi 5  (Pironman MAX 5)', '192.168.50.1  (static)',
+     'FieldComms application server  All EmComm tools and services',
+     'Wired GbE via UniFi Switch Port 2.  Does not run Wi-Fi.'],
+    ['44Net Gateway Pi 5  (Argon NEO 5)', '192.168.50.2  (static)',
+     'AMPRNet / 44Net WireGuard gateway  Routes 44.0.0.0/8 for EMCOMM-NET',
+     'Wired GbE via UniFi Switch Port 3.  WireGuard tunnel to amprgw.ampr.org.'],
+    ['Windows Laptop', '192.168.50.3  (DHCP reservation)',
+     'Winlink Express + JS8Call  IC-7300 HF station',
+     'Wired via Port 4 or Wi-Fi (EMCOMM-NET).'],
+    ['Color MFP Printer', '192.168.50.10  (DHCP reservation)',
+     'Network printer shared to all devices',
+     'Wired via Port 5 or Wi-Fi (EMCOMM-NET).'],
+    ['Pi 500 Workstations x4', '192.168.50.20-23  (DHCP reservations)',
+     'Operator browser stations',
+     'Wired via Ports 6-9 or Wi-Fi (EMCOMM-NET).'],
+    ['Field Devices  (phones, tablets, laptops)', '192.168.50.100-200  (DHCP)',
+     'Additional operator browsers',
+     'Wi-Fi — EMCOMM-NET  —  2.4 GHz or 5 GHz.'],
+], [1.6*inch, 1.1*inch, 1.6*inch, CW-4.3*inch]))
 story.append(SP(6))
 story.append(NoteBox(
     'Recommended: set the ASUS router LAN IP to 192.168.50.254 and the Pi static IP to 192.168.50.1. '
@@ -1331,15 +2332,18 @@ story.append(H1('17. Quick Reference Card'))
 story.append(HR(EOC_LT, 0.5))
 story.append(SP(6))
 story.append(tbl(['ITEM', 'VALUE'], [
-    ['FieldComms dashboard', 'http://192.168.50.1'],
-    ['Wi-Fi network (SSID)', 'EMCOMM-NET'],
-    ['Pi static IP', '192.168.50.1'],
-    ['ASUS router admin', 'http://192.168.50.1  (or http://192.168.50.254 if reconfigured)'],
-    ['CUPS printer admin', 'http://192.168.50.1:631'],
-    ['Pat Winlink (backup)', 'http://192.168.50.1:8090'],
-    ['Kiwix offline library', 'http://192.168.50.1:8081'],
-    ['Health monitor (raw)', 'http://192.168.50.1:5051/health'],
-    ['JS8Call TCP API (laptop)', 'http://[laptop-ip]:2442'],
+    ['FieldComms dashboard',   'http://192.168.50.1'],
+    ['Wi-Fi network (SSID)',   'EMCOMM-NET'],
+    ['FieldComms Pi static IP','192.168.50.1'],
+    ['44Net Gateway Pi IP',    '192.168.50.2'],
+    ['44Net gateway status',   'http://192.168.50.2:9000'],
+    ['AMPRNet tunnel check',   'ping 44.0.0.1  (from any EMCOMM-NET device)'],
+    ['ASUS router admin',      'http://192.168.50.254'],
+    ['CUPS printer admin',     'http://192.168.50.1:631'],
+    ['Pat Winlink (backup)',   'http://192.168.50.1:8090'],
+    ['Kiwix offline library',  'http://192.168.50.1:8081'],
+    ['Health monitor (raw)',   'http://192.168.50.1:5051/health'],
+    ['JS8Call TCP API (laptop)','http://[laptop-ip]:2442'],
     ['Callsign K9ESV', 'McHenry County Emergency Services Volunteers and EMA'],
     ['McHenry County grid', 'EN52'],
     ['Default coordinates', '42.3153 N  /  88.4473 W  (Woodstock, IL)'],

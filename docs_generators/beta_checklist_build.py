@@ -135,17 +135,18 @@ def rows_table(items):
             P(feat, S('ft', fontSize=8, leading=11)),
             P(note, S('nt', fontSize=7.5, leading=10, textColor=HexColor('#445566'))),
         ])
-    t = Table(data, colWidths=[PF_W, PF_W, CW-PF_W*2-1.5*inch, 1.5*inch])
+    t = Table(data, colWidths=[PF_W, PF_W, CW-PF_W*2-1.5*inch, 1.5*inch],
+              repeatRows=1, splitByRow=1)
     t.setStyle(TableStyle([
         ('BACKGROUND',    (0,0), (-1,0),  EOC),
         ('TEXTCOLOR',     (0,0), (-1,0),  white),
         ('ROWBACKGROUNDS',(0,1), (-1,-1), [white, LGRAY]),
         ('GRID',          (0,0), (-1,-1), 0.3, LINE),
-        ('VALIGN',        (0,0), (-1,-1), 'MIDDLE'),
-        ('TOPPADDING',    (0,0), (-1,-1), 3),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 3),
-        ('LEFTPADDING',   (0,0), (-1,-1), 4),
-        ('RIGHTPADDING',  (0,0), (-1,-1), 4),
+        ('VALIGN',        (0,0), (-1,-1), 'TOP'),
+        ('TOPPADDING',    (0,0), (-1,-1), 4),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+        ('LEFTPADDING',   (0,0), (-1,-1), 5),
+        ('RIGHTPADDING',  (0,0), (-1,-1), 5),
     ]))
     return t
 

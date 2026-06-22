@@ -84,13 +84,13 @@ def tbl(headers_or_data, rows_or_widths, widths=None):
     else:
         headers = headers_or_data
         rows    = rows_or_widths
-        hrow = [P(str(h), _s('TH', fontName='Helvetica-Bold', fontSize=9,
-                              textColor=white, leading=12)) for h in headers]
+        hrow = [P(str(h), _s('TH', fontName='Helvetica-Bold', fontSize=8.5,
+                              textColor=white, leading=11)) for h in headers]
         data = [hrow]
         for row in rows:
             data.append([P(str(c), _s('TC', fontSize=9, leading=12)) for c in row])
 
-    t = Table(data, colWidths=widths)
+    t = Table(data, colWidths=widths, repeatRows=1, splitByRow=1)
     style = TableStyle([
         ('BACKGROUND',    (0, 0), (-1, 0),  EOC),
         ('TEXTCOLOR',     (0, 0), (-1, 0),  white),
@@ -100,8 +100,8 @@ def tbl(headers_or_data, rows_or_widths, widths=None):
         ('VALIGN',        (0, 0), (-1, -1), 'TOP'),
         ('TOPPADDING',    (0, 0), (-1, -1), 5),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-        ('LEFTPADDING',   (0, 0), (-1, -1), 6),
-        ('RIGHTPADDING',  (0, 0), (-1, -1), 6),
+        ('LEFTPADDING',   (0, 0), (-1, -1), 7),
+        ('RIGHTPADDING',  (0, 0), (-1, -1), 7),
     ])
     t.setStyle(style)
     return t
@@ -173,9 +173,10 @@ class ManualCanvas(canvas.Canvas):
         self._startPage()
 
     def save(self):
-        self.TOTAL = len(self._saved)
+        total = len(self._saved)
         for st in self._saved:
             self.__dict__.update(st)
+            self.TOTAL = total   # restore after dict update (update clobbers it)
             self._draw_chrome()
             super().showPage()
         super().save()

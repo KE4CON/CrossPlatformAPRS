@@ -162,16 +162,17 @@ def ref_tbl(headers, rows, widths):
                       textColor=white, leading=9)) for h in headers]]
     for row in rows:
         data.append([P(c, S('td', fontSize=8, leading=11)) for c in row])
-    t = Table(data, colWidths=widths)
+    t = Table(data, colWidths=widths, repeatRows=1, splitByRow=1)
     t.setStyle(TableStyle([
         ('BACKGROUND',    (0,0), (-1,0),  EOC),
+        ('FONTNAME',      (0,0), (-1,0),  'Helvetica-Bold'),
         ('ROWBACKGROUNDS',(0,1), (-1,-1), [white, LGRAY]),
         ('GRID',          (0,0), (-1,-1), 0.3, LINE),
         ('VALIGN',        (0,0), (-1,-1), 'TOP'),
-        ('TOPPADDING',    (0,0), (-1,-1), 4),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
-        ('LEFTPADDING',   (0,0), (-1,-1), 6),
-        ('RIGHTPADDING',  (0,0), (-1,-1), 6),
+        ('TOPPADDING',    (0,0), (-1,-1), 5),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ('LEFTPADDING',   (0,0), (-1,-1), 7),
+        ('RIGHTPADDING',  (0,0), (-1,-1), 7),
         ('LINEBELOW',     (0,0), (-1,0),  1, EOC_LT),
     ]))
     return t

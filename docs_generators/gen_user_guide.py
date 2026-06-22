@@ -117,20 +117,23 @@ def SB(num, title, url=''):
 def tbl(data, widths):
     rows = []
     for i, row in enumerate(data):
+        fs = 8 if i == 0 else 8.5
+        ld = 10 if i == 0 else 12
         rows.append([P(str(c), S('TH' if i==0 else 'TC',
                                   fontName='Helvetica-Bold' if i==0 else 'Helvetica',
-                                  fontSize=8, textColor=white if i==0 else black,
-                                  leading=11)) for c in row])
-    t = Table(rows, colWidths=widths)
+                                  fontSize=fs, textColor=white if i==0 else black,
+                                  leading=ld)) for c in row])
+    t = Table(rows, colWidths=widths, repeatRows=1, splitByRow=1)
     t.setStyle(TableStyle([
         ('BACKGROUND',    (0,0), (-1,0),  EOC),
+        ('FONTNAME',      (0,0), (-1,0),  'Helvetica-Bold'),
         ('ROWBACKGROUNDS',(0,1), (-1,-1), [white, LGRAY]),
         ('GRID',          (0,0), (-1,-1), 0.3, LINE),
         ('VALIGN',        (0,0), (-1,-1), 'TOP'),
-        ('TOPPADDING',    (0,0), (-1,-1), 4),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
-        ('LEFTPADDING',   (0,0), (-1,-1), 6),
-        ('RIGHTPADDING',  (0,0), (-1,-1), 6),
+        ('TOPPADDING',    (0,0), (-1,-1), 5),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ('LEFTPADDING',   (0,0), (-1,-1), 7),
+        ('RIGHTPADDING',  (0,0), (-1,-1), 7),
     ]))
     return t
 
@@ -249,10 +252,13 @@ story.append(PB())
 
 # Section 1 — Getting Started
 story += [SB(1,'Getting Started — Connecting to FieldComms','http://192.168.50.1/'), SP(8)]
-story.append(P('FieldComms is a self-contained emergency communications server running on a Raspberry Pi. '
-               'It broadcasts its own Wi-Fi network called <b>EMCOMM-NET</b>. Any smartphone, tablet, or '
-               'laptop can connect and access all tools through a standard web browser — '
-               'no app installation required, no internet needed.'))
+story.append(P(
+    'FieldComms is a self-contained emergency communications server running on a Raspberry Pi. '
+    'The ASUS RT-BE58 Go travel router broadcasts a dedicated Wi-Fi network called <b>EMCOMM-NET</b> '
+    '— the Pi itself does not broadcast Wi-Fi. '
+    'Any smartphone, tablet, or laptop in range connects to EMCOMM-NET and reaches the full '
+    'FieldComms dashboard through a standard web browser in under a minute. '
+    'No app installation is required. No internet connection is needed for any core feature.'))
 story.append(SP(6))
 story.append(tbl([['FIELD','VALUE'],['Wi-Fi Network Name (SSID)','EMCOMM-NET'],
     ['Password','Provided by your net manager'],['Security','WPA2'],
@@ -269,8 +275,12 @@ story.append(PB())
 
 # Section 2 — Main Dashboard
 story += [SB(2,'Main Dashboard','http://192.168.50.1/'), SP(8)]
-story.append(P('The dashboard is your central hub. It shows live system status, active NWS weather alerts, '
-               'a live APRS station table, and links to every tool.'))
+story.append(P(
+    'The dashboard at http://192.168.50.1 is your central hub for every activation. '
+    'It shows live NWS weather alerts color-coded by severity, a real-time APRS station table '
+    'fed by Graywolf and YAAC, system health indicators, Dead Man Switch state for any active net, '
+    'and quick-launch cards for every tool in the system. '
+    'Select a mode from the three-button mode bar to reorganize the cards for the task at hand.'))
 story.append(SP(6))
 story.append(H2('Three Dashboard Modes'))
 story.append(tbl([['MODE','BUTTON','TOOLS AVAILABLE'],
@@ -283,8 +293,13 @@ story.append(PB())
 
 # Section 3 — Amateur Net Control
 story += [SB(3,'Amateur Net Control Logger','http://192.168.50.1/netcontrol.html'), SP(8)]
-story.append(P('The primary tool for running ARES/RACES amateur radio nets. Supports multiple simultaneous nets, '
-               'automatically looks up FCC callsign data, and exports logs in ICS-309 format.'))
+story.append(P(
+    'The Amateur Net Control Logger is the primary tool for running ARES/RACES nets. '
+    'Type a callsign and press Enter — FieldComms looks it up in the local FCC database instantly '
+    'and fills the operator name and license class automatically. '
+    'Every check-in is timestamped in UTC and saved to the server. '
+    'Served-agency staff and EOC observers can watch the live log in Observer Mode '
+    'without touching the net control interface.'))
 story.append(SP(6))
 story.append(H2('Starting a Net'))
 for i, step in enumerate([
@@ -427,8 +442,14 @@ story.append(PB())
 
 # Section 13 — ICS Platform Overview
 story += [SB(13,'ICS Platform — Overview','http://192.168.50.1/ics/'), SP(8)]
-story.append(P('Complete Incident Command System management organized into the five standard ICS sections. '
-               'All data saved to the FieldComms server and accessible from any device on EMCOMM-NET.'))
+story.append(P(
+    'The ICS Platform provides a complete Incident Command System management interface '
+    'organized into the five standard ICS sections. '
+    'All data is saved to the FieldComms server and synchronized in real time across '
+    'every device on EMCOMM-NET — section chiefs at different workstations all see '
+    'the same incident state simultaneously without refreshing their browsers. '
+    'The Planning P tab walks you through all 15 phases of the ICS planning cycle '
+    'with agendas, required forms, and attendee lists for each phase.'))
 story.append(SP(6))
 story.append(H2('Creating an Incident'))
 for i, step in enumerate([
@@ -621,9 +642,14 @@ story.append(tbl([['TOOL','URL','WHEN TO USE'],
     ['Health Monitor',':5051/health','Check service status, system temperature, disk usage'],
     ], [1.4*inch, 1.4*inch, CW-2.8*inch]))
 story.append(SP(6))
-story.append(TipBox('For questions or issues during an activation, the Health Monitor at '
-                    'http://192.168.50.1:5051/health shows complete system status. '
-                    'The install log is at /var/log/fieldcomms-install.log.', 'note'))
+story.append(TipBox(
+    'During an activation, the Health Monitor at http://192.168.50.1:5051/health shows complete '
+    'system status including CPU temperature, memory, disk usage, service health dots, '
+    'GPS fix quality, and internet connectivity. '
+    'If a service dot is red, SSH to the Pi and run:  sudo systemctl restart <service-name>. '
+    'Common service names: fcc-lookup, health-monitor, ics-platform, kiwix, deadmans, nginx.  '
+    'The install log is at /var/log/fieldcomms-install.log.',
+    'note'))
 story.append(PB())
 
 # Section 31 — Reference Library

@@ -1,79 +1,82 @@
-# APRS Command
+# FieldComms EmComm Field Server v1.0
 
-APRS Command is a modern C# / .NET cross-platform APRS client inspired by UI-View32, focused only on amateur-radio APRS features.
+Off-grid emergency communications server for Raspberry Pi.
 
-Target platforms:
-- Windows
-- Linux
-- Raspberry Pi
-- macOS
-
-Recommended stack:
-- .NET 10 LTS SDK
-- Avalonia UI for the desktop app
-- Mapsui or equivalent map rendering layer
-- SQLite for local station/history storage
-
-This repository is intentionally scaffolded for Codex-driven development. Start with `AGENTS.md` and `codex-tasks/MASTER_TASK_LIST.md`.
-
-## First local setup
+## Quick Start
 
 ```bash
-dotnet --info
-dotnet --version
-dotnet restore
-dotnet build
-dotnet test
+sudo bash scripts/install.sh
 ```
 
-The repository pins SDK selection with `global.json`. Install the .NET 10 SDK before building.
+Then browse to: http://192.168.50.1/ (on EMCOMM-NET WiFi)
+Or: http://localhost/ (locally)
 
-## Desktop smoke run
+## What's Included
 
-```bash
-dotnet run --project src/Aprs.Desktop/Aprs.Desktop.csproj
-```
+### Web Frontend (26 pages)
+| Page | Description |
+|------|-------------|
+| index.html | Main dashboard — clock, weather alerts, APRS table |
+| netcontrol.html | Amateur net control logger with FCC autofill |
+| starcom.html | Starcom net control (Radio IDs, sc- prefix) |
+| observer.html | Read-only net viewer (?net= URL param) |
+| roster.html | Member directory — 11 certs, 13 equipment fields |
+| resources.html | Resource board with status cycling |
+| tactical.html | APRS tactical map (Leaflet + Graywolf) |
+| resmap.html | Starcom resource map with zone drawing |
+| callsign.html | FCC callsign lookup |
+| deadmans.html | Dead Man's Switch monitor with countdown |
+| preflight.html | GO/CAUTION/NO-GO pre-deployment checklist |
+| nts.html | NTS Radiogram generator |
+| ics213.html | ICS-213 General Message form |
+| ics214.html | ICS-214 Activity Log |
+| grid.html | Grid square / Maidenhead calculator |
+| repeaters.html | Repeater database browser |
+| facilities.html | EOC/hospital/shelter directory |
+| cheatsheets.html | Phonetic, Q-codes, prowords, band plan, ICS |
+| printcenter.html | Unified print hub + incident cover sheet |
+| propagation.html | HF propagation — solar indices, band conditions |
+| ics/index.html | ICS Platform overview |
+| ics/command.html | ICS Command section (ICS-201, 202, 203) |
+| ics/operations.html | ICS Operations — T-cards, resources, ICS-204 |
+| ics/planning.html | ICS Planning — situation status, IAP forms |
+| ics/logistics.html | ICS Logistics — ICS-205, supply, meals, check-in |
+| ics/finance.html | ICS Finance/Admin — cost accounting, time tracking |
 
-The desktop opens to the original map-first shell: the map is the primary workspace, the station list stays on the right, the raw packet monitor stays below the map, and feature buttons such as Messages, Objects, Weather, Events, Event Bus, Replay, RF Diagnostics, and Alerts remain available in the lower-right area.
+### Python Services
+| File | Port | Description |
+|------|------|-------------|
+| fcc_lookup_server.py | 5050 | Main API — FCC, nets, roster, APRS, forms, DMS |
+| health_monitor.py | 5051 | System health — CPU, disk, GPS, services |
+| deadmans.py | — | Background DMS state machine |
+| ics_platform_server.py | 5055 | ICS incident management API |
+| build_fcc_db.py | — | Downloads FCC amateur DB, builds SQLite |
+| fetch_repeaters.py | — | Downloads RepeaterBook data |
 
-## Publish guidance
+## Port Map
+- 80: nginx (web frontend)
+- 5050: FCC Lookup / Main API
+- 5051: Health Monitor
+- 5055: ICS Platform
+- 8080: Graywolf APRS
+- 8081: Kiwix offline library
+- 8090: Pat Winlink
+- 2442: JS8Call
+- 8300/8310: VARA HF/FM
 
-Final installers are planned for a future release. Current first-run, repeatable publish, final release validation, and installer/package planning guidance is documented in `docs/FIRST_RUN_SETUP.md`, `docs/PACKAGING_PREPARATION.md`, `docs/BUILD_AND_PUBLISH.md`, `docs/FINAL_RELEASE_VALIDATION_CHECKLIST.md`, `docs/INSTALLER_AND_PACKAGE_PLAN.md`, and `docs/PUBLISHING.md`.
+## Default Credentials
+- WiFi SSID: EMCOMM-NET
+- WiFi Password: fieldcomms2026
+- Server IP: 192.168.50.1
 
-Portable ZIP and `tar.gz` package scripts write archives to `artifacts/packages/` and SHA256 files to `artifacts/checksums/`. Full installers, signing, notarization, and package-manager manifests are planned for later work.
+## Data Paths
+- /opt/fieldcomms/data/ — runtime data
+- /opt/fieldcomms/data/fcc.db — FCC database
+- /var/www/html/ — web frontend
 
-## User documentation
+## Station Default (Columbus OH)
+- Lat: 39.9612
+- Lon: -82.9988
+- Grid: EN90aa
 
-APRS Command also includes an in-app Help button. Click Help in the application header to read the user manual, quick start guide, setup guides, safety guide, troubleshooting guide, and glossary offline from inside the desktop app.
-
-- [Quick Start](docs/QUICK_START.md)
-- [Installation Guide](docs/INSTALLATION_GUIDE.md)
-- [Installer and Package Plan](docs/INSTALLER_AND_PACKAGE_PLAN.md)
-- [Final Release Validation Checklist](docs/FINAL_RELEASE_VALIDATION_CHECKLIST.md)
-- [User Manual](docs/USER_MANUAL.md)
-- [First-Run Setup](docs/FIRST_RUN_SETUP.md)
-- [Safety and Transmit Guide](docs/SAFETY_AND_TRANSMIT_GUIDE.md)
-- [APRS-IS Setup Guide](docs/APRS_IS_SETUP_GUIDE.md)
-- [RF/TNC Setup Guide](docs/RF_TNC_SETUP_GUIDE.md)
-- [Map and Offline Maps Guide](docs/MAP_AND_OFFLINE_MAPS_GUIDE.md)
-- [Troubleshooting](docs/TROUBLESHOOTING.md)
-- [Glossary](docs/GLOSSARY.md)
-- [Developer Guide](docs/DEVELOPER_GUIDE.md)
-
-## Project layout
-
-```text
-src/Aprs.Core        APRS packet models, parser, symbol logic, validation
-src/Aprs.Transport   APRS-IS, KISS, AGWPE, Direwolf, serial/network transport
-src/Aprs.Services    Station database, beacon scheduler, messaging, object manager
-src/Aprs.Mapping     Map tile cache, APRS marker rendering, offline map support
-src/Aprs.Desktop     Avalonia desktop user interface
-src/AprsCommand.Contracts  Versioned public DTO placeholders for future APIs/plugins
-src/AprsCommand.Api  Local REST API foundation for future integrations
-tests/Aprs.Tests     Unit and integration tests
-codex-tasks/         Codex-ready implementation tasks
-```
-
-## Licensing note
-
-Do not copy UI-View32 source code, icons, maps, proprietary artwork, or documentation text. Use UI-View only as a feature reference and implement original code.
+Configured for your station during install.sh.

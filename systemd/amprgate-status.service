@@ -1,0 +1,23 @@
+[Unit]
+Description=AMPRNet Gateway Status Page (Port 9000)
+Documentation=https://github.com/KE4CON/CrossPlatformAPRS
+After=network.target wg-quick@ampr0.service
+Wants=wg-quick@ampr0.service
+
+[Service]
+Type=simple
+User=amprgate
+Group=amprgate
+WorkingDirectory=/opt/amprgate
+ExecStart=/opt/amprgate/venv/bin/python /opt/amprgate/amprgate_status.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=amprgate-status
+
+# Allow sudo for wg-quick tunnel management
+# (amprgate user needs sudoers entry: amprgate ALL=(ALL) NOPASSWD: /usr/bin/wg, /usr/bin/wg-quick)
+
+[Install]
+WantedBy=multi-user.target

@@ -78,10 +78,20 @@ def ch9():
 def ch10():
     s = chapter(10, 'Tactical APRS Map', 'http://192.168.50.1/tactical.html')
     s.append(P(
-        'The Tactical Map is a full-screen Leaflet.js mapping tool that combines '
-        'live APRS station tracking, offline map tiles, manual tactical overlays, '
-        'and GPS position tracking. It supports both Graywolf and YAAC as APRS '
-        'back-ends and works completely offline once map tiles have been downloaded.'))
+        'The Tactical APRS Map is a full-screen interactive map that combines live APRS '
+        'station tracking with manual tactical overlays and offline map tiles. '
+        'It pulls station data simultaneously from Graywolf (port 8080) and YAAC (port 8082), '
+        'merges the feeds, deduplicates by callsign, and keeps every connected browser '
+        'updated via WebSocket. The map works completely offline once tiles have been '
+        'downloaded — no internet connection is needed to see stations or draw overlays.'))
+    s.append(SP(4))
+    s.append(P(
+        'The default map layer is USGS Imagery+Topo Hybrid — public-domain satellite '
+        'imagery with roads, contours, and place names overlaid. Additional tile sets '
+        '(OpenStreetMap, Esri World Imagery) are available in the layer selector. '
+        'McHenry County map tiles are included with the FieldComms installation. '
+        'Additional county and state tile sets are downloaded using the '
+        'download_tiles.sh script.'))
     s.append(SP(6))
     s.append(P('Map Layout', H2))
     s.append(tbl(['ELEMENT', 'DESCRIPTION'], [
@@ -224,10 +234,20 @@ def ch13():
     s = chapter(13, "Dead Man's Switch — Net Inactivity Monitor",
                 'http://192.168.50.1/deadmans.html')
     s.append(P(
-        "The Dead Man's Switch (DMS) monitors active radio nets for inactivity. "
-        "If no check-in or traffic is logged within a configurable threshold, it "
-        "triggers an audible alert and visual warning. This ensures net control "
-        "operators don't miss a silent net or a dropped connection during a real activation."))
+        "The Dead Man's Switch (DMS) is a net inactivity monitor. "
+        "When armed for a net, it watches the last-activity timestamp on that net. "
+        "If no check-in, traffic entry, or manual reset occurs within the configured "
+        "threshold period, the DMS fires: an audible alarm sounds, the page turns red, "
+        "and a countdown flashes until the situation is resolved. "
+        "This gives net control operators an automatic safety net against a silent radio, "
+        "a dropped connection, or an operator who stepped away from the console."))
+    s.append(SP(4))
+    s.append(P(
+        "The DMS can be armed independently for each active net. "
+        "During a major activation running a Starcom General Net, a Weather Net, and a "
+        "SAR Net simultaneously, each net gets its own DMS with its own threshold. "
+        "The DMS runs in the browser tab where it was opened — keep that tab visible "
+        "on a dedicated monitor or the net control operator screen."))
     s.append(SP(6))
     s.append(P('Arming the DMS for a Net', H2))
     s += steps([
@@ -305,10 +325,19 @@ def ch15():
     s = chapter(15, 'ICS Platform — Overview', 'http://192.168.50.1/ics/')
     s.append(P(
         'The ICS Platform is the full incident command and documentation system '
-        'built into FieldComms. It covers all five ICS sections — Command, Operations, '
-        'Planning, Logistics, and Finance/Admin — plus the ICS Planning P cycle guide. '
-        'Access it by selecting ICS from the mode bar on the main dashboard, or '
-        'directly at http://192.168.50.1/ics/.'))
+        'built into FieldComms. It covers all five standard ICS sections — '
+        'Command, Operations, Planning, Logistics, and Finance/Admin — '
+        'plus an interactive Planning P cycle guide. '
+        'All five sections share a single active incident record, '
+        'so changes made in Operations are immediately visible in Planning, '
+        'and the Logistics comms plan feeds directly into printed IAP packages.'))
+    s.append(SP(4))
+    s.append(P(
+        'The ICS Platform is accessible by selecting the ICS mode from the dashboard '
+        'mode bar, or directly at http://192.168.50.1/ics/. '
+        'All data is stored on the Pi and synchronized in real time across every device '
+        'on EMCOMM-NET. Section chiefs at different tables in the EOC all see the same '
+        'incident state simultaneously without refreshing their browsers.'))
     s.append(SP(6))
     s.append(P('Creating a New Incident', H2))
     s += steps([

@@ -8,13 +8,22 @@ from manual_framework import *
 def ch1():
     s = chapter(1, 'Introduction & System Overview')
     s.append(P(
-        'Incident Management is a self-contained emergency communications server '
-        'that runs on a Raspberry Pi. It provides a complete suite of EmComm tools '
-        '— net control logging, an ICS incident management platform, mapping, '
-        'reference libraries, and form generation — all accessible through a standard '
-        'web browser with no internet connection required. It is built for McHenry '
-        'County Emergency Services Volunteers and McHenry County Emergency Management '
-        'Agency operating under the RACES / ARES / Starcom framework.'))
+        'FieldComms Incident Management System is a self-contained emergency communications '
+        'server that runs on a Raspberry Pi. It provides a complete suite of EmComm tools '
+        'accessible through any standard web browser — net control logging, an ICS incident '
+        'management platform, APRS mapping, offline reference libraries, Winlink integration, '
+        'and ICS form generation. No internet connection is required for any core feature. '
+        'It is purpose-built for McHenry County Emergency Services Volunteers and McHenry '
+        'County Emergency Management Agency operating under the RACES, ARES, and Starcom '
+        'frameworks.'))
+    s.append(SP(4))
+    s.append(P(
+        'The system runs on a Raspberry Pi 5 with 16 GB RAM inside a Pironman MAX 5 tower '
+        'enclosure with dual NVMe SSDs in RAID 1. An ASUS RT-BE58 Go Wi-Fi 7 travel router '
+        'provides the EMCOMM-NET wireless access point — the Pi itself is a wired server, '
+        'not a hotspot. Any smartphone, tablet, or laptop within Wi-Fi range connects to '
+        'EMCOMM-NET and reaches the full dashboard at http://192.168.50.1 in under a minute, '
+        'with no app installation and no per-device configuration required.'))
     s.append(SP(4))
     s.append(P('How It Works', H2))
     s.append(P(
@@ -94,10 +103,14 @@ def ch2():
 def ch3():
     s = chapter(3, 'The Main Dashboard', 'http://192.168.50.1/')
     s.append(P(
-        'The dashboard is your central hub. It shows live system status, active '
-        'weather alerts, a live APRS station table, and quick-launch cards for '
-        'every tool. At the very top is the organization header with the '
-        'MCESV/MCEMA logo and your operator identity badge.'))
+        'The dashboard is your central hub for every activation. '
+        'The moment you open http://192.168.50.1 in any browser on EMCOMM-NET, '
+        'you see the full picture: live NWS weather alerts with severity color coding, '
+        'the real-time APRS station table from Graywolf and YAAC, '
+        'system health indicators, and the Dead Man Switch state for any active net. '
+        'At the very top is the MCESV/MCEMA organization header and your operator identity badge. '
+        'The three-button mode switcher below it reorganizes the tool cards to match '
+        'the type of operation you are running.'))
     s.append(SP(6))
     s.append(P('Three Dashboard Modes', H2))
     s.append(P(
@@ -244,9 +257,19 @@ def ch6():
     s = chapter(6, 'Amateur Net Control Logger',
                 'http://192.168.50.1/netcontrol.html')
     s.append(P(
-        'The Net Control logger is the primary tool for running ARES/RACES amateur '
-        'radio nets. It supports multiple simultaneous nets, automatically looks up '
-        'FCC callsign data, tracks traffic, and exports logs in ICS-309 format.'))
+        'The Amateur Net Control Logger is the primary tool for running ARES/RACES '
+        'amateur radio nets. When a station checks in, you type their callsign and '
+        'press Enter — FieldComms looks up the operator in the local FCC database '
+        'and fills their name and license class automatically. '
+        'The check-in is timestamped in UTC and saved to the server immediately, '
+        'making it visible to all connected devices including served-agency staff '
+        'watching in Observer Mode.'))
+    s.append(SP(4))
+    s.append(P(
+        'The logger supports multiple nets running simultaneously, each on its own tab, '
+        'each with an independent check-in log, traffic log, and ICS-309 export. '
+        'A weekly ARES net, a RACES emergency activation, and an NTS traffic session '
+        'can all be logged at the same time with one operator on the keyboard.'))
     s.append(SP(6))
 
     s.append(P('Starting a Net', H2))
@@ -315,13 +338,15 @@ def ch6():
 def ch7():
     s = chapter(7, 'Starcom Net Logger', 'http://192.168.50.1/starcom.html')
     s.append(P(
-        'The Starcom Net Logger is its own dedicated module with a dedicated '
-        'dashboard mode — separate from the Amateur Radio section. Select '
-        '<b>🚔 Starcom / Public Safety</b> from the mode bar on the main dashboard '
-        'to access it. The module is purpose-built for public-safety Starcom radio '
-        'net logging. It identifies units by Radio ID and unit number rather than '
-        'amateur callsigns, includes a dispatch center field, and uses the '
-        '<b>sc-</b> prefix convention for net names.'))
+        'The Starcom Net Logger has its own dedicated dashboard mode — separate from '
+        'the Amateur Radio section. Select <b>🚔 Starcom / Public Safety</b> from the '
+        'mode bar on the main dashboard to access it. '
+        'The module is purpose-built for public safety Starcom radio net logging '
+        'and handles the identifiers, terminology, and workflow that public safety '
+        'operators use day to day. Units are identified by Radio ID and unit number '
+        'rather than amateur callsigns. A dispatch center field tracks which agency '
+        'is managing traffic on each channel. Net names use the sc- prefix by convention '
+        'so they appear clearly labeled in exports and the Dead Man Switch monitor.'))
     s.append(SP(6))
 
     s.append(P('Running Multiple Simultaneous Nets', H2))
