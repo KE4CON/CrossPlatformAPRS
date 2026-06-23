@@ -193,10 +193,13 @@ tr:nth-child(even) td { background: var(--bg); }
   <!-- Tunnel control -->
   <div class="section-card">
     <h2>Tunnel Control</h2>
-    <div class="info-box">
-      These controls send commands directly to the gateway Pi (192.168.50.2).
-      Bring the tunnel down only if you need to reconfigure WireGuard.
-      The tunnel comes back up automatically at gateway Pi reboot.
+    <div class="info-box warn" style="border-color:var(--amber);background:#fef9ed">
+      <strong>Tunnel controls require physical access to the gateway Pi.</strong>
+      These buttons only work when this page is open in the Chromium browser
+      on the gateway Pi itself — not from operator laptops or phones on EMCOMM-NET.
+      This is by design. A valid callsign login is also required.<br><br>
+      To control the tunnel: sit at the gateway Pi keyboard → open Chromium →
+      go to http://localhost:9001 → log in with your callsign → use the controls.
     </div>
     <div class="actions">
       <button class="btn btn-green" onclick="action('up')">▲ Bring Tunnel UP</button>
@@ -332,17 +335,39 @@ function load() {
 
 function action(act) {
   const msg = document.getElementById('action-msg');
-  msg.textContent = 'Sending command...';
 
-  fetch(GATEWAY_DIRECT + '/api/tunnel/' + act, { method: 'POST' })
-    .then(r => r.json())
-    .then(d => {
-      msg.textContent = d.message || 'Done';
-      setTimeout(load, 2500);
-    })
-    .catch(() => {
-      msg.textContent = 'Could not reach gateway Pi — check 192.168.50.2 is online';
-    });
+  // Tunnel control is localhost-only on the gateway Pi (port 9001).
+  // These buttons only work when browsing FROM the gateway Pi itself.
+  // Get session token from cookie
+  const token = document.cookie.split(';')
+    .map(c => c.trim())
+    .find(c => c.startsWith('amprtoken='));
+
+  if (!token) {
+    msg.textContent = 'Login required — enter your callsign first';
+    msg.style.color = 'var(--amber)';
+    return;
+  }
+
+  msg.textContent = 'Sending command to gateway...';
+  msg.style.color = 'var(--muted)';
+
+  // Control port 9001 — localhost only. Only works on gateway Pi keyboard browser.
+  fetch('http://127.0.0.1:9001/api/tunnel/' + act, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token.split('=')[1] }
+  })
+  .then(r => r.json())
+  .then(d => {
+    msg.textContent = d.message || 'Done';
+    msg.style.color = d.ok ? 'var(--green)' : 'var(--red)';
+    if (d.ok) setTimeout(load, 2500);
+  })
+  .catch(() => {
+    msg.textContent = 'Tunnel control requires physical access to the gateway Pi keyboard. ' +
+                      'Open this page in Chromium on the gateway Pi itself.';
+    msg.style.color = 'var(--amber)';
+  });
 }
 
 load();

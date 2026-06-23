@@ -502,6 +502,25 @@
 </div>
 </div><!-- /ms-amateur-ref -->
 
+<!-- SYSTEM STATUS — always visible in amateur mode -->
+<div class="mode-section amateur-section" id="ms-amateur-system">
+<div class="sec-label">🌐 Connectivity &amp; System</div>
+<div class="card-grid">
+  <a class="op-card" href="wan-status.html" style="--card-color:var(--amber)" id="wan-card">
+    <div class="card-icon">📡</div>
+    <div class="card-name">WAN Status</div>
+    <div class="card-desc">InstyConnect cellular · Starlink failover · active WAN source</div>
+    <div class="card-port" id="wan-card-status">Checking...</div>
+  </a>
+  <a class="op-card" href="amprgate.html" style="--card-color:var(--blue)" id="ampr-card">
+    <div class="card-icon">🛰</div>
+    <div class="card-name">AMPRNet Gateway</div>
+    <div class="card-desc">44Net WireGuard tunnel · 44.0.0.0/8 routing · gateway Pi status</div>
+    <div class="card-port" id="ampr-card-status">Checking...</div>
+  </a>
+</div>
+</div><!-- /ms-amateur-system -->
+
 <!-- ── STARCOM / PUBLIC SAFETY MODE SECTIONS ──────────────────────────── -->
 
 <!-- Starcom: Net Operations -->
@@ -596,6 +615,25 @@
   </a>
 </div>
 </div><!-- /ms-starcom-ics -->
+
+<!-- STARCOM: Connectivity & System -->
+<div class="mode-section starcom-section" id="ms-starcom-system">
+<div class="sec-label">🌐 Connectivity &amp; System</div>
+<div class="card-grid">
+  <a class="op-card" href="wan-status.html" style="--card-color:var(--amber)">
+    <div class="card-icon">📡</div>
+    <div class="card-name">WAN Status</div>
+    <div class="card-desc">InstyConnect cellular · Starlink failover · active WAN source</div>
+    <div class="card-port" id="wan-card-status-sc">Checking...</div>
+  </a>
+  <a class="op-card" href="amprgate.html" style="--card-color:var(--blue)">
+    <div class="card-icon">🛰</div>
+    <div class="card-name">AMPRNet Gateway</div>
+    <div class="card-desc">44Net WireGuard tunnel · 44.0.0.0/8 routing · gateway Pi status</div>
+    <div class="card-port" id="ampr-card-status-sc">Checking...</div>
+  </a>
+</div>
+</div><!-- /ms-starcom-system -->
 
 <!-- ── ICS MODE SECTIONS ────────────────────────────────────────────── -->
 
@@ -771,6 +809,25 @@
   </a>
 </div>
 </div><!-- /ms-ics-comms -->
+
+<!-- ICS: Connectivity & System -->
+<div class="mode-section ics-section" id="ms-ics-system">
+<div class="sec-label">🌐 Connectivity &amp; System</div>
+<div class="card-grid">
+  <a class="op-card" href="wan-status.html" style="--card-color:var(--amber)">
+    <div class="card-icon">📡</div>
+    <div class="card-name">WAN Status</div>
+    <div class="card-desc">InstyConnect cellular · Starlink failover · active WAN source</div>
+    <div class="card-port" id="wan-card-status-ics">Checking...</div>
+  </a>
+  <a class="op-card" href="amprgate.html" style="--card-color:var(--blue)">
+    <div class="card-icon">🛰</div>
+    <div class="card-name">AMPRNet Gateway</div>
+    <div class="card-desc">44Net WireGuard tunnel · 44.0.0.0/8 routing · gateway Pi status</div>
+    <div class="card-port" id="ampr-card-status-ics">Checking...</div>
+  </a>
+</div>
+</div><!-- /ms-ics-system -->
 
 <!-- ICS launch btn (kept for Amateur mode, bottom of page) -->
 <div class="mode-section amateur-section" id="ms-amateur-ics-launch">
@@ -1316,8 +1373,63 @@ function openJS8Call(e) {
   });
 })();
 
-</script>
+// ── WAN + AMPRNet live status on dashboard cards ──────────────────────────
+(function() {
+  const API = 'http://192.168.50.1:5050';
 
-<script src="/lib/identity.js"></script>
-</body>
-</html>
+  function updateWanCards(source, label) {
+    ['wan-card-status','wan-card-status-sc','wan-card-status-ics'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = label;
+      el.style.color = {cellular:'var(--green)',satellite:'var(--blue)',
+                        none:'var(--red)'}[source] || 'var(--dim)';
+    });
+    const card = document.getElementById('wan-card');
+    if (card) card.style.setProperty('--card-color',
+      {cellular:'var(--green)',satellite:'var(--blue)',none:'var(--red)'}[source] || 'var(--amber)');
+  }
+
+  function updateAmprCards(up, addr) {
+    ['ampr-card-status','ampr-card-status-sc','ampr-card-status-ics'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = up ? 'UP  \u00b7  ' + (addr || '44.x.x.x') : 'TUNNEL DOWN';
+      el.style.color = up ? 'var(--green)' : 'var(--red)';
+    });
+    const card = document.getElementById('ampr-card');
+    if (card) card.style.setProperty('--card-color', up ? 'var(--green)' : 'var(--red)');
+  }
+
+  function pollStatus() {
+    fetch(API + '/wan/status', {signal: AbortSignal.timeout(4000)})
+      .then(r => r.json())
+      .then(d => {
+        const src = d.active_source || 'unknown';
+        const carrier = (d.instyconnect && d.instyconnect.carrier) || 'Cellular';
+        const labels = {
+          cellular:  'Cellular  \u00b7  ' + carrier,
+          satellite: 'Starlink  (failover)',
+          site:      'Site Ethernet',
+          none:      'No WAN  \u2014  Offline',
+        };
+        updateWanCards(src, labels[src] || src);
+      })
+      .catch(() => updateWanCards('unknown', 'Status unavailable'));
+
+    fetch(API + '/amprgate/status', {signal: AbortSignal.timeout(4000)})
+      .then(r => r.json())
+      .then(d => updateAmprCards(d.tunnel === 'up' && d.reachable !== false, d.ampr_address))
+      .catch(() =>
+        fetch('http://192.168.50.2:9000/api/status', {signal: AbortSignal.timeout(3000)})
+          .then(r => r.json())
+          .then(d => updateAmprCards(d.tunnel === 'up', d.ampr_address))
+          .catch(() => updateAmprCards(false, null))
+      );
+  }
+
+  pollStatus();
+  setInterval(pollStatus, 30000);
+})();
+
+</script>

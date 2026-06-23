@@ -203,7 +203,40 @@ def ch3():
     s.append(SP(6))
     s.append(note(
         'The URL parameter <b>?mode=starcom</b> loads the dashboard directly in '
-        'Starcom mode — useful for bookmarking on Starcom-dedicated devices.', 'tip'))
+        'Starcom mode — useful for bookmarking on Starcom-dedicated devices. '
+        'Similarly, <b>?mode=ics</b> opens directly in ICS mode for dedicated '
+        'incident command tablets.', 'tip'))
+    s.append(SP(6))
+
+    s.append(P('2.3  Connectivity Status Cards', H2))
+    s.append(P(
+        'Two live connectivity status cards are visible at the bottom of all three modes:'))
+    s.append(SP(4))
+    s.append(tbl(['CARD', 'SHOWS', 'LINKS TO'], [
+        ['WAN Status',
+         'Active WAN source — InstyConnect cellular, Starlink satellite, or offline. '
+         'Card turns green for cellular, blue for Starlink failover, red for offline. '
+         'Updates every 30 seconds.',
+         'wan-status.html — full WAN dashboard with signal strength, carrier, '
+         'latency, connectivity tests, and WAN event log'],
+        ['AMPRNet Gateway',
+         'WireGuard tunnel state — UP with 44.x.x.x AMPRNet address shown, '
+         'or TUNNEL DOWN in red. Updates from the gateway Pi every 30 seconds.',
+         'amprgate.html — full gateway dashboard with tunnel controls, '
+         'traffic stats, and routing table'],
+    ], [1.0*inch, 2.4*inch, CW-3.4*inch]))
+    s.append(SP(6))
+
+    s.append(P('2.4  Health Monitor Sidebar', H2))
+    s.append(P(
+        'The right panel on the dashboard shows live system health: '
+        'CPU temperature, memory and disk usage, GPS fix status, internet connectivity, '
+        'and a row of colored service status dots — one per background service. '
+        'A green dot means the service is running normally. '
+        'A red dot means it has stopped or failed. '
+        'Note the service name from the dot tooltip, then SSH to the Pi and run '
+        'sudo systemctl restart [service-name] to restart it. '
+        'The health panel refreshes every 15 seconds automatically.'))
     s.append(PB())
     return s
 
@@ -266,6 +299,30 @@ def ch4():
         '<font face="Courier" size="9">python3 /opt/fieldcomms/scripts/gen_operator_cards.py '
         '--ssid EMCOMM-NET --password YOUR-PASSWORD</font>. '
         'Output is a print-ready PDF, 10 cards per Avery 5371 sheet.', 'tip'))
+    s.append(SP(6))
+
+    s.append(P('3.2  CSV Import Column Reference', H2))
+    s.append(P(
+        'The roster accepts CSV files exported from any spreadsheet application. '
+        'The following column headers are recognized — extra columns are ignored:'))
+    s.append(SP(4))
+    s.append(tbl(['COLUMN HEADER', 'REQUIRED', 'DESCRIPTION'], [
+        ['callsign',      'Yes', 'FCC amateur callsign — auto-filled in net logs via FCC database lookup'],
+        ['radio_id',      'Yes', 'Starcom Radio ID number — used in Starcom net logger check-ins'],
+        ['first_name',    'Yes', 'Operator first name'],
+        ['last_name',     'Yes', 'Operator last name'],
+        ['role',          'No',  'Role or position — Net Control, Field Unit, EOC Staff, etc.'],
+        ['phone',         'No',  'Contact number for off-air coordination'],
+        ['email',         'No',  'Email for Winlink or off-air messaging'],
+        ['certifications','No',  'Comma-separated — NIMS-100, NIMS-700, SKYWARN, etc.'],
+    ], [1.4*inch, 0.8*inch, CW-2.2*inch]))
+    s.append(SP(4))
+    s.append(note(
+        'Export CSV from Excel: File → Save As → CSV UTF-8 (Comma delimited). '
+        'Export from Google Sheets: File → Download → Comma Separated Values. '
+        'UTF-8 encoding is required — other encodings may cause character errors '
+        'in names with accented characters.',
+        'tip'))
     s.append(PB())
     return s
 

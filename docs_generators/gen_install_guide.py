@@ -2249,6 +2249,33 @@ story.append(CodeBlock([
 ]))
 story.append(SP(6))
 
+story.append(H3('B.5  Access Control — Who Can Reach What'))
+story.append(P(
+    'FieldComms restricts access to the 44Net gateway on two levels. '
+    'This is both a security measure and a Part 97 compliance measure — '
+    'only licensed amateur radio operators should be able to view or control '
+    'the AMPRNet gateway.'))
+story.append(SP(4))
+story.append(tbl(['PORT', 'ACCESSIBLE FROM', 'AUTH REQUIRED', 'PROVIDES'], [
+    ['Port 9000  (0.0.0.0)',
+     'Any EMCOMM-NET device  (192.168.50.x)',
+     'None for /api/status  (machine poll).  Valid FCC callsign for web UI.',
+     'Read-only status JSON.  Callsign-authenticated web dashboard.'],
+    ['Port 9001  (127.0.0.1)',
+     'Gateway Pi keyboard only  (localhost — not reachable from network)',
+     'Valid callsign session from port 9000 login.  Physical presence required.',
+     'Tunnel control: up / down / restart.'],
+], [1.0*inch, 1.6*inch, 1.8*inch, CW-4.4*inch]))
+story.append(SP(4))
+story.append(NoteBox(
+    'Tunnel controls (up/down/restart) are intentionally inaccessible from the network. '
+    'An operator who wants to restart the WireGuard tunnel must sit at the gateway Pi keyboard, '
+    'open Chromium, log in with their FCC callsign, and use the local control interface. '
+    'This prevents accidental or unauthorized tunnel disruption from operator laptops or phones. '
+    'The FieldComms Pi polling service reads /api/status on port 9000 without authentication '
+    '— this is a read-only machine-to-machine call and is intentional.',
+    'note'))
+story.append(SP(6))
 story.append(H3('B.5  Advertise the 44Net Route to EMCOMM-NET Devices'))
 story.append(P(
     'For other devices on EMCOMM-NET to use the 44Net gateway automatically, '
@@ -2398,7 +2425,16 @@ story.append(tbl(['CHECK', 'COMMAND / METHOD', 'EXPECTED RESULT'], [
      'Replies received'],
     ['Status page accessible',
      'Open http://192.168.50.2:9000 in any browser on EMCOMM-NET',
-     'Shows tunnel status: UP, peer count, last handshake time'],
+     'Shows callsign login page — enter a valid FCC callsign to proceed'],
+    ['Callsign login works',
+     'Enter your callsign at http://192.168.50.2:9000 login page',
+     'FCC database validates callsign — dashboard loads showing tunnel status'],
+    ['Access log recording',
+     'SSH to gateway Pi: tail /var/log/amprgate-access.log',
+     'Shows LOGIN-OK entry with your callsign, IP, and license class'],
+    ['Tunnel control blocked from network',
+     'From a laptop on EMCOMM-NET: curl http://192.168.50.2:9001',
+     'Connection refused — port 9001 is localhost-only'],
     ['AMPRNet reachable from Pi 500 workstation',
      'Open http://192.168.50.2:9000 in Chromium on Pi 500',
      'Status page loads and shows tunnel UP'],

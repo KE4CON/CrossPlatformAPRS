@@ -480,6 +480,35 @@ STATUSHTML
 
 success "Status page HTML template created"
 
+# ── Sudoers entry for amprgate ─────────────────────────────────────────────
+step "Configuring Sudoers for WireGuard Access"
+
+SUDOERS_FILE="/etc/sudoers.d/amprgate"
+cat > "$SUDOERS_FILE" << 'SUDEOF'
+# Allow amprgate service user to manage WireGuard tunnel without password
+# Required for tunnel up/down/restart via authenticated web interface (localhost:9001)
+# Access requires valid FCC callsign session — see /var/log/amprgate-access.log
+amprgate ALL=(ALL) NOPASSWD: /usr/bin/wg, /usr/bin/wg-quick
+SUDEOF
+chmod 440 "$SUDOERS_FILE"
+visudo -c -f "$SUDOERS_FILE" 2>>"$GW_LOG" \
+    && success "Sudoers entry created: $SUDOERS_FILE" \
+    || { warn "Invalid sudoers file — removing"; rm -f "$SUDOERS_FILE"; }
+
+# ── Firewall — protect control port 9001 ──────────────────────────────────
+step "Configuring Firewall — Access Control"
+
+if command -v ufw &>/dev/null; then
+    # Allow status/UI from EMCOMM-NET (read-only + callsign-authenticated UI)
+    ufw allow from 192.168.50.0/24 to any port 9000 proto tcp \
+        comment "AMPRNet status and UI (callsign auth)" 2>>"$GW_LOG" || true
+    # Block control port from all external sources — localhost only by design
+    ufw deny in on eth0 to any port 9001 proto tcp \
+        comment "AMPRNet control port — localhost only" 2>>"$GW_LOG" || true
+    success "Port 9000: EMCOMM-NET accessible (callsign login required for UI)"
+    success "Port 9001: Blocked externally — localhost access only (physical keyboard)"
+fi
+
 # ── Systemd services ──────────────────────────────────────────────
 step "Installing Systemd Services"
 
@@ -540,12 +569,25 @@ cat > "$DESKTOP_DIR/amprgate-status.desktop" << DESKEOF
 [Desktop Entry]
 Type=Application
 Name=AMPRNet Gateway Status
-Comment=Opens the 44Net tunnel status page in Chromium
+Comment=Opens the 44Net tunnel status and control page in Chromium
 Exec=chromium-browser --app=http://localhost:$STATUS_PORT --start-maximized --disable-session-crashed-bubble
 Icon=network-wired
 Terminal=false
 Categories=Network;
 X-GNOME-Autostart-enabled=true
+DESKEOF
+
+# Also create a tunnel control shortcut (localhost:9001 — only works here)
+cat > "$DESKTOP_DIR/amprgate-control.desktop" << DESKEOF
+[Desktop Entry]
+Type=Application
+Name=AMPRNet Tunnel Control
+Comment=Local-only tunnel control interface (requires callsign login)
+Exec=chromium-browser --app=http://localhost:9001 --start-maximized
+Icon=network-wired
+Terminal=false
+Categories=Network;
+X-GNOME-Autostart-enabled=false
 DESKEOF
 success "Desktop autostart configured — Chromium will open status page on login"
 

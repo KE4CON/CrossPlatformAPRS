@@ -384,8 +384,31 @@ def ch30():
     s.append(note(
         'Recommended field printers: <b>Brother HL-L2350DW</b> (laser, excellent Linux support), '
         '<b>Canon PIXMA TR150</b> or <b>HP OfficeJet 200</b> (battery-powered portable options). '
+        'Color multifunction laser options for full IAP package printing: '
+        '<b>Brother MFC-L3770CDW</b>, <b>HP Color LaserJet Pro MFP M479fdw</b>, or '
+        '<b>Canon imageCLASS MF743Cdw</b> — all support USB, Wi-Fi, and Ethernet. '
         'See the Installation Guide Step 8 for full setup instructions and the complete '
         'comparison of all three printer connection options.', 'tip'))
+    s.append(SP(6))
+
+    s.append(P('29.3  Adding the Printer on Each Device', H2))
+    s.append(tbl(['DEVICE TYPE', 'HOW TO ADD SHARED PRINTER'], [
+        ['Windows laptop',
+         'Settings → Bluetooth & devices → Printers & scanners → Add a printer. '
+         'Windows discovers the CUPS printer automatically on EMCOMM-NET via Bonjour.'],
+        ['Mac / macOS',
+         'System Settings → Printers & Scanners → click + (Add Printer). '
+         'Click the Default tab — shared printer appears via Bonjour. Select and click Add.'],
+        ['iPad / iPhone  (AirPrint)',
+         'No setup required. CUPS + Avahi advertises as AirPrint-compatible. '
+         'Tap Share → Print in any FieldComms page and select the printer.'],
+        ['Android',
+         'Install the free CUPS Print app from Google Play. '
+         'Add printer at IP 192.168.50.1, Port 631, Protocol IPP.'],
+        ['Raspberry Pi 500 workstation',
+         'Chromium discovers CUPS printers via Bonjour automatically. '
+         'No additional setup needed — printer appears in the print dialog.'],
+    ], [1.5*inch, CW-1.5*inch]))
     s.append(PB())
     return s
 
@@ -674,11 +697,46 @@ def ch34():
         'The gateway status page at http://192.168.50.2:9000 shows tunnel state, '
         'last handshake time, AMPRNet address, bytes transferred, and system health '
         'of the gateway Pi. '
+        'Access requires a valid FCC amateur radio callsign. '
         'The FieldComms dashboard health monitor also shows a 44Net status indicator '
         'updated every 30 seconds by the amprgate-poll background service.'))
     s.append(SP(6))
 
-    s.append(P('33.6  Network IP Reference', H2))
+    s.append(P('33.6  AMPRNet Gateway — Access Control', H2))
+    s.append(P(
+        'Access to the AMPRNet gateway is restricted to FCC-licensed amateur radio '
+        'operators. This is both a security measure and a Part 97 compliance requirement. '
+        'The gateway uses a two-level access model:'))
+    s.append(SP(4))
+    s.append(tbl(['LEVEL', 'HOW TO ACCESS', 'WHAT YOU CAN DO'], [
+        ['Status dashboard  (any EMCOMM-NET device)',
+         'Open http://192.168.50.2:9000 in any browser on EMCOMM-NET.  '
+         'Enter your FCC callsign when prompted.  '
+         'Callsign is validated against the local FCC database on the FieldComms Pi.',
+         'View tunnel state, AMPRNet address, last handshake, '
+         'traffic statistics, routes, and gateway system health.  '
+         'Read-only — no tunnel control from this level.'],
+        ['Tunnel control  (gateway Pi keyboard only)',
+         'Sit at the gateway Pi keyboard.  '
+         'Open Chromium to http://localhost:9001.  '
+         'Log in with your FCC callsign.  '
+         'Physical presence at the gateway Pi is required — '
+         'this port is blocked from the network.',
+         'Bring the WireGuard tunnel up, down, or restart it.  '
+         'All actions are logged with callsign, timestamp, and IP address.'],
+    ], [1.2*inch, 2.2*inch, CW-3.4*inch]))
+    s.append(SP(4))
+    s.append(note(
+        'The /api/status endpoint on port 9000 does not require authentication. '
+        'This is intentional — the FieldComms Pi poll service reads it every 30 seconds '
+        'as a machine-to-machine call to update the dashboard WAN indicator. '
+        'This endpoint is read-only and returns no sensitive data. '
+        'All web UI access and all tunnel control actions are logged to '
+        '/var/log/amprgate-access.log on the gateway Pi.',
+        'note'))
+    s.append(SP(6))
+
+    s.append(P('33.7  Network IP Reference', H2))
     s.append(tbl(['DEVICE', 'IP ADDRESS', 'ADMIN URL'], [
         ['FieldComms Pi 5  (application server)',  '192.168.50.1',   'http://192.168.50.1'],
         ['44Net Gateway Pi 5',                     '192.168.50.2',   'http://192.168.50.2:9000'],

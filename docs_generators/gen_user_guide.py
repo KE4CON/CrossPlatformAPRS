@@ -48,8 +48,11 @@ class NC(canvas.Canvas):
         total = len(self._saved)
         for st in self._saved:
             self.__dict__.update(st)
+            self.TOTAL = total
             n = self._pageNumber
-            if n > 1:
+            if n == 1:
+                self._draw_cover()
+            elif n > 1:
                 self.setFillColor(EOC)
                 self.rect(0, PAGE_H-0.40*inch, PAGE_W, 0.40*inch, fill=1, stroke=0)
                 self.setFillColor(GOLD)
@@ -72,11 +75,54 @@ class NC(canvas.Canvas):
                     'Amateur Radio Emergency Communications — For Authorized Personnel')
                 self.drawRightString(PAGE_W-M, 0.11*inch,
                     f'Page {n} of {total}')
-            else:
-                self.drawCentredString(PAGE_W/2, 0.11*inch,
-                    f'FieldComms IMS v1.0  ·  {ORG}  ·  {TODAY}')
             super().showPage()
         super().save()
+    def _draw_cover(self):
+        """Full-page canvas-drawn cover."""
+        self.setFillColor(HexColor('#1a3a6b'))
+        self.rect(0, 0, PAGE_W, PAGE_H, fill=1, stroke=0)
+        self.setFillColor(HexColor('#f0c040'))
+        self.rect(0, PAGE_H - 0.18*inch, PAGE_W, 0.18*inch, fill=1, stroke=0)
+        self.setFillColor(HexColor('#f0c040'))
+        self.rect(0, 0, PAGE_W, 0.18*inch, fill=1, stroke=0)
+        self.setFillColor(HexColor('#1e4480'))
+        self.rect(0, PAGE_H*0.38, PAGE_W, PAGE_H*0.36, fill=1, stroke=0)
+        self.setFillColor(HexColor('#f0c040'))
+        self.setFont('Helvetica-Bold', 10)
+        self.drawCentredString(PAGE_W/2, PAGE_H - 0.70*inch,
+            'K9ESV  ·  McHenry County Emergency Services Volunteers')
+        self.setFillColor(HexColor('#c0d4f0'))
+        self.setFont('Helvetica', 9)
+        self.drawCentredString(PAGE_W/2, PAGE_H - 0.88*inch,
+            'and McHenry County Emergency Management Agency')
+        self.setFillColor(HexColor('#ffffff'))
+        self.setFont('Helvetica-Bold', 58)
+        self.drawCentredString(PAGE_W/2, PAGE_H*0.60, 'FIELDCOMMS')
+        self.setFillColor(HexColor('#f0c040'))
+        self.setFont('Helvetica-Bold', 15)
+        self.drawCentredString(PAGE_W/2, PAGE_H*0.545,
+            'Incident Management System  v1.0')
+        self.setStrokeColor(HexColor('#f0c040'))
+        self.setLineWidth(1.5)
+        self.line(M*2, PAGE_H*0.505, PAGE_W - M*2, PAGE_H*0.505)
+        self.setFillColor(HexColor('#ffffff'))
+        self.setFont('Helvetica-Bold', 26)
+        self.drawCentredString(PAGE_W/2, PAGE_H*0.448, 'USER GUIDE')
+        self.setFillColor(HexColor('#c0d4f0'))
+        self.setFont('Helvetica', 10)
+        self.drawCentredString(PAGE_W/2, PAGE_H*0.395, 'McHenry County RACES, ARES & Starcom')
+        self.setFillColor(HexColor('#8090c0'))
+        self.setFont('Helvetica', 9.5)
+        self.drawCentredString(PAGE_W/2, PAGE_H*0.30,
+            'RACES  ·  ARES  ·  Starcom  ·  K9ESV  ·  MCESV / MCEMA')
+        self.setFillColor(HexColor('#6070a0'))
+        self.setFont('Helvetica', 9)
+        self.drawCentredString(PAGE_W/2, PAGE_H*0.25, TODAY)
+        self.setFillColor(HexColor('#1a3a6b'))
+        self.setFont('Helvetica', 7)
+        self.drawCentredString(PAGE_W/2, 0.05*inch,
+            f'FieldComms IMS v1.0  ·  MCESV/MCEMA  ·  {TODAY}')
+
 
 # ── Style helpers ─────────────────────────────────────────────────────────────
 def S(name, **kw):

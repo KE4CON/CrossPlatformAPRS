@@ -136,6 +136,35 @@ def ch10():
         'Enter a radius in km in the <b>Range ring</b> field and click <b>Draw Ring</b> '
         'to place a circle on the map centered on your GPS position or the station '
         'default coordinates. Useful for visualizing coverage areas.'))
+    s.append(SP(6))
+
+    s.append(P('9.4  Map Layers', H2))
+    s.append(tbl(['LAYER', 'DESCRIPTION', 'AVAILABILITY'], [
+        ['USGS Topo + Imagery  (default)',
+         'USGS satellite imagery with roads, contours, and place names overlaid. '
+         'Best for field operations and SAR.',
+         'Offline — tiles stored on Pi'],
+        ['OpenStreetMap',
+         'Detailed street map with building outlines, trails, and POIs. '
+         'Good for urban EOC operations.',
+         'Offline — tiles stored on Pi'],
+        ['Esri World Imagery',
+         'High-resolution satellite imagery without overlays. '
+         'Best for aerial reconnaissance and damage assessment.',
+         'Online only — requires WAN'],
+        ['NOAA NWS Radar  (overlay)',
+         'Live NOAA radar precipitation overlay on any base layer. '
+         'Updates every 5 minutes when WAN is available.',
+         'Online only — requires WAN'],
+    ], [1.4*inch, 2.4*inch, CW-3.8*inch]))
+    s.append(SP(4))
+    s.append(note(
+        'Offline map tiles for McHenry County and surrounding counties are '
+        'pre-loaded during installation. '
+        'To download tiles for additional counties or states, run: '
+        'sudo bash /opt/fieldcomms/scripts/download_tiles.sh --region [region-name]. '
+        'Each county tile set uses approximately 200-500 MB of storage.',
+        'tip'))
     s.append(PB())
     return s
 
@@ -392,6 +421,29 @@ def ch15():
         ['Public Health',            'Disease outbreak, mass vaccination, shelter-in-place'],
         ['Other',                    'Any incident not covered by the above types'],
     ], widths=[1.8*inch, CW-1.8*inch]))
+    s.append(SP(6))
+
+    s.append(P('14.3  Multi-User Real-Time Collaboration', H2))
+    s.append(P(
+        'Every device on EMCOMM-NET connected to the ICS Platform sees the same '
+        'incident state simultaneously. '
+        'Changes made by the Operations Section Chief on one tablet appear immediately '
+        'on the Planning Section Chief tablet and the Logistics Section Chief laptop '
+        'without anyone pressing a refresh button. '
+        'This real-time synchronization uses WebSocket connections maintained by '
+        'the ics-platform background service on the Pi.'))
+    s.append(SP(4))
+    s.append(P(
+        'The recommended workflow for a fully-staffed EOC activation is:'))
+    s.append(SP(4))
+    s.append(tbl(['POSITION', 'DEVICE', 'ICS SECTION'], [
+        ['Incident Commander',     'Tablet on EMCOMM-NET', 'ics/command.html — objectives, safety, public info'],
+        ['Operations Section Chief','Laptop on EMCOMM-NET','ics/operations.html — T-card board, resource assignments'],
+        ['Planning Section Chief', 'Laptop on EMCOMM-NET', 'ics/planning.html — IAP tracker, situation status'],
+        ['Logistics Section Chief','Tablet on EMCOMM-NET', 'ics/logistics.html — comms plan, supply requests'],
+        ['Finance/Admin',          'Laptop on EMCOMM-NET', 'ics/finance.html — cost tracking, time log'],
+        ['Net Control Operator',   'Pi 500 workstation',   'netcontrol.html + starcom.html — radio net logging'],
+    ], [1.6*inch, 1.5*inch, CW-3.1*inch]))
     s.append(PB())
     return s
 
