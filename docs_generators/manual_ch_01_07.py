@@ -9,49 +9,106 @@ def ch1():
     s = chapter(1, 'Introduction & System Overview')
     s.append(P(
         'FieldComms Incident Management System is a self-contained emergency communications '
-        'server that runs on a Raspberry Pi. It provides a complete suite of EmComm tools '
-        'accessible through any standard web browser — net control logging, an ICS incident '
-        'management platform, APRS mapping, offline reference libraries, Winlink integration, '
-        'and ICS form generation. No internet connection is required for any core feature. '
-        'It is purpose-built for McHenry County Emergency Services Volunteers and McHenry '
-        'County Emergency Management Agency operating under the RACES, ARES, and Starcom '
-        'frameworks.'))
+        'server built on a Raspberry Pi 5 for McHenry County RACES, ARES, and Starcom operations. '
+        'It provides 32 web-based EmComm tools accessible from any smartphone, tablet, or laptop '
+        'connected to the EMCOMM-NET Wi-Fi access point — no internet, no app installation, '
+        'and no per-device configuration required. '
+        'All core features operate fully offline. '
+        'When internet connectivity is available through InstyConnect cellular or Starlink satellite, '
+        'live features such as NWS weather alerts, APRS-IS, and HF propagation data activate automatically.'))
     s.append(SP(4))
     s.append(P(
-        'The system runs on a Raspberry Pi 5 with 16 GB RAM inside a Pironman MAX 5 tower '
-        'enclosure with dual NVMe SSDs in RAID 1. An ASUS RT-BE58 Go Wi-Fi 7 travel router '
-        'provides the EMCOMM-NET wireless access point — the Pi itself is a wired server, '
-        'not a hotspot. Any smartphone, tablet, or laptop within Wi-Fi range connects to '
-        'EMCOMM-NET and reaches the full dashboard at http://192.168.50.1 in under a minute, '
-        'with no app installation and no per-device configuration required.'))
-    s.append(SP(4))
-    s.append(P('How It Works', H2))
-    s.append(P(
-        'The Pi broadcasts its own Wi-Fi network named <b>EMCOMM-NET</b>. Any '
-        'smartphone, tablet, or laptop connects to that network and opens the '
-        'dashboard in a browser at <b>http://192.168.50.1</b>. The server hosts '
-        'every tool locally. No app needs to be installed on any device.'))
-    s.append(SP(4))
-    s.append(tbl(['WHAT IT IS', 'DETAIL'], [
-        ['A web server', 'nginx serves the dashboard and all 30 tool pages'],
-        ['A database', 'SQLite stores members, nets, incidents, resources, forms'],
-        ['An API layer', 'Python Flask services on ports 5050–5056 serve live data'],
-        ['An offline library', 'Kiwix serves WikiMed, Wikipedia, and reference docs at port 8081'],
-        ['An APRS receiver', 'Graywolf and YAAC receive RF APRS packets at ports 8080 and 8082'],
-        ['A map tile server', 'Offline USGS tiles served at port 8083 — no internet needed'],
-    ], widths=[1.8*inch, CW-1.8*inch]))
+        'Version 1.0 uses two Raspberry Pi 5 units: the FieldComms application server at '
+        '192.168.50.1 running all 32 web tools and 15 background services, and a dedicated '
+        'AMPRNet gateway Pi at 192.168.50.2 maintaining a permanent WireGuard tunnel into '
+        'the 44.0.0.0/8 amateur radio IP network. '
+        'Three ASUS RT-BE58 Go Wi-Fi 7 routers form an AiMesh network: one primary router '
+        'managing WAN connectivity and DHCP, and two mesh nodes extending EMCOMM-NET coverage '
+        'to secondary rooms, outdoor staging areas, and upper floors. '
+        'InstyConnect cellular with T-Mobile and Verizon dual-carrier coverage is the primary '
+        'WAN source. Starlink satellite provides automatic secondary failover.'))
     s.append(SP(6))
-    s.append(P('Key Principles', H2))
-    s += steps([
-        '<b>Offline-first</b> — every feature works without internet. Optional WAN connection enables FCC database refresh, NWS alerts, and propagation data.',
-        '<b>Browser-based</b> — no app installs. Any device with a modern browser works.',
-        '<b>Identity-aware</b> — each operator identifies once and their callsign, Radio ID, or name appears on all log entries.',
-        '<b>Multi-user</b> — many operators on many devices simultaneously, all seeing the same live data.',
-        '<b>Three dashboard modes</b> — Amateur Radio, Starcom / Public Safety, and ICS Incident Command keep tools organized for the task at hand.',
-    ])
+
+    s.append(P('1.1  System Architecture', H2))
+    s.append(tbl(['COMPONENT', 'DESCRIPTION', 'IP / ACCESS'], [
+        ['FieldComms Pi 5  (16 GB)',
+         'Application server  ·  Pironman MAX 5 tower  ·  2× 1 TB NVMe RAID 1  ·  '
+         'runs all 32 web pages and 15 Python services',
+         '192.168.50.1  /  http://192.168.50.1'],
+        ['44Net Gateway Pi 5  (16 GB)',
+         'AMPRNet gateway  ·  Argon NEO 5 case  ·  256 GB M.2 SSD  ·  Pi OS Desktop  ·  '
+         'WireGuard tunnel to amprgw.ampr.org  ·  routes 44.0.0.0/8',
+         '192.168.50.2  /  http://192.168.50.2:9000'],
+        ['ASUS RT-BE58 Go  (primary)',
+         'Wi-Fi 7 access point  ·  DHCP server  ·  dual WAN gateway  ·  AiMesh controller  ·  '
+         'InstyConnect cellular primary WAN  ·  Starlink automatic failover',
+         '192.168.50.254  /  http://192.168.50.254'],
+        ['ASUS RT-BE58 Go  (2× mesh nodes)',
+         'AiMesh coverage extension  ·  same EMCOMM-NET SSID  ·  seamless roaming  ·  '
+         'wired backhaul via UniFi Switch Ports 11 and 12',
+         'Managed by primary router'],
+        ['UniFi Switch Lite 16 PoE',
+         '16-port GbE managed switch  ·  8× PoE  ·  2× SFP uplink  ·  '
+         'wired distribution hub for all devices',
+         'Layer 2 — no IP'],
+        ['InstyConnect Drum  (primary WAN)',
+         'Omnidirectional 5G/LTE cellular antenna  ·  modem built into enclosure  ·  '
+         'T-Mobile + Verizon dual-carrier  ·  single PoE Ethernet to ASUS WAN port',
+         'Modem admin: 10.1.1.1'],
+        ['InstyConnect Switchblade  (backup antenna)',
+         'Directional 4× folding LDAP antenna  ·  swap with Drum cable when signal is poor  ·  '
+         'aim toward nearest tower using InstyConnect app',
+         'Same WAN port as Drum'],
+        ['Starlink dish  (automatic failover)',
+         'Satellite internet  ·  CGNAT  ·  no inbound connections  ·  '
+         'connects to ASUS USB WAN port via Ethernet adapter',
+         'Dish admin: 192.168.100.1'],
+        ['Windows Laptop',
+         'IC-7300 HF radio  ·  Winlink Express  ·  VARA HF  ·  JS8Call  ·  '
+         'all connected via single USB cable',
+         '192.168.50.3  (recommended)'],
+        ['Pi 500 Workstations  (×4)',
+         'Browser-based operator stations  ·  Raspberry Pi 500 keyboard computer  ·  '
+         'Raspberry Pi Monitor 15.6"  ·  USB-C powered',
+         '192.168.50.20–23'],
+    ], [1.4*inch, 3.0*inch, CW-4.4*inch]))
+    s.append(SP(6))
+
+    s.append(P('1.2  Dashboard Modes', H2))
+    s.append(P(
+        'The FieldComms dashboard reorganizes its tool cards into three modes '
+        'selected from the mode bar at the top of the page. '
+        'The mode changes the layout and highlights the tools most relevant '
+        'to the current type of operation. All tools remain accessible regardless of mode.'))
+    s.append(SP(4))
+    s.append(tbl(['MODE', 'BEST FOR', 'HIGHLIGHTED TOOLS'], [
+        ['Amateur Radio',
+         'ARES/RACES nets, HF operations, Winlink, APRS tracking',
+         'Net Control Logger, Callsign Lookup, APRS Map, Propagation, Repeaters, Dead Man Switch'],
+        ['Starcom / Public Safety',
+         'Public safety Starcom radio nets, SAR operations, shelter management',
+         'Starcom Net Logger, Resource Tracking Map, Resource Board, Facilities Directory'],
+        ['ICS Incident Command',
+         'Activated incidents requiring formal ICS documentation and IAP',
+         'ICS Platform (all 5 sections), Planning P, ICS-213, ICS-214, Winlink Import'],
+    ], [1.0*inch, 2.2*inch, CW-3.2*inch]))
+    s.append(SP(6))
+
+    s.append(P('1.3  Offline vs. Online Features', H2))
+    s.append(tbl(['FEATURE', 'OFFLINE  (no WAN)', 'ONLINE  (WAN active)'], [
+        ['Net Control Logging',    'Full — always available', 'Full — no change'],
+        ['FCC Callsign Lookup',    'Full — local 800K database', 'Full — local database used'],
+        ['ICS Platform',           'Full — all sections', 'Full — no change'],
+        ['Kiwix Reference Library','Full — stored on Pi', 'Full — no change'],
+        ['Offline Maps (APRS)',    'Full — tiles stored on Pi', 'Full — no change'],
+        ['NWS Weather Alerts',     'Unavailable', 'Live — updates every 5 minutes'],
+        ['APRS-IS Feed',           'RF only via Graywolf/YAAC', 'Internet APRS-IS active'],
+        ['HF Propagation Data',    'Last cached data only', 'Live band conditions'],
+        ['Pat Winlink',            'RF only (packet/VARA RF)', 'Internet Winlink gateways'],
+        ['AMPRNet / 44Net',        'Unavailable (needs WAN)', 'Live via WireGuard tunnel'],
+    ], [1.8*inch, 2.2*inch, CW-4.0*inch]))
     s.append(PB())
     return s
-
 
 def ch2():
     s = chapter(2, 'Getting Started — Connecting to FieldComms',

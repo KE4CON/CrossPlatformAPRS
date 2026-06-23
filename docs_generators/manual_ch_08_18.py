@@ -235,51 +235,77 @@ def ch13():
                 'http://192.168.50.1/deadmans.html')
     s.append(P(
         "The Dead Man's Switch (DMS) is a net inactivity monitor. "
-        "When armed for a net, it watches the last-activity timestamp on that net. "
-        "If no check-in, traffic entry, or manual reset occurs within the configured "
-        "threshold period, the DMS fires: an audible alarm sounds, the page turns red, "
-        "and a countdown flashes until the situation is resolved. "
+        "When armed for a specific net, it watches the last-activity timestamp on that net. "
+        "If no check-in, no traffic entry, and no manual reset occurs within the configured "
+        "threshold period, the DMS fires: an audible alarm sounds on every browser "
+        "that has the DMS page open, the page background turns red, and a countdown "
+        "flashes until the situation is resolved. "
         "This gives net control operators an automatic safety net against a silent radio, "
-        "a dropped connection, or an operator who stepped away from the console."))
+        "a dropped connection, or an unattended console during a long activation."))
     s.append(SP(4))
     s.append(P(
-        "The DMS can be armed independently for each active net. "
-        "During a major activation running a Starcom General Net, a Weather Net, and a "
-        "SAR Net simultaneously, each net gets its own DMS with its own threshold. "
-        "The DMS runs in the browser tab where it was opened — keep that tab visible "
-        "on a dedicated monitor or the net control operator screen."))
+        "The DMS can be armed independently for each active net running in FieldComms. "
+        "A major activation running a Starcom General Net, a Weather Net, and a SAR Net "
+        "simultaneously can have each net on its own DMS with its own threshold. "
+        "The DMS page runs in the browser tab where it was opened — "
+        "keep it visible on a dedicated monitor or the net control operator display."))
     s.append(SP(6))
-    s.append(P('Arming the DMS for a Net', H2))
-    s += steps([
-        "Open the Dead Man's Switch page from the Amateur Radio or Starcom dashboard.",
-        'Active nets appear automatically in the panel.',
-        'Click <b>⚠ Arm</b> next to the net you want to monitor.',
-        'The DMS is now active. Any check-in or traffic logged in the Net Control Logger or Starcom Logger will automatically reset the timer.',
-        'The countdown timer is displayed on the page, showing time remaining before the alert fires.',
-    ])
+
+    s.append(P('12.1  How to Arm the DMS', H2))
+    s.extend(steps([
+        'Open http://192.168.50.1/deadmans.html in a browser on any EMCOMM-NET device.',
+        'Select the net you want to monitor from the dropdown. '
+        'All active nets in FieldComms appear here automatically.',
+        'Set the threshold — how many minutes of inactivity before the alarm fires. '
+        'Typical settings: 10 minutes for a busy net, 15 minutes for a weather or traffic net, '
+        '5 minutes for a SAR net where frequent check-ins are expected.',
+        'Click ARM. The countdown timer starts from the last recorded activity on that net.',
+        'Leave the DMS tab open and visible. The alarm fires in this tab and browser only. '
+        'For maximum coverage, open the DMS on a dedicated monitor at the net control position.',
+    ]))
     s.append(SP(6))
-    s.append(P('Configuration', H2))
-    s.append(tbl(['SETTING', 'DEFAULT', 'DESCRIPTION'], [
-        ['Threshold',    '30 min', 'Time of inactivity before the alert fires'],
-        ['Warning at',   '80%',    'Percentage of threshold at which a yellow warning appears'],
-        ['Poll interval','30 sec', 'How often the DMS checks the server for net activity'],
-        ['Alert sound',  'On',     'Audible alarm when the threshold is exceeded'],
-    ], widths=[1.4*inch, 0.9*inch, CW-2.3*inch]))
+
+    s.append(P('12.2  When the DMS Fires', H2))
+    s.append(P(
+        "When the inactivity threshold is exceeded the DMS fires immediately. "
+        "The browser tab turns red, a loud alarm tone plays, and the countdown "
+        "shows how long ago the last activity was recorded. "
+        "Any of the following actions resets the DMS and stops the alarm:"))
+    s.append(SP(4))
+    s.append(tbl(['RESET ACTION', 'HOW', 'NOTES'], [
+        ['Station check-in',
+         'Any operator checks into the net using the Net Control Logger',
+         'Most common reset during a normal net — just running the net keeps the DMS satisfied'],
+        ['Traffic entry',
+         'Any operator adds a traffic item to the net traffic log',
+         'Logging a message or status update counts as activity'],
+        ['Manual reset',
+         'Click the RESET button on the DMS page',
+         'Use during planned quiet periods — briefings, breaks, or scheduled silence'],
+        ['Disarm',
+         'Click DISARM on the DMS page',
+         'Disarm when the net is formally closed or monitoring is no longer needed'],
+    ], [1.3*inch, 2.1*inch, CW-3.4*inch]))
     s.append(SP(6))
-    s.append(P('Resetting and Disarming', H2))
-    s += steps([
-        'Click <b>↺ Reset</b> to manually reset the timer without disarming.',
-        'Click <b>Disarm</b> to turn off monitoring for that net.',
-        'The DMS disarms automatically when the net is closed.',
-    ])
+
+    s.append(P('12.3  Multiple Nets', H2))
+    s.append(P(
+        "Each net in FieldComms can have its own independent DMS instance. "
+        "Open http://192.168.50.1/deadmans.html in separate browser tabs, "
+        "one per net, and set different thresholds for each. "
+        "For example: the Starcom General Net at 10 minutes, "
+        "the RACES HF net at 20 minutes during an extended overnight activation, "
+        "and the SAR Coordination Net at 5 minutes. "
+        "Each tab monitors and alarms independently."))
     s.append(SP(4))
     s.append(note(
-        "The DMS runs in the browser tab where you opened it. If you close the "
-        "tab or navigate away, the audible alert will not sound. Keep the DMS page "
-        "open in a dedicated tab during activations.", 'warn'))
+        "The DMS runs in the browser tab — it does not send alerts to other devices. "
+        "If the operator closes the tab or the device goes to sleep, the DMS stops. "
+        "For overnight or extended activations, use a dedicated device on AC power "
+        "with screen-saver and sleep disabled for the DMS monitor.",
+        'warn'))
     s.append(PB())
     return s
-
 
 def ch14():
     s = chapter(14, 'Pre-Flight Deployment Checklist',

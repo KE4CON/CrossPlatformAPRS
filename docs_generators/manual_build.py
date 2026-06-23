@@ -31,52 +31,11 @@ _s = lambda name, **kw: ParagraphStyle(
     spaceBefore=kw.get('spaceBefore',0),
 )
 
-# ── Cover page ────────────────────────────────────────────────────────────────
+# ── Cover page — drawn by ManualCanvas._draw_cover() ─────────────────────────
+# The cover is rendered entirely on canvas (page 1).
+# This function returns just a PageBreak to occupy page 1 in the story.
 def cover():
-    story = []
-    story.append(SP(50))
-
-    cov = Table([[Table([[
-        P('McHenry County Emergency Services Volunteers',
-          _s('c1', fontName='Helvetica-Bold', fontSize=10, textColor=GOLD,
-             alignment=TA_CENTER, leading=14)),
-        P('and McHenry County Emergency Management Agency',
-          _s('c2', fontName='Helvetica', fontSize=10, textColor=HexColor('#c0d4f0'),
-             alignment=TA_CENTER, leading=14)),
-        SP(6),
-        P('INCIDENT MANAGEMENT',
-          _s('c3', fontName='Helvetica-Bold', fontSize=34, textColor=white,
-             alignment=TA_CENTER, leading=40)),
-        P('SYSTEM v1.0',
-          _s('c4', fontName='Helvetica-Bold', fontSize=24, textColor=GOLD,
-             alignment=TA_CENTER, leading=28)),
-        SP(10),
-        HR(GOLD, 0.6),
-        SP(8),
-        P('Complete User Manual',
-          _s('c5', fontName='Helvetica', fontSize=16, textColor=HexColor('#c0d4f0'),
-             alignment=TA_CENTER, leading=20)),
-        SP(4),
-        P('K9ESV  ·  RACES  ·  ARES  ·  Starcom',
-          _s('c6', fontName='Helvetica', fontSize=11, textColor=HexColor('#8090b0'),
-             alignment=TA_CENTER, leading=15)),
-        SP(20),
-        P(f'MCESV/MCEMA  ·  {TODAY}',
-          _s('c7', fontName='Helvetica', fontSize=9, textColor=HexColor('#6070a0'),
-             alignment=TA_CENTER, leading=12)),
-    ]], colWidths=[CW])]], colWidths=[CW])
-    cov.setStyle(TableStyle([
-        ('BACKGROUND',    (0,0), (-1,-1), EOC),
-        ('TOPPADDING',    (0,0), (-1,-1), 50),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 50),
-        ('LEFTPADDING',   (0,0), (-1,-1), 40),
-        ('RIGHTPADDING',  (0,0), (-1,-1), 40),
-        ('LINEBELOW',     (0,0), (-1,-1), 3, GOLD),
-    ]))
-    story.append(cov)
-    story.append(PB())
-    return story
-
+    return [PB()]
 
 # ── Table of Contents ─────────────────────────────────────────────────────────
 def toc_page(chapters):

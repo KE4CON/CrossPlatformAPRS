@@ -177,9 +177,71 @@ class ManualCanvas(canvas.Canvas):
         for st in self._saved:
             self.__dict__.update(st)
             self.TOTAL = total   # restore after dict update (update clobbers it)
-            self._draw_chrome()
+            n = self._pageNumber
+            if n == 1:
+                self._draw_cover()
+            else:
+                self._draw_chrome()
             super().showPage()
         super().save()
+
+    def _draw_cover(self):
+        """Full-page canvas-drawn cover — page 1 only."""
+        # Full-page deep navy background
+        self.setFillColor(EOC)
+        self.rect(0, 0, PAGE_W, PAGE_H, fill=1, stroke=0)
+        # Gold accent stripes
+        self.setFillColor(GOLD)
+        self.rect(0, PAGE_H - 0.18*inch, PAGE_W, 0.18*inch, fill=1, stroke=0)
+        self.setFillColor(GOLD)
+        self.rect(0, 0, PAGE_W, 0.18*inch, fill=1, stroke=0)
+        # Mid-tone band behind title
+        self.setFillColor(HexColor('#1e4480'))
+        self.rect(0, PAGE_H*0.38, PAGE_W, PAGE_H*0.36, fill=1, stroke=0)
+        # Org / callsign header
+        self.setFillColor(GOLD)
+        self.setFont('Helvetica-Bold', 10)
+        self.drawCentredString(PAGE_W/2, PAGE_H - 0.70*inch,
+            'K9ESV  ·  McHenry County Emergency Services Volunteers')
+        self.setFillColor(HexColor('#c0d4f0'))
+        self.setFont('Helvetica', 9)
+        self.drawCentredString(PAGE_W/2, PAGE_H - 0.88*inch,
+            'and McHenry County Emergency Management Agency')
+        # FIELDCOMMS title
+        self.setFillColor(white)
+        self.setFont('Helvetica-Bold', 58)
+        self.drawCentredString(PAGE_W/2, PAGE_H*0.60, 'FIELDCOMMS')
+        # Subtitle
+        self.setFillColor(GOLD)
+        self.setFont('Helvetica-Bold', 15)
+        self.drawCentredString(PAGE_W/2, PAGE_H*0.545,
+            'Incident Management System  v1.0')
+        # Gold rule
+        self.setStrokeColor(GOLD)
+        self.setLineWidth(1.5)
+        self.line(M*2, PAGE_H*0.505, PAGE_W - M*2, PAGE_H*0.505)
+        # Document type
+        self.setFillColor(white)
+        self.setFont('Helvetica-Bold', 26)
+        self.drawCentredString(PAGE_W/2, PAGE_H*0.448, 'COMPLETE USER MANUAL')
+        # Sub-doc line
+        self.setFillColor(HexColor('#c0d4f0'))
+        self.setFont('Helvetica', 10)
+        self.drawCentredString(PAGE_W/2, PAGE_H*0.395, 'v1.0')
+        # Hardware / affiliation
+        self.setFillColor(HexColor('#8090c0'))
+        self.setFont('Helvetica', 9.5)
+        self.drawCentredString(PAGE_W/2, PAGE_H*0.30,
+            'RACES  ·  ARES  ·  Starcom  ·  K9ESV  ·  MCESV / MCEMA')
+        # Date
+        self.setFillColor(HexColor('#6070a0'))
+        self.setFont('Helvetica', 9)
+        self.drawCentredString(PAGE_W/2, PAGE_H*0.25, TODAY)
+        # Footer text
+        self.setFillColor(EOC)
+        self.setFont('Helvetica', 7)
+        self.drawCentredString(PAGE_W/2, 0.05*inch,
+            f'FieldComms IMS v1.0  ·  For Authorized Operator Use  ·  MCESV/MCEMA')
 
     def _draw_chrome(self):
         n = self._pageNumber

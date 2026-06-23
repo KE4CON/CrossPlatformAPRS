@@ -536,97 +536,170 @@ def ch33():
 
 
 def ch34():
-    s = chapter(34, 'Network Hardware — ASUS RT-BE58 Go & UniFi Switch Flex 2.5G')
+    s = chapter(34, 'Network Hardware — ASUS RT-BE58 Go & UniFi Switch Lite 16')
     s.append(P(
-        'FieldComms v1.0 uses a dedicated Wi-Fi 7 travel router and a 2.5 GbE managed '
-        'switch rather than having the Pi broadcast its own Wi-Fi hotspot. '
-        'This architecture gives every device on scene a faster and more reliable wireless '
-        'connection, lets the Pi dedicate all its CPU and memory to running FieldComms '
-        'services, and provides a clean separation between the application server '
-        'and the network infrastructure.'))
+        'FieldComms v1.0 uses a three-router mesh network rather than a single access point. '
+        'The primary ASUS RT-BE58 Go travel router manages WAN connectivity, DHCP, and the '
+        'EMCOMM-NET Wi-Fi access point. Two additional RT-BE58 Go routers operate as AiMesh '
+        'nodes extending EMCOMM-NET to secondary rooms, outdoor staging areas, and upper floors '
+        '— all sharing the same SSID and password with seamless device roaming. '
+        'The Pi itself never broadcasts Wi-Fi. It communicates over wired Ethernet only.'))
     s.append(SP(4))
-    s.append(P(
-        'The ASUS RT-BE58 Go travel router handles everything wireless: '
-        'DHCP, SSID broadcast, WPA2 authentication, and optional WAN internet routing. '
-        'The UniFi Switch Flex 2.5G-5 provides five wired 2.5 GbE ports for the Pi, '
-        'the Windows laptop, and any other wired devices. '
-        'The Pi itself always communicates over wired Ethernet at its static address '
-        '192.168.50.1 — rock solid, no wireless interference, no Wi-Fi dropouts.'))
-    s.append(SP(6))
-    s.append(P('Network Architecture Overview', H2))
     s.append(tbl(['DEVICE', 'ROLE', 'CONNECTION'], [
-        ['ASUS RT-BE58 Go',
-         'Wi-Fi 7 access point + DHCP server + WAN gateway',
-         'WAN: Ethernet uplink or USB tether · LAN: 2.5G to UniFi switch'],
-        ['UniFi Switch Flex 2.5G-5',
-         '5-port 2.5 GbE wired distribution switch',
-         'Port 1 (PoE in): uplink to ASUS router · Ports 2–5: Pi, TNC, EOC laptop, spare'],
-        ['Raspberry Pi 5 (16 GB)',
-         'FieldComms application server',
-         'Wired 2.5 GbE via UniFi switch · Static IP: 192.168.50.1'],
-        ['Windows Laptop',
-         'Winlink Express + JS8Call + IC-7300',
-         'Wi-Fi (EMCOMM-NET) or wired via UniFi switch'],
-    ], widths=[1.6*inch, 2.2*inch, CW-3.8*inch]))
-    s.append(SP(8))
+        ['ASUS RT-BE58 Go  (primary)',
+         'Wi-Fi 7 AP  ·  DHCP server  ·  WAN gateway  ·  AiMesh controller',
+         'WAN: InstyConnect cellular  ·  USB WAN: Starlink failover  ·  LAN: UniFi switch'],
+        ['ASUS RT-BE58 Go  (mesh node 1)',
+         'EMCOMM-NET extension — same SSID, seamless roaming',
+         'Wired backhaul via UniFi Switch Port 11'],
+        ['ASUS RT-BE58 Go  (mesh node 2)',
+         'EMCOMM-NET extension — third coverage zone',
+         'Wired backhaul via UniFi Switch Port 12'],
+        ['UniFi Switch Lite 16 PoE',
+         '16-port GbE managed switch  ·  8x PoE  ·  wired distribution hub',
+         'Port 1: router uplink  ·  Ports 2-12: devices  ·  Ports 13-16: spare'],
+    ], [1.4*inch, 2.4*inch, CW-3.8*inch]))
+    s.append(SP(6))
 
-    s.append(P('33.5  ASUS RT-BE58 Go Setup', H2))
-    s += steps([
-        'Connect a device to the router (Wi-Fi or Ethernet) and open <b>http://192.168.50.1</b> (default gateway).',
-        'Change the LAN IP to <b>192.168.50.1</b> (LAN → LAN IP).',
-        'Set the subnet to <b>255.255.255.0</b>.',
-        'Set DHCP range to <b>192.168.50.100 – 192.168.50.200</b>.',
-        'Disable the router\'s Wi-Fi security on the management interface — the router LAN IP becomes the FieldComms server IP once the Pi is assigned 192.168.50.1 via nmcli.',
-        'Set the Wi-Fi SSID to <b>EMCOMM-NET</b> on both 2.4 GHz and 5 GHz bands.',
-        'Set a strong WPA3/WPA2 password. Apply.',
-    ])
-    s.append(SP(4))
-    s.append(note(
-        'Write down the ASUS router admin password and store it on a USB drive labeled '
-        'FIELDCOMMS. If the router is factory-reset in the field you will need it to '
-        'reconfigure the LAN subnet and SSID before FieldComms is accessible.', 'warn'))
-    s.append(SP(8))
-
-    s.append(P('33.7  Power Budget & Field Deployment Notes', H2))
-    s.append(tbl(['DEVICE', 'TYPICAL DRAW', 'NOTES'], [
-        ['Raspberry Pi 5 (16 GB)', '~12–25W', 'Higher under load (FCC search, APRS, all services active)'],
-        ['ASUS RT-BE58 Go',        '~8–12W',  'USB-C powered — power bank compatible'],
-        ['UniFi Switch Flex 2.5G', '~10–18W', 'PoE input from router or separate adapter'],
-        ['Raspberry Pi Monitor',   '~5–8W',   'USB-C powered from Pi USB port or separate supply'],
-        ['Windows Laptop',         '~30–65W', 'Varies widely — use laptop power supply, not power bank'],
-    ], widths=[1.8*inch, 1.1*inch, CW-2.9*inch]))
-    s.append(SP(8))
-
-    s.append(P('33.8  Extending Coverage — ASUS AiMesh', H2))
+    s.append(P('33.1  EMCOMM-NET Wi-Fi Coverage', H2))
     s.append(P(
-        'A single ASUS RT-BE58 Go covers approximately 2,000–2,500 sq ft. '
-        'For larger deployments, add one or more AiMesh nodes. All nodes share the '
-        'same EMCOMM-NET SSID and 192.168.50.x subnet. Devices roam automatically '
-        '— the Pi remains at 192.168.50.1 regardless of which node a device connects through.'))
+        'All three routers broadcast EMCOMM-NET on 2.4 GHz and 5 GHz simultaneously. '
+        'Devices connect to whichever band and router provides the strongest signal '
+        'and roam automatically as operators move around the venue. '
+        'A single RT-BE58 Go covers approximately 2,000 to 2,500 square feet indoors. '
+        'With both mesh nodes active, the system covers 7,500 to 20,000 square feet '
+        'depending on building construction. '
+        'For outdoor SAR staging areas, a node on battery at the perimeter '
+        'extends EMCOMM-NET to field positions without additional cabling.'))
+    s.append(SP(6))
+
+    s.append(P('33.2  WAN Connectivity — InstyConnect Primary + Starlink Failover', H2))
+    s.append(P(
+        'The ASUS router manages two WAN sources with automatic failover. '
+        'InstyConnect cellular (T-Mobile and Verizon dual-carrier) is always the primary. '
+        'Starlink satellite is secondary — the ASUS switches to it automatically '
+        'within 30 to 60 seconds when cellular drops, and switches back when cellular recovers. '
+        'No operator action is required for the failover in either direction.'))
     s.append(SP(4))
-    s.append(tbl(['SCENARIO', 'RECOMMENDED SETUP'], [
-        ['Single room EOC (≤ 2,500 sq ft)',        '1× RT-BE58 Go primary only — no extension needed'],
-        ['Multi-room / large shelter (2,500–7,500 sq ft)', '1× primary + 1 AiMesh node (wireless or wired backhaul)'],
-        ['Large building or campus (> 7,500 sq ft)', '1× primary + 2–3 nodes, wired backhaul recommended'],
-        ['Outdoor SAR staging area',                'Primary at command post + battery-powered nodes at field positions'],
-    ], widths=[2.2*inch, CW-2.2*inch]))
+    s.append(tbl(['PRIORITY', 'WAN SOURCE', 'HOW CONNECTED', 'ACTIVATES'], [
+        ['1 — Primary',
+         'InstyConnect cellular  (T-Mobile + Verizon)',
+         'PoE Ethernet from Drum or Switchblade antenna to ASUS WAN port',
+         'Always — default for all activations'],
+        ['2 — Auto failover',
+         'Starlink satellite',
+         'Starlink Ethernet adapter → USB-Ethernet adapter → ASUS USB WAN port',
+         'Automatic when cellular WAN drops or degrades'],
+        ['3 — Manual',
+         'EOC site Ethernet',
+         'Site cable to ASUS WAN port  (replaces InstyConnect cable)',
+         'Manual — when reliable site internet is available'],
+        ['4 — Last resort',
+         'USB smartphone tether  or  venue Wi-Fi (WISP)',
+         'Phone USB to ASUS USB port  or  ASUS WISP wireless WAN mode',
+         'Manual — emergency fallback only'],
+    ], [0.8*inch, 1.5*inch, 2.1*inch, CW-4.4*inch]))
+    s.append(SP(6))
+
+    s.append(P('33.3  InstyConnect Antennas', H2))
+    s.append(P(
+        'FieldComms carries two InstyConnect antennas to handle different deployment sites. '
+        'Both connect via a single outdoor-rated PoE Ethernet cable to the ASUS WAN port. '
+        'The modem is integrated into the outdoor antenna enclosure — '
+        'no separate modem box is needed. Power travels up the same cable that carries data.'))
     s.append(SP(4))
-    s += steps([
-        '<b>Factory reset the node</b>. Hold reset 5–10 seconds until LED flashes.',
-        '<b>Power on the node</b> within 30 ft of the primary for initial pairing.',
-        'On the primary router: <b>AiMesh → Add AiMesh Node</b>. Select the node and click Connect.',
-        '<b>Move the node</b> to its final position once pairing completes.',
-        '<b>Test coverage</b> by walking the area with a phone on EMCOMM-NET.',
-    ])
+    s.append(tbl(['ANTENNA', 'TYPE', 'WHEN TO USE', 'AIMING'], [
+        ['InstyConnect Drum',
+         'Omnidirectional 5G/LTE',
+         'Default antenna — deploy at every activation. '
+         'Mounts on any 1.5" to 2" mast, tripod, or vehicle roof rack.',
+         'No aiming needed — omnidirectional picks up all towers from all directions.'],
+        ['InstyConnect Switchblade',
+         'Directional 4x folding LDAP',
+         'When Drum signal is insufficient at a specific site. '
+         'Folds flat for transport. Deploys in under 5 minutes. '
+         'Swap the PoE cable from the Drum to the Switchblade on the ASUS WAN port.',
+         'Aim toward nearest tower using the InstyConnect signal app. '
+         'Rotate slowly while watching signal bars — stop at peak signal.'],
+    ], [1.1*inch, 1.1*inch, 2.1*inch, CW-4.3*inch]))
+    s.append(SP(4))
     s.append(note(
-        'Up to 8 AiMesh nodes are supported. Pairing takes under 5 minutes on site. '
-        'For wired Ethernet backhaul, run a CAT 6 cable from any UniFi switch port '
-        'to the node LAN port — AiMesh detects the wired connection automatically.', 'tip'))
+        'InstyConnect data plan management: '
+        'Keep the plan in Standby mode ($5/month) between activations. '
+        'Standby maintains the SIM and multi-network capability so you can activate '
+        'at full speed the moment an emergency is declared. '
+        'Activate and pause plans at instyconnect.com. '
+        'Active plan cost is approximately $79-99/month on the Multi-Network Unlimited plan.',
+        'tip'))
+    s.append(SP(6))
+
+    s.append(P('33.4  WAN Status Dashboard', H2))
+    s.append(P(
+        'The WAN Status Dashboard at http://192.168.50.1/wan-status.html gives '
+        'operators a live view of all WAN sources from any browser on EMCOMM-NET. '
+        'The active WAN source is shown in a large color-coded panel: '
+        'green for InstyConnect cellular, blue for Starlink satellite, red for offline. '
+        'InstyConnect signal strength, carrier, and technology are displayed. '
+        'Starlink latency, throughput, and obstruction percentage appear when the dish is active. '
+        'A connectivity test panel verifies reachability to NWS weather alerts, '
+        'APRS-IS, Cloudflare DNS, and the AMPRNet gateway every 60 seconds. '
+        'A WAN event log records every failover and failback with UTC timestamps.'))
+    s.append(SP(6))
+
+    s.append(P('33.5  AMPRNet / 44Net Gateway', H2))
+    s.append(P(
+        'A dedicated Raspberry Pi 5 at 192.168.50.2 runs the AMPRNet gateway service. '
+        'It maintains a permanent WireGuard encrypted tunnel to amprgw.ampr.org and '
+        'routes the entire 44.0.0.0/8 AMPRNet address block for all EMCOMM-NET devices. '
+        'This means any device on EMCOMM-NET — phones, tablets, operator workstations, '
+        'and the FieldComms Pi itself — can reach other AMPRNet stations globally '
+        'without routing traffic through the commercial internet.'))
+    s.append(SP(4))
+    s.append(tbl(['AMPRNET USE CASE', 'HOW IT WORKS FROM EMCOMM-NET'], [
+        ['Winlink via AMPRNet',
+         'Pat Winlink on the FieldComms Pi can connect to RMS gateways on 44.x.x.x addresses '
+         'directly over AMPRNet — bypassing commercial internet when only amateur radio paths are available.'],
+        ['APRS-IS via AMPRNet',
+         'Graywolf and YAAC can connect to APRS-IS servers on 44.x.x.x — '
+         'keeping APRS traffic within the amateur radio network.'],
+        ['Inter-node FieldComms',
+         'If a second MCESV FieldComms system is deployed with its own 44Net gateway, '
+         'the two systems can share data over AMPRNet without commercial internet routing.'],
+        ['Direct amateur station connectivity',
+         'Any licensed amateur station worldwide with a 44.x.x.x address is directly reachable '
+         'from any EMCOMM-NET device for data exchange, file transfer, or status checking.'],
+    ], [1.8*inch, CW-1.8*inch]))
+    s.append(SP(4))
+    s.append(P(
+        'The gateway status page at http://192.168.50.2:9000 shows tunnel state, '
+        'last handshake time, AMPRNet address, bytes transferred, and system health '
+        'of the gateway Pi. '
+        'The FieldComms dashboard health monitor also shows a 44Net status indicator '
+        'updated every 30 seconds by the amprgate-poll background service.'))
+    s.append(SP(6))
+
+    s.append(P('33.6  Network IP Reference', H2))
+    s.append(tbl(['DEVICE', 'IP ADDRESS', 'ADMIN URL'], [
+        ['FieldComms Pi 5  (application server)',  '192.168.50.1',   'http://192.168.50.1'],
+        ['44Net Gateway Pi 5',                     '192.168.50.2',   'http://192.168.50.2:9000'],
+        ['ASUS RT-BE58 Go  (primary router)',       '192.168.50.254', 'http://192.168.50.254'],
+        ['Windows Laptop  (recommended)',           '192.168.50.3',   'DHCP reservation in router'],
+        ['Color MFP Printer  (recommended)',        '192.168.50.10',  'DHCP reservation in router'],
+        ['Pi 500 Workstations  (×4)',              '192.168.50.20–23', 'DHCP reservations in router'],
+        ['InstyConnect modem',                     '10.1.1.1',       'http://10.1.1.1  (via InstyConnect Wi-Fi)'],
+        ['Starlink dish admin',                    '192.168.100.1',  'http://192.168.100.1  (via Starlink network)'],
+        ['Field devices  (DHCP)',                  '192.168.50.100–200', 'Assigned automatically by ASUS router'],
+        ['CUPS print server',                      '192.168.50.1',   'http://192.168.50.1:631'],
+        ['Kiwix offline library',                  '192.168.50.1',   'http://192.168.50.1:8081'],
+        ['Pat Winlink',                            '192.168.50.1',   'http://192.168.50.1:8090'],
+        ['Health Monitor API',                     '192.168.50.1',   'http://192.168.50.1:5050/health'],
+        ['WAN Status Dashboard',                   '192.168.50.1',   'http://192.168.50.1/wan-status.html'],
+        ['AMPRNet Gateway Status',                 '192.168.50.2',   'http://192.168.50.2:9000'],
+    ], [2.2*inch, 1.4*inch, CW-3.6*inch]))
     s.append(PB())
     return s
 
 
-def ch35():
     s = chapter(35, 'JS8Call — HF Digital Keyboard Messaging (Windows)')
     s.append(P(
         'JS8Call is a weak-signal HF digital mode designed for keyboard-to-keyboard '
@@ -680,6 +753,57 @@ def ch35():
     s.append(PB())
     return s
 
+
+def ch35():
+    s = chapter(35, 'JS8Call — HF Digital Keyboard Messaging  (Windows)',
+                'http://192.168.50.1/js8call')
+    s.append(P(
+        'JS8Call is a keyboard-to-keyboard HF digital messaging mode based on FT8 technology. '
+        'It is designed for very weak signal conditions — stations can exchange readable '
+        'messages at signal levels 20 dB below what voice would require. '
+        'JS8Call supports direct messaging between two stations, group messaging to a '
+        'named group callsign such as @EMCOMM, store-and-forward relay through '
+        'intermediate stations when no direct path exists, and heartbeat beacons '
+        'that advertise a station presence automatically.'))
+    s.append(SP(4))
+    s.append(P(
+        'JS8Call runs on the Windows laptop alongside Winlink Express, both connected '
+        'to the IC-7300 via the single USB cable. The FieldComms dashboard provides a '
+        'purple JS8Call quick-launch card that opens JS8Call built-in web interface '
+        'from any device on EMCOMM-NET — operators at the EOC table can monitor JS8Call '
+        'traffic from their phones or tablets without being at the Windows laptop.'))
+    s.append(SP(6))
+
+    s.append(P('34.1  Recommended JS8Call Frequencies', H2))
+    s.append(tbl(['BAND', 'DIAL FREQUENCY', 'NOTES'], [
+        ['40m  (primary for ARES/RACES)', '7.078.0 MHz', 'Primary JS8Call calling frequency — most activity'],
+        ['80m  (regional, nighttime)',    '3.578.0 MHz', 'Good regional coverage after dark'],
+        ['20m  (long distance)',          '14.078.0 MHz', 'DX and national nets — good during daylight'],
+        ['17m  (secondary)',              '18.104.0 MHz', 'Less congested alternative to 20m'],
+        ['60m  (emergency designated)',   '5.357.0 MHz USB', 'FCC Part 97.303(h) emergency channels'],
+    ], [1.2*inch, 1.6*inch, CW-2.8*inch]))
+    s.append(SP(6))
+
+    s.append(P('34.2  JS8Call for EmComm', H2))
+    s.append(tbl(['USE CASE', 'HOW TO DO IT'], [
+        ['Direct station message',
+         'Type @[CALLSIGN]:  followed by your message. The addressed station receives it '
+         'even if they are not actively watching — JS8Call stores incoming messages.'],
+        ['Group message  (all EMCOMM stations)',
+         'Type @EMCOMM:  followed by your message. All stations monitoring the @EMCOMM '
+         'group receive it and it appears highlighted in their message window.'],
+        ['Heartbeat beacon  (announce presence)',
+         'Enable Heartbeat in JS8Call settings. Your station transmits a short beacon '
+         'every 15 minutes advertising your callsign, grid, and signal strength.'],
+        ['Store-and-forward relay',
+         'If direct contact is not possible, any intermediate JS8Call station on the '
+         'path can relay your message to the destination automatically.'],
+        ['Query station SNR',
+         'Send  CALLSIGN SNR?  to ask a station to report your signal strength. '
+         'Useful for propagation assessment before attempting Winlink.'],
+    ], [1.6*inch, CW-1.6*inch]))
+    s.append(PB())
+    return s
 
 def ch36():
     s = chapter(36, 'ICS Planning P — Operational Planning Cycle',
