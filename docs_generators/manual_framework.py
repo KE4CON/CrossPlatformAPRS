@@ -139,14 +139,15 @@ def note(text, kind='note'):
 def chapter(num, title, url=''):
     """Return a list of flowables opening a chapter."""
     items = []
-    # Chapter number badge
+    # Chapter number badge — 0.70*inch fits two-digit numbers at 28pt
+    # Use fontSize=22 so two-digit numbers (10-36) fit in 0.65*inch without wrapping
     badge = Table([[
-        P(str(num), _s('cn', fontName='Helvetica-Bold', fontSize=28,
-                        textColor=white, alignment=TA_CENTER, leading=32)),
+        P(str(num), _s('cn', fontName='Helvetica-Bold', fontSize=22,
+                        textColor=white, alignment=TA_CENTER, leading=26)),
         P(title + (f'\n<font size="8" color="#8090b0">{url}</font>' if url else ''),
           _s('ct', fontName='Helvetica-Bold', fontSize=16, textColor=EOC,
              leading=20)),
-    ]], colWidths=[0.55*inch, CW-0.55*inch])
+    ]], colWidths=[0.65*inch, CW-0.65*inch])
     badge.setStyle(TableStyle([
         ('BACKGROUND',  (0, 0), (0, -1),  EOC),
         ('BACKGROUND',  (1, 0), (1, -1),  LGRAY),
