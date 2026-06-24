@@ -170,15 +170,15 @@ def H2(t): return P(t, S('h2', fontName='Helvetica-Bold', fontSize=11,
 def H3(t): return P(t, S('h3', fontName='Helvetica-Bold', fontSize=9.5,
                            textColor=EOC, leading=13, spaceBefore=4, spaceAfter=2))
 
-def tbl(headers, rows, widths, hbg=EOC):
+def tbl(headers, rows, widths, hbg=EOC, extra_style=None):
     data = [[P(str(h), S('TH', fontName='Helvetica-Bold', fontSize=8,
-                           textColor=white, leading=10, spaceAfter=0))
+                           textColor=white, leading=10, spaceAfter=0))\
              for h in headers]]
     for row in rows:
-        data.append([P(str(c), S('TC', fontSize=8.5, leading=12, spaceAfter=0))
+        data.append([P(str(c), S('TC', fontSize=8.5, leading=12, spaceAfter=0))\
                      for c in row])
     t = Table(data, colWidths=widths, repeatRows=1)
-    t.setStyle(TableStyle([
+    style = [
         ('BACKGROUND',    (0,0), (-1,0),  hbg),
         ('TEXTCOLOR',     (0,0), (-1,0),  white),
         ('FONTNAME',      (0,0), (-1,0),  'Helvetica-Bold'),
@@ -190,7 +190,10 @@ def tbl(headers, rows, widths, hbg=EOC):
         ('LEFTPADDING',   (0,0), (-1,-1), 7),
         ('RIGHTPADDING',  (0,0), (-1,-1), 7),
         ('WORDWRAP',      (0,0), (-1,-1), 'CJK'),
-    ]))
+    ]
+    if extra_style:
+        style.extend(extra_style)
+    t.setStyle(TableStyle(style))
     return t
 
 def CodeBlock(lines):
@@ -400,7 +403,8 @@ story.append(tbl(['COMPONENT', 'DESCRIPTION', 'COMPONENT', 'DESCRIPTION'], [
      'Pat Winlink', 'Browser-based backup Winlink client at port 8090'],
     ['JS8Call Integration', 'Dashboard card opens JS8Call web API on Windows laptop',
      'ICS Planning P', 'Interactive 15-phase planning cycle guide'],
-], [1.2*inch, 1.8*inch, 1.4*inch, CW-4.4*inch]))
+], [1.2*inch, 1.8*inch, 1.4*inch, CW-4.4*inch],
+   extra_style=[('LINEAFTER', (1,0), (1,-1), 1.5, EOC_LT)]))
 story.append(PB())
 
 # ── SECTION 2 — HARDWARE REQUIREMENTS ────────────────────────────────────────
