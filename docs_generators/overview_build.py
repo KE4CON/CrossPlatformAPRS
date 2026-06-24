@@ -442,7 +442,7 @@ access_content = [
                    textColor=HexColor('#90d4a0'), alignment=TA_CENTER, leading=20)),
         P('6', S('sn3', fontName='Helvetica-Bold', fontSize=18,
                   textColor=HexColor('#d4a0d0'), alignment=TA_CENTER, leading=20)),
-    ]], colWidths=[C2/3]*3),
+    ]], colWidths=[(C2 - 0.28*inch)/3]*3),
     Table([[
         P('Web Pages', S('sl',  fontSize=7, textColor=HexColor('#90a8c0'),
                           alignment=TA_CENTER, leading=9)),
@@ -450,10 +450,10 @@ access_content = [
                           alignment=TA_CENTER, leading=9)),
         P('WAN Sources',S('sl3',fontSize=7, textColor=HexColor('#90a8c0'),
                            alignment=TA_CENTER, leading=9)),
-    ]], colWidths=[C2/3]*3),
+    ]], colWidths=[(C2 - 0.28*inch)/3]*3),
 ]
 access_inner = Table([[item] for item in access_content],
-                     colWidths=[C2 - 0.20*inch])
+                     colWidths=[C2 - 0.28*inch])
 access_inner.setStyle(TableStyle([
     ('VALIGN',        (0,0), (-1,-1), 'TOP'),
     ('TOPPADDING',    (0,0), (-1,-1), 0),
@@ -466,8 +466,8 @@ col2.setStyle(TableStyle([
     ('BACKGROUND',    (0,0), (-1,-1), EOC),
     ('TOPPADDING',    (0,0), (-1,-1), 8),
     ('BOTTOMPADDING', (0,0), (-1,-1), 8),
-    ('LEFTPADDING',   (0,0), (-1,-1), 10),
-    ('RIGHTPADDING',  (0,0), (-1,-1), 10),
+    ('LEFTPADDING',   (0,0), (-1,-1), 8),
+    ('RIGHTPADDING',  (0,0), (-1,-1), 8),
     ('LINEBELOW',     (0,0), (-1,-1), 2, GOLD),
 ]))
 
