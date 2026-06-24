@@ -809,11 +809,11 @@ story.append(P(
     'All three broadcast the same EMCOMM-NET SSID — devices roam between them automatically.'))
 story.append(SP(6))
 story.append(H2('AiMesh Coverage'))
-story.append(tbl([['ROUTER','SWITCH PORT','PLACEMENT'],
-    ['ASUS RT-BE58 Go  (primary)','Port 1  (uplink)','Central — command post or EOC entrance. Manages WAN and DHCP.'],
-    ['ASUS RT-BE58 Go  (mesh node 1)','Port 11','Secondary room, opposite wing, or upper floor.'],
-    ['ASUS RT-BE58 Go  (mesh node 2)','Port 12','Third coverage zone — outdoor staging, parking, or far wing.'],
-    ], [1.8*inch, 1.0*inch, CW-2.8*inch]))
+story.append(tbl([['ROUTER','PORT','PLACEMENT'],
+    ['Primary Router','Port 1','Central — command post or EOC entrance. Manages WAN and DHCP.'],
+    ['Mesh Node 1','Port 11','Secondary room, opposite wing, or upper floor.'],
+    ['Mesh Node 2','Port 12','Third zone — outdoor staging, parking, or far wing.'],
+    ], [1.5*inch, 0.7*inch, CW-2.2*inch]))
 story.append(SP(6))
 story.append(H2('WAN Connectivity — InstyConnect Primary + Starlink Failover'))
 story.append(P(
@@ -822,17 +822,17 @@ story.append(P(
     'Starlink satellite is the automatic secondary — the ASUS switches to it within 30-60 seconds '
     'if cellular drops, and switches back when it recovers. No operator action is required.'))
 story.append(SP(4))
-story.append(tbl([['ANTENNA','TYPE','WHEN TO USE'],
-    ['InstyConnect Drum','Omnidirectional 5G/LTE','Default — deploy at every activation. Mounts on any mast or tripod. No aiming needed.'],
-    ['InstyConnect Switchblade','Directional folding','When Drum signal is poor. Swap the PoE cable to the same ASUS WAN port. Aim toward nearest tower using InstyConnect app.'],
-    ['Starlink dish','Satellite  (auto-failover)','Active automatically when cellular drops. Requires clear sky view. CGNAT — no inbound connections possible.'],
-    ], [1.4*inch, 1.3*inch, CW-2.7*inch]))
+story.append(tbl([['ANTENNA','WHEN TO USE'],
+    ['InstyConnect Drum','Default — every activation. Mounts on any mast or tripod. No aiming needed.'],
+    ['InstyConnect Switchblade','When Drum signal is poor. Swap PoE cable to same ASUS WAN port. Aim toward tower.'],
+    ['Starlink dish','Active automatically when cellular drops. Requires clear sky view. No inbound connections.'],
+    ], [2.2*inch, CW-2.2*inch]))
 story.append(SP(4))
-story.append(tbl([['WAN STATE','WHAT YOU SEE ON DASHBOARD','FEATURES AVAILABLE'],
-    ['InstyConnect UP  (cellular)','WAN card green — InstyConnect + carrier name','All features including NWS alerts, APRS-IS, FCC refresh, Pat Winlink via internet'],
-    ['Starlink UP  (failover)','WAN card blue — Starlink (failover)','All features except inbound connections. Slightly higher latency (~20-40ms).'],
-    ['Both DOWN  (offline)','WAN card red — No WAN — Offline','All 32 local tools fully operational. NWS alerts, APRS-IS, FCC refresh paused.'],
-    ], [1.5*inch, 1.5*inch, CW-3.0*inch]))
+story.append(tbl([['WAN STATE','DASHBOARD SHOWS','FEATURES AVAILABLE'],
+    ['InstyConnect UP','WAN card green — cellular + carrier','All features: NWS, APRS-IS, FCC refresh, Pat Winlink via internet'],
+    ['Starlink UP  (failover)','WAN card blue — Starlink failover','All features except inbound connections. ~20-40ms higher latency.'],
+    ['Both DOWN  (offline)','WAN card red — Offline mode','All 32 local tools work normally. NWS, APRS-IS, FCC refresh paused.'],
+    ], [1.4*inch, 1.5*inch, CW-2.9*inch]))
 story.append(SP(4))
 story.append(TipBox(
     'View full WAN details at http://192.168.50.1/wan-status.html — shows active source, '
@@ -846,9 +846,9 @@ story.append(P(
     'Any device on EMCOMM-NET can reach other AMPRNet stations worldwide.'))
 story.append(SP(4))
 story.append(tbl([['ACCESS LEVEL','HOW','WHAT YOU CAN DO'],
-    ['Status dashboard','Open http://192.168.50.2:9000 — enter your FCC callsign when prompted','View tunnel state, AMPRNet address, traffic stats. Read-only.'],
-    ['Tunnel control','Gateway Pi keyboard only — open Chromium to http://localhost:9001 on the gateway Pi itself','Bring tunnel up/down/restart. Requires physical presence at gateway Pi. Callsign login required.'],
-    ], [1.2*inch, 2.2*inch, CW-3.4*inch]))
+    ['Status Dashboard','http://192.168.50.2:9000 — enter FCC callsign at login prompt','View tunnel state, AMPRNet address, traffic stats. Read-only.'],
+    ['Tunnel Control','Gateway Pi keyboard only — open http://localhost:9001 on the gateway Pi. Callsign login required.','Bring tunnel up/down/restart. All actions logged.'],
+    ], [1.2*inch, 2.4*inch, CW-3.6*inch]))
 story.append(SP(4))
 story.append(TipBox(
     'The AMPRNet dashboard card on the FieldComms main dashboard shows live tunnel state '
