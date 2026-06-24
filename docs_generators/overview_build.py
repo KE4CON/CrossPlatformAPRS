@@ -269,7 +269,7 @@ cap_body.setStyle(TableStyle([
     ('LINEAFTER',   (0,0), (1,-1), 0.5, LINE),
 ]))
 story.append(cap_body)
-story.append(SP(2))
+story.append(SP(1))
 
 # ── CONNECTIVITY ───────────────────────────────────────────────────────────────
 story.append(section_hdr('📡', 'Connectivity — Dual WAN with Automatic Failover',
@@ -310,15 +310,15 @@ wan_desc = Table([[
 wan_desc.setStyle(TableStyle([
     ('BACKGROUND',    (0,0), (-1,-1), LGRAY),
     ('VALIGN',        (0,0), (-1,-1), 'TOP'),
-    ('TOPPADDING',    (0,0), (-1,-1), 3),
-    ('BOTTOMPADDING', (0,0), (-1,-1), 3),
+    ('TOPPADDING',    (0,0), (-1,-1), 2),
+    ('BOTTOMPADDING', (0,0), (-1,-1), 2),
     ('LEFTPADDING',   (0,0), (-1,-1), 6),
     ('RIGHTPADDING',  (0,0), (-1,-1), 6),
     ('LINEAFTER',     (0,0), (1,-1), 0.5, LINE),
     ('LINEBELOW',     (0,0), (-1,-1), 1, AMBER),
 ]))
 story.append(wan_desc)
-story.append(SP(2))
+story.append(SP(1))
 
 # ── HARDWARE ───────────────────────────────────────────────────────────────────
 story.append(section_hdr('🖥', 'Hardware Platform', EOC, EOC_BG))
@@ -362,21 +362,20 @@ hw_t.setStyle(TableStyle([
     ('ROWBACKGROUNDS',(0,1), (-1,-1), [white, LGRAY]),
     ('GRID',          (0,0), (-1,-1), 0.3, LINE),
     ('VALIGN',        (0,0), (-1,-1), 'TOP'),
-    ('TOPPADDING',    (0,0), (-1,-1), 2),
-    ('BOTTOMPADDING', (0,0), (-1,-1), 2),
+    ('TOPPADDING',    (0,0), (-1,-1), 1),
+    ('BOTTOMPADDING', (0,0), (-1,-1), 1),
     ('LEFTPADDING',   (0,0), (-1,-1), 4),
     ('RIGHTPADDING',  (0,0), (-1,-1), 4),
 ]))
 story.append(hw_t)
-story.append(SP(2))
+story.append(SP(1))
 
-# ── BOTTOM SECTION — 3 columns: Reference | How to Access | Why ─────────────
+# ── BOTTOM SECTION — 2 columns: Reference (left) | Access + Why (right) ──────
 
-C1 = CW * 0.33
-C2 = CW * 0.34
-C3 = CW - C1 - C2
+CL = CW * 0.44   # left column  — Reference & Administration
+CR = CW - CL     # right column — How to Access + Why FieldComms
 
-# ── COLUMN 1: Reference & Administration ─────────────────────────────────────
+# ── LEFT: Reference & Administration ─────────────────────────────────────────
 ref_items = [
     ('📚', 'Kiwix Library',     'WikiMed, Wikipedia, iFixit — offline'),
     ('📁', 'Reference Library', 'SOGs, plans, field docs — searchable'),
@@ -394,6 +393,10 @@ RI = S('ri', fontSize=9,   leading=10,  alignment=TA_CENTER)
 RT = S('rt', fontName='Helvetica-Bold', fontSize=7.5, textColor=EOC, leading=9.5)
 RD = S('rd', fontSize=7,   leading=9,   textColor=HexColor('#2a3a4a'))
 
+ICOL = 0.22*inch
+TCOL = 0.90*inch
+DCOL = CL - ICOL - TCOL
+
 ref_rows = [[
     P('Reference  &  Administration',
       S('rh', fontName='Helvetica-Bold', fontSize=8.5,
@@ -403,75 +406,69 @@ ref_rows = [[
 for icon, title, desc in ref_items:
     ref_rows.append([P(icon, RI), P(f'<b>{title}</b>', RT), P(desc, RD)])
 
-col1 = Table(ref_rows, colWidths=[0.20*inch, 0.82*inch, C1 - 1.02*inch])
-col1.setStyle(TableStyle([
+col_ref = Table(ref_rows, colWidths=[ICOL, TCOL, DCOL])
+col_ref.setStyle(TableStyle([
     ('SPAN',          (0,0), (2,0)),
     ('LINEBELOW',     (0,0), (2,0), 1.2, EOC_LT),
     ('ROWBACKGROUNDS',(0,1), (-1,-1), [white, HexColor('#f0f4f9')]),
     ('VALIGN',        (0,0), (-1,-1), 'TOP'),
-    ('TOPPADDING',    (0,0), (-1,-1), 1),
-    ('BOTTOMPADDING', (0,0), (-1,-1), 1),
+    ('TOPPADDING',    (0,0), (-1,-1), 0),
+    ('BOTTOMPADDING', (0,0), (-1,-1), 0),
     ('LEFTPADDING',   (0,0), (-1,-1), 3),
     ('RIGHTPADDING',  (0,0), (-1,-1), 3),
-    ('TOPPADDING',    (0,0), (2,0),   3),
-    ('BOTTOMPADDING', (0,0), (2,0),   3),
+    ('TOPPADDING',    (0,0), (2,0),   2),
+    ('BOTTOMPADDING', (0,0), (2,0),   2),
     ('LINEBELOW',     (0,1), (-1,-1), 0.15, LINE),
 ]))
 
-# ── COLUMN 2: How to Access (navy box) ───────────────────────────────────────
-access_content = [
-    P('HOW TO ACCESS',
-      S('ah', fontName='Helvetica-Bold', fontSize=9, textColor=GOLD,
-        leading=11, alignment=TA_CENTER)),
-    SP(4),
-    P('<b>1</b>  Wi-Fi:  <b>EMCOMM-NET</b>',
-      S('a1', fontSize=8.5, textColor=white, leading=12)),
-    P('<b>2</b>  Browser:  <b>http://192.168.50.1</b>',
-      S('a2', fontSize=8.5, textColor=white, leading=12)),
-    P('<b>3</b>  Select mode:  Amateur / Starcom / ICS',
-      S('a3', fontSize=8.5, textColor=white, leading=12)),
-    SP(5),
-    P('No app  ·  No login  ·  Any device  ·  Any OS',
-      S('a4', fontName='Helvetica-Bold', fontSize=8, textColor=GOLD,
-        leading=10, alignment=TA_CENTER)),
-    SP(6),
-    Table([[
-        P('32', S('sn', fontName='Helvetica-Bold', fontSize=18,
+# ── RIGHT TOP: How to Access (navy box) ──────────────────────────────────────
+# Stats sub-table width = CR - 16pt padding
+SW = CR - 16   # in points, not inches
+
+access_rows = [
+    [P('HOW TO ACCESS',
+       S('ah', fontName='Helvetica-Bold', fontSize=9, textColor=GOLD,
+         leading=11, alignment=TA_CENTER))],
+    [SP(4)],
+    [P('<b>1</b>  Wi-Fi:  <b>EMCOMM-NET</b>',
+       S('a1', fontSize=8.5, textColor=white, leading=12))],
+    [P('<b>2</b>  Browser:  <b>http://192.168.50.1</b>',
+       S('a2', fontSize=8.5, textColor=white, leading=12))],
+    [P('<b>3</b>  Select mode:  Amateur / Starcom / ICS',
+       S('a3', fontSize=8.5, textColor=white, leading=12))],
+    [SP(5)],
+    [P('No app  ·  No login  ·  Any device  ·  Any OS',
+       S('a4', fontName='Helvetica-Bold', fontSize=8, textColor=GOLD,
+         leading=10, alignment=TA_CENTER))],
+    [SP(6)],
+    [Table([[
+        P('32', S('sn',  fontName='Helvetica-Bold', fontSize=18,
                    textColor=GOLD, alignment=TA_CENTER, leading=20)),
         P('15', S('sn2', fontName='Helvetica-Bold', fontSize=18,
                    textColor=HexColor('#90d4a0'), alignment=TA_CENTER, leading=20)),
-        P('6', S('sn3', fontName='Helvetica-Bold', fontSize=18,
-                  textColor=HexColor('#d4a0d0'), alignment=TA_CENTER, leading=20)),
-    ]], colWidths=[(C2 - 0.28*inch)/3]*3),
-    Table([[
+        P('6',  S('sn3', fontName='Helvetica-Bold', fontSize=18,
+                   textColor=HexColor('#d4a0d0'), alignment=TA_CENTER, leading=20)),
+    ]], colWidths=[SW/3]*3)],
+    [Table([[
         P('Web Pages', S('sl',  fontSize=7, textColor=HexColor('#90a8c0'),
                           alignment=TA_CENTER, leading=9)),
         P('Services',  S('sl2', fontSize=7, textColor=HexColor('#90a8c0'),
                           alignment=TA_CENTER, leading=9)),
         P('WAN Sources',S('sl3',fontSize=7, textColor=HexColor('#90a8c0'),
                            alignment=TA_CENTER, leading=9)),
-    ]], colWidths=[(C2 - 0.28*inch)/3]*3),
+    ]], colWidths=[SW/3]*3)],
 ]
-access_inner = Table([[item] for item in access_content],
-                     colWidths=[C2 - 0.28*inch])
-access_inner.setStyle(TableStyle([
-    ('VALIGN',        (0,0), (-1,-1), 'TOP'),
-    ('TOPPADDING',    (0,0), (-1,-1), 0),
-    ('BOTTOMPADDING', (0,0), (-1,-1), 0),
-    ('LEFTPADDING',   (0,0), (-1,-1), 0),
-    ('RIGHTPADDING',  (0,0), (-1,-1), 0),
-]))
-col2 = Table([[access_inner]], colWidths=[C2])
-col2.setStyle(TableStyle([
+access_tbl = Table(access_rows, colWidths=[CR])
+access_tbl.setStyle(TableStyle([
     ('BACKGROUND',    (0,0), (-1,-1), EOC),
-    ('TOPPADDING',    (0,0), (-1,-1), 8),
-    ('BOTTOMPADDING', (0,0), (-1,-1), 8),
-    ('LEFTPADDING',   (0,0), (-1,-1), 8),
-    ('RIGHTPADDING',  (0,0), (-1,-1), 8),
-    ('LINEBELOW',     (0,0), (-1,-1), 2, GOLD),
+    ('TOPPADDING',    (0,0), (-1,-1), 4),
+    ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+    ('LEFTPADDING',   (0,0), (-1,-1), 6),
+    ('RIGHTPADDING',  (0,0), (-1,-1), 6),
+    ('LINEBELOW',     (0,-1), (-1,-1), 2, GOLD),
 ]))
 
-# ── COLUMN 3: Why FieldComms ─────────────────────────────────────────────────
+# ── RIGHT BOTTOM: Why FieldComms ─────────────────────────────────────────────
 why_items = [
     ('Fully Offline',    'All 32 tools work with zero internet'),
     ('Multi-User',       'Every operator sees live data simultaneously'),
@@ -484,7 +481,7 @@ why_items = [
 ]
 WT = S('wt', fontName='Helvetica-Bold', fontSize=7.5, textColor=EOC, leading=9.5)
 WD = S('wd', fontSize=7, leading=9, textColor=HexColor('#2a3a4a'))
-WA = 0.85*inch
+WA = 0.95*inch
 
 why_rows = [[
     P('WHY FIELDCOMMS',
@@ -495,37 +492,48 @@ why_rows = [[
 for bold, rest in why_items:
     why_rows.append([P(f'<b>{bold}</b>', WT), P(rest, WD)])
 
-col3 = Table(why_rows, colWidths=[WA, C3 - WA])
-col3.setStyle(TableStyle([
+why_tbl = Table(why_rows, colWidths=[WA, CR - WA])
+why_tbl.setStyle(TableStyle([
     ('SPAN',          (0,0), (1,0)),
     ('LINEBELOW',     (0,0), (1,0), 1.2, EOC_LT),
     ('ROWBACKGROUNDS',(0,1), (-1,-1), [white, HexColor('#f0f4f9')]),
     ('VALIGN',        (0,0), (-1,-1), 'TOP'),
-    ('TOPPADDING',    (0,0), (-1,-1), 1),
-    ('BOTTOMPADDING', (0,0), (-1,-1), 1),
+    ('TOPPADDING',    (0,0), (-1,-1), 0),
+    ('BOTTOMPADDING', (0,0), (-1,-1), 0),
     ('LEFTPADDING',   (0,0), (-1,-1), 4),
     ('RIGHTPADDING',  (0,0), (-1,-1), 4),
-    ('TOPPADDING',    (0,0), (1,0),   3),
-    ('BOTTOMPADDING', (0,0), (1,0),   3),
+    ('TOPPADDING',    (0,0), (1,0),   2),
+    ('BOTTOMPADDING', (0,0), (1,0),   2),
     ('LINEBELOW',     (0,1), (-1,-1), 0.15, LINE),
 ]))
 
-# ── Assemble 3-column bottom ──────────────────────────────────────────────────
-bottom3 = Table([[col1, col2, col3]], colWidths=[C1, C2, C3])
-bottom3.setStyle(TableStyle([
+# Stack access box and why table in right column
+col_right = Table([
+    [access_tbl],
+    [SP(2)],
+    [why_tbl],
+], colWidths=[CR])
+col_right.setStyle(TableStyle([
+    ('VALIGN',        (0,0), (-1,-1), 'TOP'),
+    ('TOPPADDING',    (0,0), (-1,-1), 0),
+    ('BOTTOMPADDING', (0,0), (-1,-1), 0),
+    ('LEFTPADDING',   (0,0), (-1,-1), 0),
+    ('RIGHTPADDING',  (0,0), (-1,-1), 0),
+]))
+
+# ── Assemble 2-column bottom ──────────────────────────────────────────────────
+bottom2 = Table([[col_ref, col_right]], colWidths=[CL, CR])
+bottom2.setStyle(TableStyle([
     ('VALIGN',        (0,0), (-1,-1), 'TOP'),
     ('LEFTPADDING',   (0,0), (-1,-1), 0),
     ('RIGHTPADDING',  (0,0), (-1,-1), 0),
     ('TOPPADDING',    (0,0), (-1,-1), 0),
     ('BOTTOMPADDING', (0,0), (-1,-1), 0),
-    ('LINEAFTER',     (0,0), (0,-1), 0.6, LINE),
-    ('LINEAFTER',     (1,0), (1,-1), 0.6, LINE),
-    ('LEFTPADDING',   (1,0), (1,-1), 8),
-    ('RIGHTPADDING',  (1,0), (1,-1), 8),
-    ('LEFTPADDING',   (2,0), (2,-1), 8),
+    ('LINEAFTER',     (0,0), (0,-1), 0.8, LINE),
+    ('LEFTPADDING',   (1,0), (1,-1), 10),
 ]))
-story.append(bottom3)
-story.append(SP(3))
+story.append(bottom2)
+story.append(SP(0))
 
 # ── FUNDING NOTE ───────────────────────────────────────────────────────────────
 fund = Table([[
@@ -537,8 +545,8 @@ fund = Table([[
 ]], colWidths=[CW])
 fund.setStyle(TableStyle([
     ('BACKGROUND',    (0,0), (-1,-1), EOC),
-    ('TOPPADDING',    (0,0), (-1,-1), 5),
-    ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+    ('TOPPADDING',    (0,0), (-1,-1), 4),
+    ('BOTTOMPADDING', (0,0), (-1,-1), 4),
     ('LEFTPADDING',   (0,0), (-1,-1), 8),
     ('RIGHTPADDING',  (0,0), (-1,-1), 8),
     ('LINEABOVE',     (0,0), (-1,-1), 1.5, GOLD),
