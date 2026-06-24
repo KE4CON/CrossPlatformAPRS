@@ -568,6 +568,12 @@ story.append(ref_tbl(
          'Offline Wikipedia, WikiMed, iFixit, Wikivoyage. No internet needed. Open from dashboard card.'],
         ['Health Monitor', ':5051/health',
          'Live CPU/memory/disk/temp, all service status dots, GPS fix quality, internet status.'],
+        ['WAN Status', '/wan-status.html',
+         'Active WAN source (InstyConnect cellular or Starlink satellite), signal strength, '
+         'carrier, latency, connectivity tests, and WAN event log.'],
+        ['AMPRNet Gateway', '192.168.50.2:9000',
+         'WireGuard tunnel state, AMPRNet 44.x.x.x address, traffic stats. '
+         'Requires FCC callsign login. Tunnel control requires gateway Pi keyboard.'],
         ['Facilities Directory', '/facilities.html',
          'EOC, shelters, hospitals, staging areas with address, phone, and radio frequencies.'],
         ['Radio Cheat Sheets', '/cheatsheets.html',
@@ -600,6 +606,89 @@ story.append(ref_tbl(
     [1.4*inch, CW-1.4*inch]))
 story.append(SP(8))
 
+story.append(section_hdr('🌐', 'Network — Admin URLs & IP Reference',
+                         'All addresses on EMCOMM-NET (192.168.50.0/24)', EOC, EOC_BG))
+story.append(SP(6))
+story.append(ref_tbl(
+    ['DEVICE / SERVICE', 'ADDRESS', 'NOTES'],
+    [
+        ['FieldComms dashboard', 'http://192.168.50.1', 'Main entry point — all 32 tools'],
+        ['WAN Status dashboard', 'http://192.168.50.1/wan-status.html',
+         'InstyConnect + Starlink + WAN event log'],
+        ['AMPRNet gateway status', 'http://192.168.50.2:9000',
+         'Requires FCC callsign login'],
+        ['ASUS router admin  (primary)', 'http://192.168.50.254',
+         'Wi-Fi settings, dual WAN failover, AiMesh'],
+        ['InstyConnect modem admin', 'http://10.1.1.1  or  http://my.insty',
+         'Connect to InstyConnect Wi-Fi first'],
+        ['Starlink dish admin', 'http://192.168.100.1',
+         'Or use Starlink app on phone'],
+        ['CUPS print server', 'http://192.168.50.1:631',
+         'Printer management and shared queue'],
+        ['Pat Winlink', 'http://192.168.50.1:8090',
+         'Browser-based Winlink backup'],
+        ['Kiwix offline library', 'http://192.168.50.1:8081',
+         'Wikipedia, WikiMed, iFixit offline'],
+        ['Health monitor API', 'http://192.168.50.1:5051/health',
+         'JSON health data for all services'],
+        ['44Net tunnel control', 'http://localhost:9001',
+         'Gateway Pi keyboard only — callsign login required'],
+    ],
+    [2.0*inch, 1.8*inch, CW-3.8*inch]))
+story.append(SP(6))
+
+story.append(section_hdr('📡', 'WAN Connectivity Quick Reference',
+                         'InstyConnect Primary  ·  Starlink Automatic Failover', AMBER, AMBER_BG))
+story.append(SP(6))
+story.append(ref_tbl(
+    ['WAN SOURCE', 'CONNECTION', 'WHEN ACTIVE', 'ADMIN'],
+    [
+        ['InstyConnect Drum  (omnidirectional)',
+         'PoE cable → ASUS WAN port',
+         'Default — primary WAN at all activations',
+         'http://10.1.1.1'],
+        ['InstyConnect Switchblade  (directional backup)',
+         'Same PoE cable to ASUS WAN port  (swap from Drum)',
+         'When Drum signal is weak — aim toward tower using InstyConnect app',
+         'http://10.1.1.1'],
+        ['Starlink  (automatic failover)',
+         'Ethernet adapter → USB-Ethernet → ASUS USB WAN',
+         'Automatic when cellular WAN drops. ASUS switches within 30-60s.',
+         'http://192.168.100.1'],
+        ['Site Ethernet',
+         'Site cable → ASUS WAN port',
+         'Manual — when reliable site internet is available at EOC',
+         'http://192.168.50.254'],
+    ],
+    [1.4*inch, 1.5*inch, 1.6*inch, CW-4.5*inch]))
+story.append(SP(6))
+
+story.append(section_hdr('🛰', 'EMCOMM-NET Coverage — AiMesh Nodes',
+                         'Three ASUS RT-BE58 Go routers — same SSID, seamless roaming', EOC, EOC_BG))
+story.append(SP(6))
+story.append(ref_tbl(
+    ['ROUTER', 'SWITCH PORT', 'PLACEMENT'],
+    [
+        ['ASUS RT-BE58 Go  (primary)',
+         'Uplink — Port 1',
+         'Central position — command post or EOC entrance. Manages WAN and DHCP.'],
+        ['ASUS RT-BE58 Go  (mesh node 1)',
+         'Port 11',
+         'Secondary room, opposite wing, or upper floor.'],
+        ['ASUS RT-BE58 Go  (mesh node 2)',
+         'Port 12',
+         'Third coverage zone — outdoor staging, parking, or far wing.'],
+    ],
+    [1.8*inch, 1.0*inch, CW-2.8*inch]))
+story.append(SP(4))
+story.append(tip(
+    'All three routers broadcast EMCOMM-NET on 2.4 GHz and 5 GHz. '
+    'Devices roam between them automatically — no reconnection or password re-entry needed. '
+    'Pairing a new mesh node to the primary takes under 5 minutes via '
+    'http://192.168.50.254 → AiMesh → Add Node.',
+    EOC, EOC_BG))
+story.append(PB())
+
 story.append(section_hdr('⚠', 'Troubleshooting',
                          '', RED, RED_BG))
 story.append(SP(6))
@@ -624,6 +713,20 @@ story.append(ref_tbl(
         ['Service dot is red on Health Monitor',
          'A background service has stopped',
          'SSH to Pi: sudo systemctl restart <service-name>  (e.g. fcc-lookup, ics-platform)'],
+        ['WAN status shows offline / No internet',
+         'InstyConnect not connected or data plan inactive',
+         'Check Drum LED. Try Switchblade. Check plan at instyconnect.com. '
+         'If Starlink is connected, failover should be automatic.'],
+        ['Starlink failover not working',
+         'USB-to-Ethernet adapter not seated or ASUS Dual WAN not configured',
+         'Check ASUS admin → WAN → Dual WAN → must be ON with USB as secondary.'],
+        ['AMPRNet gateway login fails',
+         'Callsign not in FCC database or FieldComms Pi API unreachable',
+         'Verify callsign is valid at http://192.168.50.1/callsign.html. '
+         'If FCC DB offline, format-only validation is used as fallback.'],
+        ['Cannot reach 192.168.50.2:9000',
+         'Gateway Pi powered off or not on EMCOMM-NET',
+         'Check gateway Pi power (green LED). It must be connected to UniFi switch.'],
     ],
     [1.5*inch, 1.4*inch, CW-2.9*inch]))
 story.append(SP(8))

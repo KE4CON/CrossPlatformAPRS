@@ -273,7 +273,10 @@ TOC_ENTRIES = [
     (30,'Quick Reference & Tips','/'), (31,'Reference Library','/refs.html'),
     (32,'Winlink Form Import','/winlink-import.html'), (33,'JS8Call','/'),
     (34,'ICS Planning P','/ics/planningp.html'), (35,'Operator Access Cards','/printcenter.html'),
-    (36,'Network — EMCOMM-NET & AiMesh','/'), (37,'Printer Setup',':631'),
+    (36,'Network — EMCOMM-NET & AiMesh','/'),
+    (36.1,'WAN Connectivity — InstyConnect & Starlink','/wan-status.html'),
+    (36.2,'AMPRNet / 44Net Gateway','http://192.168.50.2:9000'),
+    (37,'Printer Setup',':631'),
 ]
 
 for num, title, url in TOC_ENTRIES:
@@ -299,12 +302,16 @@ story.append(PB())
 # Section 1 — Getting Started
 story += [SB(1,'Getting Started — Connecting to FieldComms','http://192.168.50.1/'), SP(8)]
 story.append(P(
-    'FieldComms is a self-contained emergency communications server running on a Raspberry Pi. '
-    'The ASUS RT-BE58 Go travel router broadcasts a dedicated Wi-Fi network called <b>EMCOMM-NET</b> '
-    '— the Pi itself does not broadcast Wi-Fi. '
-    'Any smartphone, tablet, or laptop in range connects to EMCOMM-NET and reaches the full '
-    'FieldComms dashboard through a standard web browser in under a minute. '
-    'No app installation is required. No internet connection is needed for any core feature.'))
+    'FieldComms is a self-contained emergency communications server running on two Raspberry Pi 5 units. '
+    'The primary Pi runs all 32 web tools and 15 background services. '
+    'A second Pi at 192.168.50.2 serves as the dedicated AMPRNet / 44Net WireGuard gateway. '
+    'Three ASUS RT-BE58 Go Wi-Fi 7 routers form the EMCOMM-NET access point: '
+    'one primary router managing WAN connectivity and DHCP, and two AiMesh nodes extending '
+    'coverage to secondary rooms and outdoor areas. '
+    'InstyConnect cellular (T-Mobile and Verizon) is the primary internet source. '
+    'Starlink satellite provides automatic failover when cellular drops. '
+    'Any smartphone, tablet, or laptop on EMCOMM-NET reaches the full dashboard at '
+    'http://192.168.50.1 in under a minute — no app, no login, no internet required.'))
 story.append(SP(6))
 story.append(tbl([['FIELD','VALUE'],['Wi-Fi Network Name (SSID)','EMCOMM-NET'],
     ['Password','Provided by your net manager'],['Security','WPA2'],
@@ -330,11 +337,26 @@ story.append(P(
 story.append(SP(6))
 story.append(H2('Three Dashboard Modes'))
 story.append(tbl([['MODE','BUTTON','TOOLS AVAILABLE'],
-    ['Amateur Radio','📻','Net Control Logger, Observer Mode, Callsign Lookup, JS8Call, APRS Tactical Map, HF Propagation, Repeaters, Grid Square, NTS Radiogram, ICS-213, ICS-214, Dead Man\'s Switch, Roster, Pre-Flight, Cheat Sheets, Print Center, Reference Library'],
-    ['Starcom / Public Safety','🚔','Starcom Net Logger, Weather Net, SAR Net, Observer Mode, Resource Tracking Map, Resource Board, Member Roster, Facilities, ICS Platform, ICS-213, ICS-214, Print Center'],
-    ['ICS / Incident Command','🏛','ICS Platform (all five sections + Planning P), Tactical Map, Resource Map, Resource Board, Roster, Facilities, ICS forms, Winlink Import, Repeaters, Cheat Sheets'],
+    ['Amateur Radio','📻','Net Control Logger, Observer Mode, Callsign Lookup, JS8Call, APRS Tactical Map, HF Propagation, Repeaters, Grid Square, NTS Radiogram, ICS-213, ICS-214, Dead Man\'s Switch, Roster, Pre-Flight, Cheat Sheets, Print Center, Reference Library, WAN Status, AMPRNet Gateway'],
+    ['Starcom / Public Safety','🚔','Starcom Net Logger, Weather Net, SAR Net, Observer Mode, Resource Tracking Map, Resource Board, Member Roster, Facilities, ICS Platform, ICS-213, ICS-214, Print Center, WAN Status, AMPRNet Gateway'],
+    ['ICS / Incident Command','🏛','ICS Platform (all five sections + Planning P), Tactical Map, Resource Map, Resource Board, Roster, Facilities, ICS forms, Winlink Import, Repeaters, Cheat Sheets, WAN Status, AMPRNet Gateway'],
     ],
     [1.2*inch, 0.5*inch, CW-1.7*inch]))
+story.append(SP(6))
+story.append(H2('Connectivity Status Cards'))
+story.append(P(
+    'Two live connectivity cards appear at the bottom of every dashboard mode:'))
+story.append(SP(4))
+story.append(tbl([['CARD','COLOR','SHOWS','LINKS TO'],
+    ['WAN Status',
+     'Green = cellular  Blue = satellite  Red = offline',
+     'Active WAN source (InstyConnect or Starlink), carrier, and signal. Updates every 30 seconds.',
+     '/wan-status.html — full WAN dashboard with signal strength, latency, connectivity tests, and event log'],
+    ['AMPRNet Gateway',
+     'Green = tunnel UP  Red = tunnel DOWN',
+     'WireGuard tunnel state, 44.x.x.x address. Updates every 30 seconds from gateway Pi.',
+     'http://192.168.50.2:9000 — gateway dashboard (requires FCC callsign login)'],
+    ], [1.0*inch, 1.5*inch, 1.8*inch, CW-4.3*inch]))
 story.append(PB())
 
 # Section 3 — Amateur Net Control
@@ -778,24 +800,60 @@ story.append(tbl([['CARD FIELD','CONTENT'],
     ], [1.5*inch, CW-1.5*inch]))
 story.append(PB())
 
-# Section 36 — Network / AiMesh
-story += [SB(36,'Network — EMCOMM-NET & AiMesh Coverage Extension','/'), SP(8)]
-story.append(P('EMCOMM-NET is the Wi-Fi network broadcast by the ASUS RT-BE58 Go travel router. All FieldComms '
-               'tools are accessible at http://192.168.50.1 from any device connected to EMCOMM-NET. '
-               'The Pi does not run its own Wi-Fi.'))
+# Section 36 — Network / AiMesh / WAN
+story += [SB(36,'Network — EMCOMM-NET, WAN & 44Net Gateway','/'), SP(8)]
+story.append(P(
+    'EMCOMM-NET is the Wi-Fi network broadcast by three ASUS RT-BE58 Go Wi-Fi 7 routers '
+    'operating as an AiMesh. One primary router manages WAN connectivity and DHCP. '
+    'Two mesh nodes extend EMCOMM-NET coverage to secondary rooms, outdoor areas, and upper floors. '
+    'All three broadcast the same EMCOMM-NET SSID — devices roam between them automatically.'))
 story.append(SP(6))
-story.append(tbl([['OPTION','HOW IT WORKS','BEST FOR'],
-    ['Single router','RT-BE58 Go covers ~2,000–2,500 sq ft. No additional setup needed.','Single room EOC activations'],
-    ['AiMesh nodes','Add ASUS AiMesh nodes to extend coverage. All nodes share EMCOMM-NET SSID and 192.168.50.x subnet. Devices roam automatically.','Multi-room EOC buildings, large shelters, outdoor staging areas'],
-    ], [1.2*inch, 2.8*inch, CW-4.0*inch]))
+story.append(H2('AiMesh Coverage'))
+story.append(tbl([['ROUTER','SWITCH PORT','PLACEMENT'],
+    ['ASUS RT-BE58 Go  (primary)','Port 1  (uplink)','Central — command post or EOC entrance. Manages WAN and DHCP.'],
+    ['ASUS RT-BE58 Go  (mesh node 1)','Port 11','Secondary room, opposite wing, or upper floor.'],
+    ['ASUS RT-BE58 Go  (mesh node 2)','Port 12','Third coverage zone — outdoor staging, parking, or far wing.'],
+    ], [1.8*inch, 1.0*inch, CW-2.8*inch]))
+story.append(SP(6))
+story.append(H2('WAN Connectivity — InstyConnect Primary + Starlink Failover'))
+story.append(P(
+    'InstyConnect cellular (T-Mobile and Verizon dual-carrier) is the primary internet source '
+    'connected to the ASUS WAN port via a single PoE Ethernet cable from the outdoor antenna. '
+    'Starlink satellite is the automatic secondary — the ASUS switches to it within 30-60 seconds '
+    'if cellular drops, and switches back when it recovers. No operator action is required.'))
 story.append(SP(4))
-for step in [
-    'Factory reset the node router. Hold reset 5–10 seconds.',
-    'Power on the node within 30 ft of the primary router for pairing.',
-    'On primary router: <b>AiMesh → Add AiMesh Node</b>. Select the node and connect.',
-    'Move the node to its final position once pairing completes (~3 minutes).',
-]:
-    story.append(B(step))
+story.append(tbl([['ANTENNA','TYPE','WHEN TO USE'],
+    ['InstyConnect Drum','Omnidirectional 5G/LTE','Default — deploy at every activation. Mounts on any mast or tripod. No aiming needed.'],
+    ['InstyConnect Switchblade','Directional folding','When Drum signal is poor. Swap the PoE cable to the same ASUS WAN port. Aim toward nearest tower using InstyConnect app.'],
+    ['Starlink dish','Satellite  (auto-failover)','Active automatically when cellular drops. Requires clear sky view. CGNAT — no inbound connections possible.'],
+    ], [1.4*inch, 1.3*inch, CW-2.7*inch]))
+story.append(SP(4))
+story.append(tbl([['WAN STATE','WHAT YOU SEE ON DASHBOARD','FEATURES AVAILABLE'],
+    ['InstyConnect UP  (cellular)','WAN card green — InstyConnect + carrier name','All features including NWS alerts, APRS-IS, FCC refresh, Pat Winlink via internet'],
+    ['Starlink UP  (failover)','WAN card blue — Starlink (failover)','All features except inbound connections. Slightly higher latency (~20-40ms).'],
+    ['Both DOWN  (offline)','WAN card red — No WAN — Offline','All 32 local tools fully operational. NWS alerts, APRS-IS, FCC refresh paused.'],
+    ], [1.5*inch, 1.5*inch, CW-3.0*inch]))
+story.append(SP(4))
+story.append(TipBox(
+    'View full WAN details at http://192.168.50.1/wan-status.html — shows active source, '
+    'carrier, signal strength, Starlink latency, connectivity test results, and a WAN event log '
+    'recording every failover and failback with UTC timestamps.'))
+story.append(SP(6))
+story.append(H2('AMPRNet / 44Net Gateway'))
+story.append(P(
+    'A dedicated Raspberry Pi 5 at 192.168.50.2 maintains a permanent WireGuard tunnel to '
+    'amprgw.ampr.org, routing the 44.0.0.0/8 AMPRNet address block for all EMCOMM-NET devices. '
+    'Any device on EMCOMM-NET can reach other AMPRNet stations worldwide.'))
+story.append(SP(4))
+story.append(tbl([['ACCESS LEVEL','HOW','WHAT YOU CAN DO'],
+    ['Status dashboard','Open http://192.168.50.2:9000 — enter your FCC callsign when prompted','View tunnel state, AMPRNet address, traffic stats. Read-only.'],
+    ['Tunnel control','Gateway Pi keyboard only — open Chromium to http://localhost:9001 on the gateway Pi itself','Bring tunnel up/down/restart. Requires physical presence at gateway Pi. Callsign login required.'],
+    ], [1.2*inch, 2.2*inch, CW-3.4*inch]))
+story.append(SP(4))
+story.append(TipBox(
+    'The AMPRNet dashboard card on the FieldComms main dashboard shows live tunnel state '
+    '(green = UP, red = DOWN) updated every 30 seconds. Click it to open the full gateway status page. '
+    'Access requires a valid FCC amateur radio callsign — all access is logged for Part 97 compliance.'))
 story.append(PB())
 
 # Section 37 — Printer Setup

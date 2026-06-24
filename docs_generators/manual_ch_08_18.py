@@ -303,18 +303,18 @@ def ch13():
     s.append(SP(4))
     s.append(tbl(['RESET ACTION', 'HOW', 'NOTES'], [
         ['Station check-in',
-         'Any operator checks into the net using the Net Control Logger',
-         'Most common reset during a normal net — just running the net keeps the DMS satisfied'],
+         'Any operator checks in via the Net Control Logger',
+         'Most common reset — running the net normally keeps the DMS satisfied'],
         ['Traffic entry',
-         'Any operator adds a traffic item to the net traffic log',
+         'Any operator adds a traffic item to the log',
          'Logging a message or status update counts as activity'],
         ['Manual reset',
-         'Click the RESET button on the DMS page',
-         'Use during planned quiet periods — briefings, breaks, or scheduled silence'],
+         'Click RESET on the DMS page',
+         'Use during quiet periods — briefings, breaks, or scheduled silence'],
         ['Disarm',
          'Click DISARM on the DMS page',
-         'Disarm when the net is formally closed or monitoring is no longer needed'],
-    ], [1.3*inch, 2.1*inch, CW-3.4*inch]))
+         'Use when the net is formally closed'],
+    ], [1.2*inch, 1.8*inch, CW-3.0*inch]))
     s.append(SP(6))
 
     s.append(P('12.3  Multiple Nets', H2))

@@ -30,48 +30,38 @@ def ch1():
     s.append(SP(6))
 
     s.append(P('1.1  System Architecture', H2))
-    s.append(tbl(['COMPONENT', 'DESCRIPTION', 'IP / ACCESS'], [
-        ['FieldComms Pi 5  (16 GB)',
-         'Application server  ·  Pironman MAX 5 tower  ·  2× 1 TB NVMe RAID 1  ·  '
-         'runs all 32 web pages and 15 Python services',
-         '192.168.50.1  /  http://192.168.50.1'],
-        ['44Net Gateway Pi 5  (16 GB)',
-         'AMPRNet gateway  ·  Argon NEO 5 case  ·  256 GB M.2 SSD  ·  Pi OS Desktop  ·  '
-         'WireGuard tunnel to amprgw.ampr.org  ·  routes 44.0.0.0/8',
-         '192.168.50.2  /  http://192.168.50.2:9000'],
+    s.append(tbl(['COMPONENT', 'DESCRIPTION', 'ADMIN IP'], [
+        ['FieldComms Pi 5',
+         'Pironman MAX 5  ·  2× 1 TB NVMe RAID 1  ·  32 pages  ·  15 services  ·  16 GB RAM',
+         '192.168.50.1'],
+        ['44Net Gateway Pi 5',
+         'Argon NEO 5  ·  256 GB SSD  ·  Pi OS Desktop  ·  WireGuard to AMPRNet  ·  16 GB RAM',
+         '192.168.50.2'],
         ['ASUS RT-BE58 Go  (primary)',
-         'Wi-Fi 7 access point  ·  DHCP server  ·  dual WAN gateway  ·  AiMesh controller  ·  '
-         'InstyConnect cellular primary WAN  ·  Starlink automatic failover',
-         '192.168.50.254  /  http://192.168.50.254'],
-        ['ASUS RT-BE58 Go  (2× mesh nodes)',
-         'AiMesh coverage extension  ·  same EMCOMM-NET SSID  ·  seamless roaming  ·  '
-         'wired backhaul via UniFi Switch Ports 11 and 12',
-         'Managed by primary router'],
+         'Wi-Fi 7 AP  ·  DHCP  ·  dual WAN  ·  AiMesh controller  ·  InstyConnect + Starlink',
+         '192.168.50.254'],
+        ['ASUS RT-BE58 Go  (×2 mesh)',
+         'AiMesh extension  ·  same SSID  ·  seamless roaming  ·  Ports 11 and 12',
+         'Managed by primary'],
         ['UniFi Switch Lite 16 PoE',
-         '16-port GbE managed switch  ·  8× PoE  ·  2× SFP uplink  ·  '
-         'wired distribution hub for all devices',
-         'Layer 2 — no IP'],
-        ['InstyConnect Drum  (primary WAN)',
-         'Omnidirectional 5G/LTE cellular antenna  ·  modem built into enclosure  ·  '
-         'T-Mobile + Verizon dual-carrier  ·  single PoE Ethernet to ASUS WAN port',
-         'Modem admin: 10.1.1.1'],
-        ['InstyConnect Switchblade  (backup antenna)',
-         'Directional 4× folding LDAP antenna  ·  swap with Drum cable when signal is poor  ·  '
-         'aim toward nearest tower using InstyConnect app',
-         'Same WAN port as Drum'],
-        ['Starlink dish  (automatic failover)',
-         'Satellite internet  ·  CGNAT  ·  no inbound connections  ·  '
-         'connects to ASUS USB WAN port via Ethernet adapter',
-         'Dish admin: 192.168.100.1'],
+         '16-port GbE  ·  8× PoE  ·  central wired distribution hub',
+         'Layer 2'],
+        ['InstyConnect Drum',
+         'Omnidirectional 5G/LTE  ·  T-Mobile + Verizon  ·  PoE Ethernet to ASUS WAN port',
+         '10.1.1.1'],
+        ['InstyConnect Switchblade',
+         'Directional folding  ·  swap when Drum signal is poor',
+         'Same WAN port'],
+        ['Starlink dish',
+         'Satellite  ·  CGNAT  ·  auto-failover via USB WAN port',
+         '192.168.100.1'],
         ['Windows Laptop',
-         'IC-7300 HF radio  ·  Winlink Express  ·  VARA HF  ·  JS8Call  ·  '
-         'all connected via single USB cable',
-         '192.168.50.3  (recommended)'],
+         'IC-7300  ·  Winlink Express  ·  VARA HF  ·  JS8Call  ·  USB cable',
+         '192.168.50.3'],
         ['Pi 500 Workstations  (×4)',
-         'Browser-based operator stations  ·  Raspberry Pi 500 keyboard computer  ·  '
-         'Raspberry Pi Monitor 15.6"  ·  USB-C powered',
-         '192.168.50.20–23'],
-    ], [1.4*inch, 3.0*inch, CW-4.4*inch]))
+         'Raspberry Pi 500 keyboard  ·  Pi Monitor 15.6"  ·  USB-C powered  ·  browser-based',
+         '192.168.50.20-23'],
+    ], [1.9*inch, 3.1*inch, CW-5.0*inch]))
     s.append(SP(6))
 
     s.append(P('1.2  Dashboard Modes', H2))
@@ -95,18 +85,18 @@ def ch1():
     s.append(SP(6))
 
     s.append(P('1.3  Offline vs. Online Features', H2))
-    s.append(tbl(['FEATURE', 'OFFLINE  (no WAN)', 'ONLINE  (WAN active)'], [
+    s.append(tbl(['FEATURE', 'OFFLINE', 'ONLINE  (WAN active)'], [
         ['Net Control Logging',    'Full — always available', 'Full — no change'],
-        ['FCC Callsign Lookup',    'Full — local 800K database', 'Full — local database used'],
+        ['FCC Callsign Lookup',    'Full — local 800K database', 'Full — local DB used'],
         ['ICS Platform',           'Full — all sections', 'Full — no change'],
-        ['Kiwix Reference Library','Full — stored on Pi', 'Full — no change'],
-        ['Offline Maps (APRS)',    'Full — tiles stored on Pi', 'Full — no change'],
-        ['NWS Weather Alerts',     'Unavailable', 'Live — updates every 5 minutes'],
-        ['APRS-IS Feed',           'RF only via Graywolf/YAAC', 'Internet APRS-IS active'],
-        ['HF Propagation Data',    'Last cached data only', 'Live band conditions'],
-        ['Pat Winlink',            'RF only (packet/VARA RF)', 'Internet Winlink gateways'],
-        ['AMPRNet / 44Net',        'Unavailable (needs WAN)', 'Live via WireGuard tunnel'],
-    ], [1.8*inch, 2.2*inch, CW-4.0*inch]))
+        ['Kiwix Library',          'Full — stored on Pi', 'Full — no change'],
+        ['Offline Maps',           'Full — tiles stored on Pi', 'Full — no change'],
+        ['NWS Weather Alerts',     'Unavailable', 'Live — updates every 5 min'],
+        ['APRS-IS Feed',           'RF only  (Graywolf/YAAC)', 'Internet APRS-IS active'],
+        ['HF Propagation',         'Last cached data only', 'Live band conditions'],
+        ['Pat Winlink',            'RF only  (packet/VARA RF)', 'Internet gateways active'],
+        ['AMPRNet / 44Net',        'Unavailable  (needs WAN)', 'Live via WireGuard tunnel'],
+    ], [1.8*inch, 1.9*inch, CW-3.7*inch]))
     s.append(PB())
     return s
 

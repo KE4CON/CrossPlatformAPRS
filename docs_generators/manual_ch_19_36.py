@@ -604,24 +604,24 @@ def ch34():
         'within 30 to 60 seconds when cellular drops, and switches back when cellular recovers. '
         'No operator action is required for the failover in either direction.'))
     s.append(SP(4))
-    s.append(tbl(['PRIORITY', 'WAN SOURCE', 'HOW CONNECTED', 'ACTIVATES'], [
-        ['1 — Primary',
-         'InstyConnect cellular  (T-Mobile + Verizon)',
-         'PoE Ethernet from Drum or Switchblade antenna to ASUS WAN port',
+    s.append(tbl(['PRI', 'WAN SOURCE', 'CONNECTION', 'ACTIVATES'], [
+        ['1',
+         'InstyConnect  (T-Mobile + Verizon)',
+         'PoE Ethernet from Drum or Switchblade to ASUS WAN port',
          'Always — default for all activations'],
-        ['2 — Auto failover',
+        ['2',
          'Starlink satellite',
-         'Starlink Ethernet adapter → USB-Ethernet adapter → ASUS USB WAN port',
-         'Automatic when cellular WAN drops or degrades'],
-        ['3 — Manual',
+         'Starlink Ethernet adapter + USB-Ethernet to ASUS USB WAN',
+         'Auto when cellular drops'],
+        ['3',
          'EOC site Ethernet',
-         'Site cable to ASUS WAN port  (replaces InstyConnect cable)',
-         'Manual — when reliable site internet is available'],
-        ['4 — Last resort',
-         'USB smartphone tether  or  venue Wi-Fi (WISP)',
-         'Phone USB to ASUS USB port  or  ASUS WISP wireless WAN mode',
-         'Manual — emergency fallback only'],
-    ], [0.8*inch, 1.5*inch, 2.1*inch, CW-4.4*inch]))
+         'Site cable to ASUS WAN port',
+         'Manual — when site internet available'],
+        ['4',
+         'USB tether or venue Wi-Fi',
+         'Phone USB to ASUS USB port  or  ASUS WISP mode',
+         'Manual — emergency fallback'],
+    ], [0.4*inch, 1.6*inch, 2.0*inch, CW-4.0*inch]))
     s.append(SP(6))
 
     s.append(P('33.3  InstyConnect Antennas', H2))
@@ -631,20 +631,16 @@ def ch34():
         'The modem is integrated into the outdoor antenna enclosure — '
         'no separate modem box is needed. Power travels up the same cable that carries data.'))
     s.append(SP(4))
-    s.append(tbl(['ANTENNA', 'TYPE', 'WHEN TO USE', 'AIMING'], [
-        ['InstyConnect Drum',
-         'Omnidirectional 5G/LTE',
-         'Default antenna — deploy at every activation. '
-         'Mounts on any 1.5" to 2" mast, tripod, or vehicle roof rack.',
-         'No aiming needed — omnidirectional picks up all towers from all directions.'],
-        ['InstyConnect Switchblade',
-         'Directional 4x folding LDAP',
-         'When Drum signal is insufficient at a specific site. '
-         'Folds flat for transport. Deploys in under 5 minutes. '
-         'Swap the PoE cable from the Drum to the Switchblade on the ASUS WAN port.',
-         'Aim toward nearest tower using the InstyConnect signal app. '
-         'Rotate slowly while watching signal bars — stop at peak signal.'],
-    ], [1.1*inch, 1.1*inch, 2.1*inch, CW-4.3*inch]))
+    s.append(tbl(['ANTENNA', 'USE WHEN', 'AIMING'], [
+        ['Drum  (omni 5G/LTE)',
+         'Default — every activation. Mounts on any mast, tripod, or vehicle roof rack.',
+         'No aiming needed — picks up all towers equally.'],
+        ['Switchblade  (directional)',
+         'When Drum signal is poor. Folds flat for transport. '
+         'Swap the PoE cable from Drum to Switchblade on the same ASUS WAN port.',
+         'Aim toward nearest tower using InstyConnect app. '
+         'Rotate slowly — stop at peak signal.'],
+    ], [1.3*inch, 2.4*inch, CW-3.7*inch]))
     s.append(SP(4))
     s.append(note(
         'InstyConnect data plan management: '
@@ -678,19 +674,19 @@ def ch34():
         'and the FieldComms Pi itself — can reach other AMPRNet stations globally '
         'without routing traffic through the commercial internet.'))
     s.append(SP(4))
-    s.append(tbl(['AMPRNET USE CASE', 'HOW IT WORKS FROM EMCOMM-NET'], [
+    s.append(tbl(['AMPRNET USE CASE', 'HOW IT WORKS'], [
         ['Winlink via AMPRNet',
-         'Pat Winlink on the FieldComms Pi can connect to RMS gateways on 44.x.x.x addresses '
-         'directly over AMPRNet — bypassing commercial internet when only amateur radio paths are available.'],
+         'Pat Winlink connects to Winlink RMS gateways on 44.x.x.x directly over AMPRNet — '
+         'bypassing commercial internet when only amateur radio paths are available.'],
         ['APRS-IS via AMPRNet',
-         'Graywolf and YAAC can connect to APRS-IS servers on 44.x.x.x — '
+         'Graywolf and YAAC connect to APRS-IS servers on 44.x.x.x — '
          'keeping APRS traffic within the amateur radio network.'],
         ['Inter-node FieldComms',
-         'If a second MCESV FieldComms system is deployed with its own 44Net gateway, '
+         'If a second MCESV FieldComms system with its own 44Net gateway is deployed, '
          'the two systems can share data over AMPRNet without commercial internet routing.'],
-        ['Direct amateur station connectivity',
-         'Any licensed amateur station worldwide with a 44.x.x.x address is directly reachable '
-         'from any EMCOMM-NET device for data exchange, file transfer, or status checking.'],
+        ['Direct station connectivity',
+         'Any amateur station worldwide with a 44.x.x.x address is directly reachable '
+         'from any EMCOMM-NET device for data exchange or status checking.'],
     ], [1.8*inch, CW-1.8*inch]))
     s.append(SP(4))
     s.append(P(
@@ -708,23 +704,20 @@ def ch34():
         'operators. This is both a security measure and a Part 97 compliance requirement. '
         'The gateway uses a two-level access model:'))
     s.append(SP(4))
-    s.append(tbl(['LEVEL', 'HOW TO ACCESS', 'WHAT YOU CAN DO'], [
-        ['Status dashboard  (any EMCOMM-NET device)',
-         'Open http://192.168.50.2:9000 in any browser on EMCOMM-NET.  '
-         'Enter your FCC callsign when prompted.  '
-         'Callsign is validated against the local FCC database on the FieldComms Pi.',
+    s.append(tbl(['HOW TO ACCESS', 'WHAT YOU CAN DO'], [
+        ['Status Dashboard  (any EMCOMM-NET device)  —  '
+         'Open http://192.168.50.2:9000.  '
+         'Enter your FCC callsign at the login prompt.  '
+         'Validated against the local FCC database on the FieldComms Pi.',
          'View tunnel state, AMPRNet address, last handshake, '
-         'traffic statistics, routes, and gateway system health.  '
-         'Read-only — no tunnel control from this level.'],
-        ['Tunnel control  (gateway Pi keyboard only)',
-         'Sit at the gateway Pi keyboard.  '
-         'Open Chromium to http://localhost:9001.  '
-         'Log in with your FCC callsign.  '
-         'Physical presence at the gateway Pi is required — '
-         'this port is blocked from the network.',
-         'Bring the WireGuard tunnel up, down, or restart it.  '
-         'All actions are logged with callsign, timestamp, and IP address.'],
-    ], [1.2*inch, 2.2*inch, CW-3.4*inch]))
+         'traffic stats, routes, and gateway health.  Read-only — no tunnel control.'],
+        ['Tunnel Control  (gateway Pi keyboard only)  —  '
+         'Open Chromium to http://localhost:9001 on the gateway Pi itself.  '
+         'Log in with FCC callsign.  '
+         'Port 9001 is blocked from the network — physical presence required.',
+         'Bring tunnel up / down / restart.  '
+         'All actions logged with callsign, timestamp, and IP address.'],
+    ], [3.0*inch, CW-3.0*inch]))
     s.append(SP(4))
     s.append(note(
         'The /api/status endpoint on port 9000 does not require authentication. '
@@ -738,7 +731,7 @@ def ch34():
 
     s.append(P('33.7  Network IP Reference', H2))
     s.append(tbl(['DEVICE', 'IP ADDRESS', 'ADMIN URL'], [
-        ['FieldComms Pi 5  (application server)',  '192.168.50.1',   'http://192.168.50.1'],
+        ['FieldComms Pi 5',  '192.168.50.1',   'http://192.168.50.1'],
         ['44Net Gateway Pi 5',                     '192.168.50.2',   'http://192.168.50.2:9000'],
         ['ASUS RT-BE58 Go  (primary router)',       '192.168.50.254', 'http://192.168.50.254'],
         ['Windows Laptop  (recommended)',           '192.168.50.3',   'DHCP reservation in router'],

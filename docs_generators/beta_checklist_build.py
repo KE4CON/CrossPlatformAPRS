@@ -275,15 +275,63 @@ story.append(KeepTogether([subsection('1.1  Access & Network'), SP(2), rows_tabl
     ('UTC clock in nav bar updates every second', ''),
 ])])); story.append(SP(6))
 
-story.append(KeepTogether([subsection('1.1b  AiMesh Coverage Extension (if deployed)'), SP(2), rows_table([
-    ('If AiMesh nodes are deployed: all nodes paired and showing Online in AiMesh menu',
-     'Optional — only test if nodes are in use'),
-    ('EMCOMM-NET visible and http://192.168.50.1 reachable from each node coverage zone',
-     'Walk to each zone with a phone'),
-    ('Device roams between nodes automatically when moving across the venue',
-     'No manual Wi-Fi reconnection needed'),
-    ('Pi remains at 192.168.50.1 throughout — not affected by which node device connects through', ''),
-    ('Wired backhaul nodes (if used): CAT 6 link confirmed by link LED on node LAN port', ''),
+story.append(KeepTogether([subsection('1.1b  AiMesh Coverage Extension  (standard 2-node deployment)'), SP(2), rows_table([
+    ('Both RT-BE58 Go mesh nodes powered on and showing Connected in primary router AiMesh menu',
+     'http://192.168.50.254 → AiMesh → AiMesh Node — both must show Connected'),
+    ('Mesh Node 1 backhaul type shows Ethernet  (UniFi Switch Port 11)',
+     'Wired backhaul confirms CAT 6 cable is seated at switch and node LAN port'),
+    ('Mesh Node 2 backhaul type shows Ethernet  (UniFi Switch Port 12)',
+     'Wired backhaul confirms CAT 6 cable is seated at switch and node LAN port'),
+    ('EMCOMM-NET and http://192.168.50.1 reachable from Node 1 coverage zone',
+     'Walk to secondary room/wing with a phone'),
+    ('EMCOMM-NET and http://192.168.50.1 reachable from Node 2 coverage zone',
+     'Walk to third coverage zone with a phone'),
+    ('Device roams between nodes without reconnecting when moving through venue',
+     'No Wi-Fi prompt, no password re-entry — seamless roam'),
+    ('Pi remains at 192.168.50.1 throughout — not affected by which node is connected', ''),
+])])); story.append(SP(6))
+
+story.append(KeepTogether([subsection('1.1c  WAN Connectivity  (InstyConnect + Starlink failover)'), SP(2), rows_table([
+    ('InstyConnect Drum powered on and connected to ASUS WAN port via PoE cable',
+     'Check Drum LED status — green or white = connected to carrier'),
+    ('ASUS WAN port shows Connected status with InstyConnect IP address',
+     'http://192.168.50.254 → WAN → Internet Status — must show Connected'),
+    ('WAN Status dashboard shows active source as InstyConnect Cellular',
+     'http://192.168.50.1/wan-status.html — WAN card must be green'),
+    ('Carrier shown on WAN status page  (T-Mobile or Verizon)',
+     'Confirms dual-carrier multi-network plan is active'),
+    ('NWS weather alerts loading on dashboard  (requires WAN)',
+     'Alerts section populates — confirms cellular internet is reaching external APIs'),
+    ('Starlink dish powered on and connected to ASUS USB WAN port via adapter',
+     'Dish status LED — may take up to 3 minutes to acquire signal after power-on'),
+    ('ASUS Dual WAN configured: Primary = WAN port, Secondary = USB, Mode = Failover',
+     'http://192.168.50.254 → WAN → Dual WAN — verify all three settings'),
+    ('Failover test: unplug InstyConnect PoE cable — ASUS switches to Starlink within 60 seconds',
+     'Watch ASUS WAN status page. WAN card on dashboard should turn blue.'),
+    ('Failback test: reconnect InstyConnect PoE cable — ASUS switches back to cellular within 60 seconds',
+     'WAN card on dashboard returns to green. InstyConnect is primary again.'),
+    ('Reconnect InstyConnect PoE cable after failover test', 'Restore normal WAN configuration'),
+])])); story.append(SP(6))
+
+story.append(KeepTogether([subsection('1.1d  AMPRNet / 44Net Gateway'), SP(2), rows_table([
+    ('Gateway Pi powered on at 192.168.50.2 (check green power LED)',
+     'Gateway Pi must be on the same UniFi switch as FieldComms Pi'),
+    ('AMPRNet Gateway card on FieldComms dashboard shows green  (tunnel UP)',
+     'http://192.168.50.1 — bottom connectivity section — amprgate card must be green'),
+    ('Gateway status page loads at http://192.168.50.2:9000',
+     'Should show callsign login page'),
+    ('Callsign login works — enter a valid FCC callsign at http://192.168.50.2:9000',
+     'Dashboard must load showing tunnel status after login'),
+    ('Tunnel status shows UP with a 44.x.x.x/29 AMPRNet address assigned',
+     'Confirms WireGuard tunnel to amprgw.ampr.org is established'),
+    ('Last handshake time shown — within the past 5 minutes',
+     'Confirms tunnel is actively maintained'),
+    ('Access log entry created — check /var/log/amprgate-access.log on gateway Pi',
+     'SSH to gateway Pi: tail /var/log/amprgate-access.log — must show LOGIN-OK with callsign'),
+    ('Tunnel control blocked from network — port 9001 not reachable from EMCOMM-NET',
+     'From any EMCOMM-NET device: curl http://192.168.50.2:9001 must return connection refused'),
+    ('WAN Status dashboard shows AMPRNet tunnel state',
+     'http://192.168.50.1/wan-status.html — AMPRNet section shows tunnel UP'),
 ])])); story.append(SP(6))
 
 story.append(KeepTogether([subsection('1.2  Pre-Flight Health Check (http://192.168.50.1/preflight.html)'), SP(2), rows_table([
@@ -673,6 +721,8 @@ story.append(KeepTogether([section('12 · System Services',
 story.append(KeepTogether([subsection('12.1  Service Status'), SP(2), rows_table([
     ('fcc-lookup.service — main API running on port 5050', ''),
     ('health-monitor.service — health API running on port 5051', ''),
+    ('wan-monitor.service — WAN status monitor polling InstyConnect and Starlink', ''),
+    ('amprgate-poll.service — polls gateway Pi every 30s for 44Net status', ''),
     ('ics-platform.service — ICS API running on port 5055', ''),
     ('fieldcomms-refs.service — reference library API running on port 5056', ''),
     ('fieldcomms-tiles.service — tile server running on port 8083', ''),
@@ -688,6 +738,21 @@ story.append(KeepTogether([subsection('12.1  Service Status'), SP(2), rows_table
     ('fcc-refresh.timer — weekly FCC database refresh timer active', ''),
     ('repeater-refresh.timer — monthly repeater database refresh timer active', ''),
     ('Firewall (ufw) enabled — ports 80, 631, 5050-5056, 8080-8090 open', ''),
+])])); story.append(SP(6))
+
+story.append(KeepTogether([subsection('12.2  Gateway Pi Services  (192.168.50.2 — SSH separately)'), SP(2), rows_table([
+    ('amprgate-status.service — status page running on port 9000',
+     'SSH to 192.168.50.2: systemctl status amprgate-status'),
+    ('wg-quick@ampr0.service — WireGuard tunnel running',
+     'SSH to 192.168.50.2: systemctl status wg-quick@ampr0'),
+    ('Port 9000 accessible from EMCOMM-NET (callsign login page loads)',
+     'From any EMCOMM-NET device: open http://192.168.50.2:9000'),
+    ('Port 9001 NOT accessible from EMCOMM-NET (connection refused)',
+     'From any EMCOMM-NET device: curl http://192.168.50.2:9001 — must fail'),
+    ('Access log file exists at /var/log/amprgate-access.log',
+     'SSH to gateway Pi: ls -la /var/log/amprgate-access.log'),
+    ('UFW firewall active on gateway Pi — port 9001 blocked externally',
+     'SSH to gateway Pi: sudo ufw status — verify 9001 is DENY'),
 ])])); story.append(PB())
 
 # ── SIGN-OFF ───────────────────────────────────────────────────────────────────
@@ -701,7 +766,7 @@ signoff_data = [
      P('Fail', S('sh2', fontName='Helvetica-Bold', fontSize=8, textColor=white, leading=10)),
      P('Not Tested', S('sh2', fontName='Helvetica-Bold', fontSize=8, textColor=white, leading=10))],
 ]
-for sec_name in ['1 · System & Infrastructure', '2 · Net Control Logging',
+for sec_name in ['1 · System & Infrastructure  (incl. WAN + 44Net)', '2 · Net Control Logging',
                   '3 · Resource & Personnel', '4 · Maps & Tactical',
                   '5 · ICS Platform', '6 · ICS Forms', '7 · Winlink',
                   '8 · Callsign & Radio Tools', '9 · Reference, Print & Kiwix',
