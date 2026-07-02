@@ -21,6 +21,17 @@ public sealed class StationListViewModel : INotifyPropertyChanged
         this.map = map;
         allRows = map.Markers.Select(marker => new StationListRowViewModel(marker)).ToList();
         Rows = new ObservableCollection<StationListRowViewModel>();
+
+        // Keep the list in sync with live marker updates pushed onto the map.
+        map.Markers.CollectionChanged += (_, _) => RebuildFromMap();
+
+        ApplyFiltersAndSort();
+    }
+
+    private void RebuildFromMap()
+    {
+        allRows.Clear();
+        allRows.AddRange(map.Markers.Select(marker => new StationListRowViewModel(marker)));
         ApplyFiltersAndSort();
     }
 
